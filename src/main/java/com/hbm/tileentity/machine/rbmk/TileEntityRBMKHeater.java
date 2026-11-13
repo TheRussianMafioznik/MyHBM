@@ -1,0 +1,312 @@
+package com.hbm.tileentity.machine.rbmk;
+
+import java.util.Map;
+
+import com.hbm.blocks.ModBlocks;
+import com.hbm.items.ModItems;
+import com.hbm.items.machine.ItemForgeFluidIdentifier;
+import com.hbm.entity.projectile.EntityRBMKDebris.DebrisType;
+import com.hbm.inventory.HeatRecipes;
+import com.hbm.forgefluid.FFUtils;
+import com.hbm.forgefluid.ModForgeFluids;
+import com.hbm.inventory.control_panel.DataValue;
+import com.hbm.inventory.control_panel.DataValueFloat;
+import com.hbm.inventory.control_panel.DataValueString;
+import com.hbm.tileentity.IBufPacketReceiver;
+import com.hbm.tileentity.machine.rbmk.TileEntityRBMKConsole.ColumnType;
+
+import io.netty.buffer.ByteBuf;
+import net.minecraft.nbt.NBTTagCompound;
+import net.minecraft.network.NetworkManager;
+import net.minecraft.network.play.server.SPacketUpdateTileEntity;
+import net.minecraft.item.ItemStack;
+import net.minecraft.util.EnumFacing;
+import net.minecraft.util.math.BlockPos;
+import net.minecraftforge.common.capabilities.Capability;
+import net.minecraftforge.fluids.Fluid;
+import net.minecraftforge.fluids.FluidRegistry;
+import net.minecraftforge.fluids.FluidStack;
+import net.minecraftforge.fluids.FluidTank;
+import net.minecraftforge.fluids.capability.CapabilityFluidHandler;
+import net.minecraftforge.fluids.capability.IFluidHandler;
+import net.minecraftforge.fluids.capability.IFluidTankProperties;
+import net.minecraftforge.fml.common.network.ByteBufUtils;
+
+public class TileEntityRBMKHeater extends TileEntityRBMKSlottedBase implements IFluidHandler, IBufPacketReceiver {
+
+	public static final double TU_PER_DEGREE = 3_000D;
+	public FluidTank[] tanks;
+	public Fluid[] tankTypes;
+
+	private int lastTank0Amount = -1;
+	private int lastTank1Amount = -1;
+
+	public TileEntityRBMKHeater() {
+		super(1);
+		tanks = new FluidTank[2];
+		tankTypes = new Fluid[2];
+
+		tanks[0] = new FluidTank(ModForgeFluids.coolant, 0, 16000);
+		tankTypes[0] = ModForgeFluids.coolant;
+		tanks[1] = new FluidTank(ModForgeFluids.hotcoolant, 0, 16000);
+		tankTypes[1] = ModForgeFluids.hotcoolant;
+	}
+
+	@Override
+	public String getName() {
+		return "container.rbmkHeater";
+	}
+
+	@Override
+	public void update() {
+
+		if(!world.isRemote) {
+			setFluidType();
+
+			if(HeatRecipes.hasBoilRecipe(tankTypes[0])) {
+				Fluid hotFluid = HeatRecipes.getBoilFluid(tankTypes[0]);
+				double tempRange = this.heat - (hotFluid.getTemperature()-273);
+				if(tempRange > 0) {
+
+					int heatReq = HeatRecipes.getRequiredHeat(tankTypes[0]);
+					int inputAmount = HeatRecipes.getInputAmountHot(tankTypes[0]);
+					int outputAmount = HeatRecipes.getOutputAmountHot(tankTypes[0]);
+
+					int inputOps = tanks[0].getFluidAmount() / inputAmount;
+					int outputOps = (tanks[1].getCapacity() - tanks[1].getFluidAmount()) / outputAmount;
+					int tempOps = (int) Math.floor((tempRange * TU_PER_DEGREE) / heatReq);
+					int ops = Math.min(inputOps, Math.min(outputOps, tempOps));
+
+					tanks[0].drain(inputAmount * ops, true);
+					tanks[1].fill(new FluidStack(tankTypes[1], outputAmount * ops), true);
+					this.heat -= heatReq * ops / TU_PER_DEGREE;
+				}
+			}
+
+			networkPackNT(50);
+
+			if(tanks[1].getFluidAmount() > 0){
+				fillFluidInit(tanks[1]);
+			}
+
+			if(lastTank0Amount != tanks[0].getFluidAmount() || lastTank1Amount != tanks[1].getFluidAmount()) {
+				lastTank0Amount = tanks[0].getFluidAmount();
+				lastTank1Amount = tanks[1].getFluidAmount();
+				markDirty();
+				world.notifyBlockUpdate(pos, world.getBlockState(pos), world.getBlockState(pos), 3);
+			}
+		}
+
+		super.update();
+	}
+
+	@Override
+	public SPacketUpdateTileEntity getUpdatePacket() {
+		return new SPacketUpdateTileEntity(this.pos, 0, this.getUpdateTag());
+	}
+
+	@Override
+	public void onDataPacket(NetworkManager net, SPacketUpdateTileEntity pkt) {
+		this.readFromNBT(pkt.getNbtCompound());
+	}
+
+	@Override
+	public NBTTagCompound getUpdateTag() {
+		return this.writeToNBT(new NBTTagCompound());
+	}
+
+	@Override
+	public void handleUpdateTag(NBTTagCompound tag) {
+		this.readFromNBT(tag);
+	}
+
+	@Override
+	public void serialize(ByteBuf buf) {
+		super.serialize(buf);
+		ByteBufUtils.writeUTF8String(buf, tankTypes[0].getName());
+		ByteBufUtils.writeUTF8String(buf, tankTypes[1].getName());
+		buf.writeInt(tanks[0].getFluidAmount());
+		buf.writeInt(tanks[1].getFluidAmount());
+	}
+
+	@Override
+	public void deserialize(ByteBuf buf) {
+		super.deserialize(buf);
+		String type0 = ByteBufUtils.readUTF8String(buf);
+		String type1 = ByteBufUtils.readUTF8String(buf);
+		tankTypes[0] = FluidRegistry.getFluid(type0);
+		tankTypes[1] = FluidRegistry.getFluid(type1);
+		if(tankTypes[0] == null) tankTypes[0] = ModForgeFluids.coolant;
+		if(tankTypes[1] == null) tankTypes[1] = ModForgeFluids.hotcoolant;
+		int amount0 = buf.readInt();
+		int amount1 = buf.readInt();
+		if(amount0 > 0) {
+			tanks[0].setFluid(new FluidStack(tankTypes[0], amount0));
+		} else {
+			tanks[0].setFluid(null);
+		}
+		if(amount1 > 0) {
+			tanks[1].setFluid(new FluidStack(tankTypes[1], amount1));
+		} else {
+			tanks[1].setFluid(null);
+		}
+	}
+
+	public void setFluidType(){
+		ItemStack inFluid = this.inventory.getStackInSlot(0);
+		if(inFluid.getItem() == ModItems.forge_fluid_identifier) {
+			setFluidTypes(ItemForgeFluidIdentifier.getType(inFluid));
+		}
+		if(tankTypes[0] == null) setFluidTypes(ModForgeFluids.coolant);
+	}
+
+	public void setFluidTypes(Fluid f){
+		if(HeatRecipes.hasBoilRecipe(f) && tankTypes[0] != f) {
+			tankTypes[0] = f;
+			tankTypes[1] = HeatRecipes.getBoilFluid(f);
+			tanks[0].setFluid(new FluidStack(f, 0));
+			tanks[1].setFluid(new FluidStack(tankTypes[1], 0));
+			this.markDirty();
+			if(!world.isRemote) {
+				world.notifyBlockUpdate(pos, world.getBlockState(pos), world.getBlockState(pos), 3);
+			}
+		}
+	}
+
+	public void fillFluidInit(FluidTank tank) {
+
+		fillFluid(this.pos.getX(), this.pos.getY() + rbmkHeight + 1, this.pos.getZ(), tank);
+
+		if(world.getBlockState(new BlockPos(pos.getX(), pos.getY() - 1, pos.getZ())).getBlock() == ModBlocks.rbmk_loader) {
+
+			fillFluid(this.pos.getX() + 1, this.pos.getY() - 1, this.pos.getZ(), tank);
+			fillFluid(this.pos.getX() - 1, this.pos.getY() - 1, this.pos.getZ(), tank);
+			fillFluid(this.pos.getX(), this.pos.getY() - 1, this.pos.getZ() + 1, tank);
+			fillFluid(this.pos.getX(), this.pos.getY() - 1, this.pos.getZ() - 1, tank);
+			fillFluid(this.pos.getX(), this.pos.getY() - 2, this.pos.getZ(), tank);
+		}
+
+		if(world.getBlockState(new BlockPos(pos.getX(), pos.getY() - 2, pos.getZ())).getBlock() == ModBlocks.rbmk_loader) {
+
+			fillFluid(this.pos.getX() + 1, this.pos.getY() - 2, this.pos.getZ(), tank);
+			fillFluid(this.pos.getX() - 1, this.pos.getY() - 2, this.pos.getZ(), tank);
+			fillFluid(this.pos.getX(), this.pos.getY() - 2, this.pos.getZ() + 1, tank);
+			fillFluid(this.pos.getX(), this.pos.getY() - 2, this.pos.getZ() - 1, tank);
+			fillFluid(this.pos.getX(), this.pos.getY() - 1, this.pos.getZ(), tank);
+			fillFluid(this.pos.getX(), this.pos.getY() - 3, this.pos.getZ(), tank);
+		}
+	}
+
+	public void fillFluid(int x, int y, int z, FluidTank tank) {
+		FFUtils.fillFluid(this, tank, world, new BlockPos(x, y, z), tank.getCapacity());
+	}
+
+	public void getDiagData(NBTTagCompound nbt) {
+		this.writeToNBT(nbt);
+		nbt.removeTag("jumpheight");
+	}
+
+	@Override
+	public void readFromNBT(NBTTagCompound nbt) {
+		super.readFromNBT(nbt);
+
+		tanks[0].readFromNBT(nbt.getCompoundTag("tanks0"));
+		tanks[1].readFromNBT(nbt.getCompoundTag("tanks1"));
+		if(nbt.hasKey("tankTypes0")) tankTypes[0] = FluidRegistry.getFluid(nbt.getString("tankTypes0"));
+		if(nbt.hasKey("tankTypes1")) tankTypes[1] = FluidRegistry.getFluid(nbt.getString("tankTypes1"));
+	}
+
+	@Override
+	public NBTTagCompound writeToNBT(NBTTagCompound nbt) {
+		super.writeToNBT(nbt);
+
+		nbt.setTag("tanks0", tanks[0].writeToNBT(new NBTTagCompound()));
+		nbt.setTag("tanks1", tanks[1].writeToNBT(new NBTTagCompound()));
+		nbt.setString("tankTypes0", tankTypes[0].getName());
+		nbt.setString("tankTypes1", tankTypes[1].getName());
+
+		return nbt;
+	}
+
+	@Override
+	public void onMelt(int reduce) {
+
+		int count = 1 + world.rand.nextInt(2);
+
+		for(int i = 0; i < count; i++) {
+			spawnDebris(DebrisType.BLANK);
+		}
+
+		super.onMelt(reduce);
+	}
+
+	@Override
+	public ColumnType getConsoleType() {
+		return ColumnType.HEATEX;
+	}
+
+	@Override
+	public NBTTagCompound getNBTForConsole() {
+		NBTTagCompound data = new NBTTagCompound();
+		data.setInteger("inputFluidAmount", this.tanks[0].getFluidAmount());
+		data.setInteger("inputFluidMax", this.tanks[0].getCapacity());
+		data.setInteger("outputFluidAmount", this.tanks[1].getFluidAmount());
+		data.setInteger("outputFluidMax", this.tanks[1].getCapacity());
+		data.setString("inputFluid", this.tankTypes[0].getLocalizedName(new FluidStack(this.tankTypes[0], 0)));
+		data.setString("outputFluid", this.tankTypes[1].getLocalizedName(new FluidStack(this.tankTypes[1], 0)));
+		return data;
+	}
+
+	@Override
+	public IFluidTankProperties[] getTankProperties(){
+		return new IFluidTankProperties[]{tanks[0].getTankProperties()[0], tanks[1].getTankProperties()[0]};
+	}
+
+	@Override
+	public int fill(FluidStack resource, boolean doFill){
+		if(resource != null && resource.amount > 0 && resource.getFluid() == tankTypes[0] && HeatRecipes.hasBoilRecipe(resource.getFluid())){
+			return tanks[0].fill(resource, doFill);
+		}
+		return 0;
+	}
+
+	@Override
+	public FluidStack drain(FluidStack resource, boolean doDrain){
+		if(resource != null && resource.amount > 0 && resource.getFluid() == tankTypes[1]){
+			return tanks[1].drain(resource, doDrain);
+		}
+		return null;
+	}
+
+	@Override
+	public FluidStack drain(int maxDrain, boolean doDrain){
+		if (maxDrain > 0) {
+			return tanks[1].drain(maxDrain, doDrain);
+		}
+		return null;
+	}
+
+	@Override
+	public boolean hasCapability(Capability<?> capability, EnumFacing facing){
+		return capability == CapabilityFluidHandler.FLUID_HANDLER_CAPABILITY || super.hasCapability(capability, facing);
+	}
+
+	@Override
+	public <T> T getCapability(Capability<T> capability, EnumFacing facing){
+		if(capability == CapabilityFluidHandler.FLUID_HANDLER_CAPABILITY)
+			return CapabilityFluidHandler.FLUID_HANDLER_CAPABILITY.cast(this);
+		return super.getCapability(capability, facing);
+	}
+
+	@Override
+	public Map<String, DataValue> getQueryData() {
+		Map<String, DataValue> data = super.getQueryData();
+
+		data.put("t0_fluidType", new DataValueString(tankTypes[0].getName()));
+		data.put("t0_fluidAmount", new DataValueFloat((float) tanks[0].getFluidAmount()));
+		data.put("t1_fluidType", new DataValueString(tankTypes[1].getName()));
+		data.put("t1_fluidAmount", new DataValueFloat((float) tanks[1].getFluidAmount()));
+
+		return data;
+	}
+}

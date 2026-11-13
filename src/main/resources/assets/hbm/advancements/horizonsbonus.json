@@ -1,0 +1,30 @@
+{
+	"display": {
+		"icon": {
+			"item": "hbm:sat_gerald"
+		},
+		"title": {
+			"translate": "hbm.achievement.horizonsBonus"
+		},
+		"description": {
+			"translate": "hbm.achievement.horizonsBonus.desc"
+		},
+		"frame": "challenge"
+	},
+	"parent": "hbm:horizonsend",
+	"criteria": {
+        "crafting_table": {
+            "trigger": "minecraft:inventory_changed",
+            "conditions": {
+                "items": [
+                    {
+         				"item": "hbm:plate_euphemium"
+      				}
+                ]
+            }
+        }
+    },
+    "rewards": {
+        "experience": 20000
+    }
+}

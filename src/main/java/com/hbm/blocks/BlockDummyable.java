@@ -1,0 +1,387 @@
+package com.hbm.blocks;
+
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Random;
+
+import com.hbm.handler.MultiblockHandlerXR;
+import com.hbm.lib.ForgeDirection;
+import com.hbm.lib.InventoryHelper;
+import com.hbm.lib.Library;
+import com.hbm.main.MainRegistry;
+
+import net.minecraft.block.Block;
+import net.minecraft.block.BlockContainer;
+import net.minecraft.block.material.Material;
+import net.minecraft.block.properties.IProperty;
+import net.minecraft.block.properties.PropertyInteger;
+import net.minecraft.block.state.BlockStateContainer;
+import net.minecraft.block.state.IBlockState;
+import net.minecraft.entity.EntityLivingBase;
+import net.minecraft.entity.player.EntityPlayer;
+import net.minecraft.item.Item;
+import net.minecraft.item.ItemStack;
+import net.minecraft.tileentity.TileEntity;
+import net.minecraft.util.EnumBlockRenderType;
+import net.minecraft.util.EnumFacing;
+import net.minecraft.util.EnumHand;
+import net.minecraft.util.math.AxisAlignedBB;
+import net.minecraft.util.math.BlockPos;
+import net.minecraft.util.math.MathHelper;
+import net.minecraft.world.IBlockAccess;
+import net.minecraft.world.World;
+import net.minecraftforge.common.MinecraftForge;
+import org.jetbrains.annotations.Nullable;
+
+public abstract class BlockDummyable extends BlockContainer {
+
+	//Drillgon200: I'm far to lazy to figure out what all the meta values should be translated to in properties
+	public static final PropertyInteger META = PropertyInteger.create("meta", 0, 15);
+	
+	public BlockDummyable(Material materialIn, String s) {
+		super(materialIn);
+		this.setTranslationKey(s);
+		this.setRegistryName(s);
+		this.setTickRandomly(true);
+		
+		ModBlocks.ALL_BLOCKS.add(this);
+	}
+	
+	/// BLOCK METADATA ///
+	
+	//0-5 		dummy rotation 		(for dummy neighbor checks)
+	//6-11 		extra 				(6 rotations with flag, for pipe connectors and the like)
+	//12-15 	block rotation 		(for rendering the TE)
+
+	//meta offset from dummy to TE rotation
+	public static final int offset = 10;
+	//meta offset from dummy to extra rotation
+	public static final int extra = 6;
+	private static final long NO_CORE = Long.MIN_VALUE;
+		
+	public static boolean safeRem = false;
+	
+	@Override
+	public void neighborChanged(IBlockState state, World world, BlockPos pos, Block blockIn, BlockPos fromPos) {
+		if(world.isRemote || safeRem)
+    		return;
+    	
+    	int metadata = state.getValue(META);
+    	
+    	//if it's an extra, remove the extra-ness
+    	if(metadata >= extra)
+    		metadata -= extra;
+    	
+    	ForgeDirection dir = ForgeDirection.getOrientation(metadata).getOpposite();
+    	Block b = world.getBlockState(new BlockPos(pos.getX() + dir.offsetX, pos.getY() + dir.offsetY, pos.getZ() + dir.offsetZ)).getBlock();
+    	if(b.getClass() != this.getClass()) {
+    		world.setBlockToAir(pos);
+    	}
+	}
+	
+	@Override
+	public void updateTick(World world, BlockPos pos, IBlockState state, Random rand) {
+		super.updateTick(world, pos, state, rand);
+		if(world.isRemote)
+    		return;
+    	
+    	int metadata = state.getValue(META);
+    	
+    	//if it's an extra, remove the extra-ness
+    	if(metadata >= extra)
+    		metadata -= extra;
+    	
+    	ForgeDirection dir = ForgeDirection.getOrientation(metadata).getOpposite();
+    	Block b = world.getBlockState(new BlockPos(pos.getX() + dir.offsetX, pos.getY() + dir.offsetY, pos.getZ() + dir.offsetZ)).getBlock();
+    	
+    	if(b.getClass() != this.getClass()) {
+    		world.setBlockToAir(pos);
+    	}
+	}
+
+	protected int getMaxCoreSearchSteps() {
+        return 512;
+    }
+	
+	public int[] findCore(IBlockAccess world, int x, int y, int z) {
+    	positions.clear();
+    	return findCoreRec(world, x, y, z);
+    }
+    
+    List<BlockPos> positions = new ArrayList<BlockPos>();
+    public int[] findCoreRec(IBlockAccess world, int x, int y, int z) {
+    	
+    	BlockPos pos = new BlockPos(x, y, z);
+    	IBlockState state = world.getBlockState(pos);
+    	
+    	if(state.getBlock().getClass() != this.getClass())
+    		return null;
+    	
+    	int metadata = state.getValue(META);
+    	
+    	//if it's an extra, remove the extra-ness
+    	if(metadata >= extra)
+    		metadata -= extra;
+    	
+    	//if the block matches and the orientation is "UNKNOWN", it's the core
+    	if(ForgeDirection.getOrientation(metadata) == ForgeDirection.UNKNOWN)
+    		return new int[] { x, y, z };
+    	
+    	if(positions.contains(pos))
+    		return null;
+
+    	ForgeDirection dir = ForgeDirection.getOrientation(metadata).getOpposite();
+    	
+    	positions.add(pos);
+    	
+    	return findCoreRec(world, x + dir.offsetX, y + dir.offsetY, z + dir.offsetZ);
+    }
+    
+    @Override
+    public void onBlockPlacedBy(World world, BlockPos pos, IBlockState state, EntityLivingBase player, ItemStack itemStack) {
+    	if(!(player instanceof EntityPlayer))
+			return;
+		
+    	world.setBlockToAir(pos);
+    	
+		EntityPlayer pl = (EntityPlayer) player;
+		EnumHand hand = pl.getHeldItemMainhand() == itemStack ? EnumHand.MAIN_HAND : EnumHand.OFF_HAND;
+		
+		int i = MathHelper.floor(player.rotationYaw * 4.0F / 360.0F + 0.5D) & 3;
+		int o = -getOffset();
+		pos = new BlockPos(pos.getX(), pos.getY() + getHeightOffset(), pos.getZ());
+		
+		ForgeDirection dir = ForgeDirection.NORTH;
+		
+		if(i == 0)
+		{
+			dir = ForgeDirection.getOrientation(2);
+		}
+		if(i == 1)
+		{
+			dir = ForgeDirection.getOrientation(5);
+		}
+		if(i == 2)
+		{
+			dir = ForgeDirection.getOrientation(3);
+		}
+		if(i == 3)
+		{
+			dir = ForgeDirection.getOrientation(4);
+		}
+		
+		dir = getDirModified(dir);
+		
+		int x = pos.getX();
+		int y = pos.getY();
+		int z = pos.getZ();
+		
+		if(!checkRequirement(world, x, y, z, dir, o)) {
+			if(!pl.capabilities.isCreativeMode) {
+				ItemStack stack = pl.inventory.mainInventory.get(pl.inventory.currentItem);
+				Item item = Item.getItemFromBlock(this);
+				
+				if(stack.isEmpty()) {
+					pl.inventory.mainInventory.set(pl.inventory.currentItem, new ItemStack(this));
+				} else {
+					if(stack.getItem() != item || stack.getCount() == stack.getMaxStackSize()) {
+						pl.inventory.addItemStackToInventory(new ItemStack(this));
+					} else {
+						pl.getHeldItem(hand).grow(1);
+					}
+				}
+			}
+			
+			return;
+		}
+		
+		if(!world.isRemote){
+			world.setBlockState(new BlockPos(x + dir.offsetX * o , y + dir.offsetY * o, z + dir.offsetZ * o), this.getDefaultState().withProperty(META, dir.ordinal() + offset), 3);
+			fillSpace(world, x, y, z, dir, o);
+		}
+		pos = new BlockPos(pos.getX(), pos.getY() - getHeightOffset(), pos.getZ());
+		world.scheduleUpdate(pos, this, 1);
+		world.scheduleUpdate(pos, this, 2);
+
+    	super.onBlockPlacedBy(world, pos, state, player, itemStack);
+    }
+
+    protected boolean standardOpenBehavior(World world, int x, int y, int z, EntityPlayer player, int id) {
+		
+		if(world.isRemote) {
+			return true;
+		} else if(!player.isSneaking()) {
+			int[] pos = this.findCore(world, x, y, z);
+
+			if(pos == null)
+				return false;
+
+			player.openGui(MainRegistry.instance, id, world, pos[0], pos[1], pos[2]);
+			return true;
+		} else {
+			return true;
+		}
+	}
+    protected ForgeDirection getDirModified(ForgeDirection dir) {
+		return dir;
+	}
+    
+    protected boolean checkRequirement(World world, int x, int y, int z, ForgeDirection dir, int o) {
+		return MultiblockHandlerXR.checkSpace(world, x + dir.offsetX * o , y + dir.offsetY * o, z + dir.offsetZ * o, getDimensions(), x, y, z, dir);
+	}
+	
+	protected void fillSpace(World world, int x, int y, int z, ForgeDirection dir, int o) {
+
+		MultiblockHandlerXR.fillSpace(world, x + dir.offsetX * o , y + dir.offsetY * o, z + dir.offsetZ * o, getDimensions(), this, dir);
+	}
+
+	// Rebuilds this multiblock's dummy/port shell in place around an existing core, keeping the core TE (and its
+	// NBT) untouched. Lets old-world structures with a different footprint/port layout be brought up to the current
+	// one without losing contents. corePos must hold this block's core (meta >= 12).
+	public void migrateStructureInPlace(World world, BlockPos corePos) {
+		if(world.isRemote)
+			return;
+
+		IBlockState coreState = world.getBlockState(corePos);
+		if(coreState.getBlock() != this || coreState.getValue(META) < 12)
+			return;
+
+		ForgeDirection dir = ForgeDirection.getOrientation(coreState.getValue(META) - offset);
+		int o = getOffset();
+
+		// collect this core's existing shell parts (same block, meta < 12) within a generous box, then remove them
+		// (collect first so findCore stays valid while we still have the old blocks in place)
+		List<BlockPos> shell = new ArrayList<BlockPos>();
+		for(int dx = -3; dx <= 3; dx++) {
+			for(int dy = -1; dy <= 8; dy++) {
+				for(int dz = -3; dz <= 3; dz++) {
+					BlockPos p = corePos.add(dx, dy, dz);
+					if(p.equals(corePos))
+						continue;
+					IBlockState s = world.getBlockState(p);
+					if(s.getBlock() != this || s.getValue(META) >= 12)
+						continue;
+					int[] c = findCore(world, p.getX(), p.getY(), p.getZ());
+					if(c != null && c[0] == corePos.getX() && c[1] == corePos.getY() && c[2] == corePos.getZ())
+						shell.add(p);
+				}
+			}
+		}
+
+		safeRem = true;
+		for(BlockPos p : shell)
+			world.setBlockToAir(p);
+		fillSpace(world, corePos.getX() - dir.offsetX * o, corePos.getY() - dir.offsetY * o, corePos.getZ() - dir.offsetZ * o, dir, o);
+		safeRem = false;
+	}
+	
+	//"upgrades" regular dummy blocks to ones with the extra flag
+	public void makeExtra(World world, int x, int y, int z) {
+		BlockPos pos = new BlockPos(x, y, z);
+		if(world.getBlockState(pos).getBlock() != this)
+			return;
+		
+		int meta = world.getBlockState(pos).getValue(META);
+		
+		if(meta > 5)
+			return;
+			
+		//world.setBlockMetadataWithNotify(x, y, z, meta + extra, 3);
+		safeRem = true;
+		world.setBlockState(pos, this.getDefaultState().withProperty(META, meta + extra), 3);
+		safeRem = false;
+	}
+
+	
+	//Drillgon200: Removes the extra. I could have sworn there was already a method for this, but I can't find it.
+	public void removeExtra(World world, int x, int y, int z) {
+		BlockPos pos = new BlockPos(x, y, z);
+		if(world.getBlockState(pos).getBlock() != this)
+			return;
+		
+		int meta = world.getBlockState(pos).getValue(META);
+		
+		if(meta <= 5 || meta >= 12)
+			return;
+			
+		//world.setBlockMetadataWithNotify(x, y, z, meta + extra, 3);
+		safeRem = true;
+		world.setBlockState(pos, this.getDefaultState().withProperty(META, meta - extra), 3);
+		safeRem = false;
+	}
+		
+	//checks if the dummy metadata is within the extra range
+	public boolean hasExtra(int meta) {
+		return meta > 5 && meta < 12;
+	}
+
+	@Override
+	public void breakBlock(World world, BlockPos pos, IBlockState state) {
+		int i = state.getValue(META);
+		if(i >= 12) {
+		} else if(!safeRem) {
+			if(i >= extra)
+				i -= extra;
+
+			ForgeDirection dir = ForgeDirection.getOrientation(i).getOpposite();
+			int[] pos1 = findCore(world, pos.getX() + dir.offsetX, pos.getY() + dir.offsetY, pos.getZ() + dir.offsetZ);
+
+			if(pos1 != null) {
+				world.setBlockToAir(new BlockPos(pos1[0], pos1[1], pos1[2]));
+			}
+		}
+		InventoryHelper.dropInventoryItems(world, pos, world.getTileEntity(pos));
+		super.breakBlock(world, pos, state);
+	}
+	@Override
+	public EnumBlockRenderType getRenderType(IBlockState state) {
+		return EnumBlockRenderType.INVISIBLE;
+	}
+	
+	@Override
+	public boolean isOpaqueCube(IBlockState state) {
+		return false;
+	}
+	
+	@Override
+	public boolean isBlockNormalCube(IBlockState state) {
+		return false;
+	}
+	
+	@Override
+	public boolean isNormalCube(IBlockState state) {
+		return false;
+	}
+	
+	@Override
+	public boolean isNormalCube(IBlockState state, IBlockAccess world, BlockPos pos) {
+		return false;
+	}
+	@Override
+	public boolean shouldSideBeRendered(IBlockState blockState, IBlockAccess blockAccess, BlockPos pos, EnumFacing side) {
+		return false;
+	}
+	
+	@Override
+	protected BlockStateContainer createBlockState() {
+		return new BlockStateContainer(this, new IProperty[]{META});
+	}
+	
+	@Override
+	public int getMetaFromState(IBlockState state) {
+		return state.getValue(META);
+	}
+	
+	@Override
+	public IBlockState getStateFromMeta(int meta) {
+		return this.getDefaultState().withProperty(META, meta);
+	}
+	
+	public abstract int[] getDimensions();
+	public abstract int getOffset();
+	
+	public int getHeightOffset() {
+		return 0;
+	}
+
+}

@@ -1,0 +1,30 @@
+{
+	"display": {
+		"icon": {
+			"item": "hbm:digamma_up_on_top"
+		},
+		"title": {
+			"translate": "hbm.achievement.digammaUpOnTop"
+		},
+		"description": {
+			"translate": "hbm.achievement.digammaUpOnTop.desc"
+		},
+		"frame": "challenge"
+	},
+	"parent": "hbm:digammakauaimoho",
+	"criteria": {
+        "crafting_table": {
+            "trigger": "minecraft:inventory_changed",
+            "conditions": {
+                "items": [
+                    {
+                        "item": "hbm:machine_fensu"
+                    }
+                ]
+            }
+        }
+    },
+    "rewards": {
+        "experience": 200000
+    }
+}

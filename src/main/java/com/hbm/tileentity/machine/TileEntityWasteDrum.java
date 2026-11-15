@@ -8,11 +8,13 @@ import com.hbm.tileentity.TileEntityMachineBase;
 import net.minecraft.block.Block;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.init.Blocks;
+import net.minecraft.init.SoundEvents;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.util.EnumFacing;
 import net.minecraft.util.ITickable;
+import net.minecraft.util.SoundCategory;
 
 public class TileEntityWasteDrum extends TileEntityMachineBase implements ITickable {
 
@@ -45,7 +47,7 @@ public class TileEntityWasteDrum extends TileEntityMachineBase implements ITicka
 		if(item instanceof ItemRBMKRod)
 			return true;
 		
-		return WasteDrumRecipes.hasRecipe(item);
+		return WasteDrumRecipes.hasRecipe(stack);
 	}
 	
 	@Override
@@ -66,7 +68,7 @@ public class TileEntityWasteDrum extends TileEntityMachineBase implements ITicka
 			return ItemRBMKRod.getCoreHeat(itemStack) < 50 && ItemRBMKRod.getHullHeat(itemStack) < 50;
 		}
 		
-		return WasteDrumRecipes.isCold(item);
+		return WasteDrumRecipes.isCold(itemStack);
 	}
 	
 	@Override
@@ -128,10 +130,11 @@ public class TileEntityWasteDrum extends TileEntityMachineBase implements ITicka
 						
 						if(!inventory.getStackInSlot(i).isEmpty()) {
 							
-							Item waste_hot = inventory.getStackInSlot(i).getItem();
+							ItemStack waste_hot = inventory.getStackInSlot(i);
 							ItemStack waste_cold = WasteDrumRecipes.getOutput(waste_hot);
 							if(waste_cold != null){
 								inventory.setStackInSlot(i, waste_cold.copy());
+								world.playSound(null, pos.getX(), pos.getY(), pos.getZ(), SoundEvents.BLOCK_FIRE_EXTINGUISH, SoundCategory.BLOCKS, 0.5F, 1.0F);
 							}
 						}
 					}

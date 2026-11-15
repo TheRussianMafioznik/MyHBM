@@ -57,6 +57,8 @@ import com.hbm.items.machine.ItemChemistryTemplate;
 import com.hbm.items.machine.ItemFluidTank;
 import com.hbm.items.machine.ItemForgeFluidIdentifier;
 import com.hbm.items.machine.ItemRBMKPellet;
+import com.hbm.items.machine.ItemZirnoxRod;
+import com.hbm.items.machine.ItemZirnoxRodDepleted;
 import com.hbm.items.special.ItemHot;
 import com.hbm.items.special.ItemWasteLong;
 import com.hbm.items.special.ItemWasteShort;
@@ -309,6 +311,21 @@ public class ModEventHandlerClient {
 		for(Item item : ModItems.ALL_ITEMS) {
 			registerModel(item, 0);
 		}
+		for (ItemZirnoxRod.EnumZirnoxType type : ItemZirnoxRod.EnumZirnoxType.VALUES) {
+    ModelLoader.setCustomModelResourceLocation(
+        ModItems.rod_zirnox,
+        type.ordinal(),
+        new ModelResourceLocation(ModItems.rod_zirnox.getRegistryName() + "_" + type.name().toLowerCase(java.util.Locale.US), "inventory")
+    );
+}
+
+for (ItemZirnoxRodDepleted.EnumZirnoxTypeDepleted type : ItemZirnoxRodDepleted.EnumZirnoxTypeDepleted.VALUES) {
+    ModelLoader.setCustomModelResourceLocation(
+        ModItems.rod_zirnox_depleted,
+        type.ordinal(),
+        new ModelResourceLocation(ModItems.rod_zirnox_depleted.getRegistryName() + "_" + type.name().toLowerCase(java.util.Locale.US), "inventory")
+    );
+}
 		for(Block block : ModBlocks.ALL_BLOCKS) {
 			if (block == ModBlocks.crate_iron || block == ModBlocks.crate_steel ||
 					block == ModBlocks.crate_desh || block == ModBlocks.crate_tungsten) {

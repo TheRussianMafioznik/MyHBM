@@ -401,6 +401,10 @@ public class ModForgeFluids {
 			.temperatureKelvin(77)
 			.props(3, 0, 0, EnumSymbol.ASPHYXIANT).dfc(1.15F)
 			.build();
+	public static Fluid carbondioxide = HbmFluid.builder("carbondioxide")
+			.props(0, 0, 0, EnumSymbol.ASPHYXIANT).dfc(1.1F)
+			.gasCanister("gas_co2")
+			.build();
 	public static Fluid balefire = HbmFluid.builder("balefire")
 			.temperature(15000)
 			.props(4, 4, 5, EnumSymbol.RADIATION).dfc(2.4F).trait(FluidTrait.CORROSIVE)
@@ -605,6 +609,7 @@ public class ModForgeFluids {
 		hydrogen = FluidRegistry.getFluid("hydrogen");
 		oxygen = FluidRegistry.getFluid("oxygen");
 		xenon = FluidRegistry.getFluid("xenon");
+		carbondioxide = FluidRegistry.getFluid("carbondioxide");
 		balefire = FluidRegistry.getFluid("balefire");
 
 		mercury = FluidRegistry.getFluid("mercury");

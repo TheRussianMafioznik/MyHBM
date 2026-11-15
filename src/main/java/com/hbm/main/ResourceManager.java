@@ -65,6 +65,10 @@ public class ResourceManager {
 	//F6 TANKS
 	public static final IModelCustom tank = new HFRWavefrontObject(new ResourceLocation(RefStrings.MODID, "models/tank.obj")).asVBO();
 	
+	//zirnox
+	public static final ResourceLocation zirnox_tex = new ResourceLocation(RefStrings.MODID, "textures/models/machines/zirnox.png");
+    public static final IModelCustom zirnox = AdvancedModelLoader.loadModel(new ResourceLocation(RefStrings.MODID, "models/zirnox.obj"));
+
 	//Small Reactor
 	public static final IModelCustom reactor_small_base = new HFRWavefrontObject(new ResourceLocation(RefStrings.MODID, "models/reactors/reactor_small_base.obj")).asVBO();
 	public static final IModelCustom reactor_small_rods = new HFRWavefrontObject(new ResourceLocation(RefStrings.MODID, "models/reactors/reactor_small_rods.obj")).asVBO();

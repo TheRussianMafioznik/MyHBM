@@ -227,6 +227,17 @@ public class AssemblerRecipes {
 				new OreDictStack(GH336.ingot(), 24),
 				new ComparableStack(ModItems.ingot_chainsteel, 8),
 			}, 2000);
+			
+			//zirnox
+        makeRecipe(new ComparableStack(ModBlocks.reactor_zirnox, 1), new AStack[] {
+        new ComparableStack(ModItems.hull_big_steel, 4),
+        new ComparableStack(ModItems.pipes_steel, 8),
+        new OreDictStack(B.ingot(), 8),
+        new OreDictStack(GRAPHITE.ingot(), 16),
+        new OreDictStack(RUBBER.ingot(), 16),
+        new OreDictStack(ANY_CONCRETE.any(), 16),
+        new ComparableStack(ModItems.circuit_aluminium, 4)
+}, 600);
 
 		makeRecipe(new ComparableStack(ModItems.wiring_red_copper, 1), new AStack[]{new ComparableStack(ModItems.wire_red_copper, 20), new ComparableStack(ModItems.cable_drum, 1)}, 60);
 		makeRecipe(new ComparableStack(ModItems.telepad, 1), new AStack[] { new OreDictStack(ANY_PLASTIC.ingot(), 12), new OreDictStack(SA326.plate(), 2), new ComparableStack(ModItems.plate_welded_combine_steel, 4), new ComparableStack(ModItems.plate_welded_steel, 2), new ComparableStack(ModItems.wire_gold, 6), new ComparableStack(ModItems.circuit_schrabidium, 1), }, 300);

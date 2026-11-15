@@ -14,6 +14,8 @@ import com.hbm.items.ModItems;
 import com.hbm.items.machine.ItemBattery;
 import com.hbm.items.machine.ItemFluidTank;
 import com.hbm.items.machine.ItemFuelRod;
+import com.hbm.items.machine.ItemZirnoxRod;
+import com.hbm.items.machine.ItemZirnoxRodDepleted;
 import com.hbm.items.special.ItemCell;
 import com.hbm.items.special.ItemHot;
 import com.hbm.items.special.ItemWasteLong;
@@ -512,6 +514,16 @@ public class CraftingManager {
 		addShapelessAuto(new ItemStack(ModItems.rod_quad_plutonium, 1), new Object[] { ModItems.rod_quad_empty, PU.ingot(), PU.ingot(), PU.nugget(), PU.nugget(), PU.nugget(), PU.nugget(), PU.nugget(), PU.nugget() });
 		addShapelessAuto(new ItemStack(ModItems.rod_quad_pu238, 1), new Object[] { ModItems.rod_quad_empty, PU238.ingot(), PU238.ingot(), PU238.nugget(), PU238.nugget(), PU238.nugget(), PU238.nugget(), PU238.nugget(), PU238.nugget() });
 		addShapelessAuto(new ItemStack(ModItems.rod_quad_pu239, 1), new Object[] { ModItems.rod_quad_empty, PU239.ingot(), PU239.ingot(), PU239.nugget(), PU239.nugget(), PU239.nugget(), PU239.nugget(), PU239.nugget(), PU239.nugget() });
+		addShapelessAuto(new ItemStack(ModItems.waste_natural_uranium_hot, 2), new Object[] { new ItemStack(ModItems.rod_zirnox_depleted, 1, ItemZirnoxRodDepleted.EnumZirnoxTypeDepleted.NATURAL_URANIUM_FUEL.ordinal()) });
+		addShapelessAuto(new ItemStack(ModItems.waste_uranium_hot, 2), new Object[] { new ItemStack(ModItems.rod_zirnox_depleted, 1, ItemZirnoxRodDepleted.EnumZirnoxTypeDepleted.URANIUM_FUEL.ordinal()) });
+		addShapelessAuto(new ItemStack(ModItems.waste_thorium_hot, 2), new Object[] { new ItemStack(ModItems.rod_zirnox_depleted, 1, ItemZirnoxRodDepleted.EnumZirnoxTypeDepleted.THORIUM_FUEL.ordinal()) });
+		addShapelessAuto(new ItemStack(ModItems.waste_mox_hot, 2), new Object[] { new ItemStack(ModItems.rod_zirnox_depleted, 1, ItemZirnoxRodDepleted.EnumZirnoxTypeDepleted.MOX_FUEL.ordinal()) });
+		addShapelessAuto(new ItemStack(ModItems.waste_plutonium_hot, 2), new Object[] { new ItemStack(ModItems.rod_zirnox_depleted, 1, ItemZirnoxRodDepleted.EnumZirnoxTypeDepleted.PLUTONIUM_FUEL.ordinal()) });
+		addShapelessAuto(new ItemStack(ModItems.waste_u233_hot, 2), new Object[] { new ItemStack(ModItems.rod_zirnox_depleted, 1, ItemZirnoxRodDepleted.EnumZirnoxTypeDepleted.U233_FUEL.ordinal()) });
+		addShapelessAuto(new ItemStack(ModItems.waste_u235_hot, 2), new Object[] { new ItemStack(ModItems.rod_zirnox_depleted, 1, ItemZirnoxRodDepleted.EnumZirnoxTypeDepleted.U235_FUEL.ordinal()) });
+		addShapelessAuto(new ItemStack(ModItems.waste_schrabidium_hot, 2), new Object[] { new ItemStack(ModItems.rod_zirnox_depleted, 1, ItemZirnoxRodDepleted.EnumZirnoxTypeDepleted.LES_FUEL.ordinal()) });
+		addShapelessAuto(new ItemStack(ModItems.waste_zfb_mox_hot, 2), new Object[] { new ItemStack(ModItems.rod_zirnox_depleted, 1, ItemZirnoxRodDepleted.EnumZirnoxTypeDepleted.ZFB_MOX_FUEL.ordinal()) });
+
 		addShapelessAuto(new ItemStack(ModItems.rod_quad_pu240, 1), new Object[] { ModItems.rod_quad_empty, PU240.ingot(), PU240.ingot(), PU240.nugget(), PU240.nugget(), PU240.nugget(), PU240.nugget(), PU240.nugget(), PU240.nugget() });
 		addShapelessAuto(new ItemStack(ModItems.rod_quad_neptunium, 1), new Object[] { ModItems.rod_quad_empty, NP237.ingot(), NP237.ingot(), NP237.nugget(), NP237.nugget(), NP237.nugget(), NP237.nugget(), NP237.nugget(), NP237.nugget() });
 		addShapelessAuto(new ItemStack(ModItems.rod_quad_polonium, 1), new Object[] { ModItems.rod_quad_empty, PO210.ingot(), PO210.ingot(), PO210.nugget(), PO210.nugget(), PO210.nugget(), PO210.nugget(), PO210.nugget(), PO210.nugget() });
@@ -2182,6 +2194,31 @@ public class CraftingManager {
 		addRecipeAuto(new ItemStack(ModItems.pile_rod_source, 1), new Object[] { " U ", "PUP", " U ", 'P', ModItems.plate_welded_iron, 'U', ModItems.billet_ra226be });
 		addRecipeAuto(new ItemStack(ModItems.pile_rod_boron, 1), new Object[] { "B", "W", "B", 'B',  B.ingot(), 'W', KEY_PLANKS });
 
+        		// ZIRNOX Fuel Rods & Depleted Unloading
+		addRecipeAuto(new ItemStack(ModItems.rod_zirnox_empty, 4), new Object[] { "Z Z", "ZBZ", "Z Z", 'Z', ZR.nugget(), 'B', BE.ingot() });
+		addZIRNOXRod(U.billet(), ItemZirnoxRod.EnumZirnoxType.NATURAL_URANIUM_FUEL);
+		addZIRNOXRod(ModItems.billet_uranium_fuel, ItemZirnoxRod.EnumZirnoxType.URANIUM_FUEL);
+		addZIRNOXRod(TH232.billet(), ItemZirnoxRod.EnumZirnoxType.TH232_FUEL);
+		addZIRNOXRod(ModItems.billet_thorium_fuel, ItemZirnoxRod.EnumZirnoxType.THORIUM_FUEL);
+		addZIRNOXRod(ModItems.billet_mox_fuel, ItemZirnoxRod.EnumZirnoxType.MOX_FUEL);
+		addZIRNOXRod(ModItems.billet_plutonium_fuel, ItemZirnoxRod.EnumZirnoxType.PLUTONIUM_FUEL);
+		addZIRNOXRod(U233.billet(), ItemZirnoxRod.EnumZirnoxType.U233_FUEL);
+		addZIRNOXRod(U235.billet(), ItemZirnoxRod.EnumZirnoxType.U235_FUEL);
+		addZIRNOXRod(ModItems.billet_les, ItemZirnoxRod.EnumZirnoxType.LES_FUEL);
+		addShapelessAuto(new ItemStack(ModItems.rod_zirnox, 1, ItemZirnoxRod.EnumZirnoxType.LITHIUM_FUEL.ordinal()), new Object[] { ModItems.rod_zirnox_empty, LI.ingot(), LI.ingot() });
+		addShapelessAuto(new ItemStack(ModItems.rod_zirnox, 1, ItemZirnoxRod.EnumZirnoxType.ZFB_MOX_FUEL.ordinal()), new Object[] { ModItems.rod_zirnox_empty, ModItems.billet_mox_fuel, ZR.billet() });
+
+		addShapelessAuto(new ItemStack(ModItems.waste_natural_uranium_hot, 2), new Object[] { new ItemStack(ModItems.rod_zirnox_depleted, 1, ItemZirnoxRodDepleted.EnumZirnoxTypeDepleted.NATURAL_URANIUM_FUEL.ordinal()) });
+		addShapelessAuto(new ItemStack(ModItems.waste_uranium_hot, 2), new Object[] { new ItemStack(ModItems.rod_zirnox_depleted, 1, ItemZirnoxRodDepleted.EnumZirnoxTypeDepleted.URANIUM_FUEL.ordinal()) });
+		addShapelessAuto(new ItemStack(ModItems.waste_thorium_hot, 2), new Object[] { new ItemStack(ModItems.rod_zirnox_depleted, 1, ItemZirnoxRodDepleted.EnumZirnoxTypeDepleted.THORIUM_FUEL.ordinal()) });
+		addShapelessAuto(new ItemStack(ModItems.waste_mox_hot, 2), new Object[] { new ItemStack(ModItems.rod_zirnox_depleted, 1, ItemZirnoxRodDepleted.EnumZirnoxTypeDepleted.MOX_FUEL.ordinal()) });
+		addShapelessAuto(new ItemStack(ModItems.waste_plutonium_hot, 2), new Object[] { new ItemStack(ModItems.rod_zirnox_depleted, 1, ItemZirnoxRodDepleted.EnumZirnoxTypeDepleted.PLUTONIUM_FUEL.ordinal()) });
+		addShapelessAuto(new ItemStack(ModItems.waste_u233_hot, 2), new Object[] { new ItemStack(ModItems.rod_zirnox_depleted, 1, ItemZirnoxRodDepleted.EnumZirnoxTypeDepleted.U233_FUEL.ordinal()) });
+		addShapelessAuto(new ItemStack(ModItems.waste_u235_hot, 2), new Object[] { new ItemStack(ModItems.rod_zirnox_depleted, 1, ItemZirnoxRodDepleted.EnumZirnoxTypeDepleted.U235_FUEL.ordinal()) });
+		addShapelessAuto(new ItemStack(ModItems.waste_schrabidium_hot, 2), new Object[] { new ItemStack(ModItems.rod_zirnox_depleted, 1, ItemZirnoxRodDepleted.EnumZirnoxTypeDepleted.LES_FUEL.ordinal()) });
+		addShapelessAuto(new ItemStack(ModItems.waste_zfb_mox_hot, 2), new Object[] { new ItemStack(ModItems.rod_zirnox_depleted, 1, ItemZirnoxRodDepleted.EnumZirnoxTypeDepleted.ZFB_MOX_FUEL.ordinal()) });
+
+
 		addRecipeAuto(new ItemStack(ModItems.rbmk_fuel_empty, 1), new Object[] { "ZRZ", "Z Z", "ZRZ", 'Z',  ModItems.plate_welded_zirconium, 'R', ModItems.rod_quad_empty });
 		addRBMKRod(ModItems.billet_uranium, ModItems.rbmk_fuel_ueu);
 		addRBMKRod(ModItems.billet_uranium_fuel, ModItems.rbmk_fuel_meu);
@@ -3076,6 +3113,11 @@ public class CraftingManager {
 	//Fill rods with 6 nuggets
 	public static void addRBMKRod(Item billet, Item out){
 		addShapelessAuto(new ItemStack(out), new Object[] { ModItems.rbmk_fuel_empty, billet, billet, billet, billet, billet, billet, billet, billet });
+	}
+
+    //zirnox
+		public static void addZIRNOXRod(Object billet, ItemZirnoxRod.EnumZirnoxType num) {
+		addShapelessAuto(new ItemStack(ModItems.rod_zirnox, 1, num.ordinal()), new Object[] { ModItems.rod_zirnox_empty, billet, billet });
 	}
 
 	//Bundled 1/9 recipes

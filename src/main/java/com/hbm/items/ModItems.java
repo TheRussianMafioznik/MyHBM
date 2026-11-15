@@ -91,6 +91,8 @@ import com.hbm.items.machine.ItemStamp;
 import com.hbm.items.machine.ItemTemplateFolder;
 import com.hbm.items.machine.ItemTurretBiometry;
 import com.hbm.items.machine.ItemTurretChip;
+import com.hbm.items.machine.ItemZirnoxRod;
+import com.hbm.items.machine.ItemZirnoxRodDepleted;
 import com.hbm.items.special.ItemSimpleConsumable;
 import com.hbm.items.special.ItemAMSCore;
 import com.hbm.items.special.ItemBook;
@@ -630,7 +632,11 @@ public class ModItems {
 	public static final Item paa_boots = new ArmorFSB(MainRegistry.enumArmorMaterialPaa, -1, EntityEquipmentSlot.FEET, RefStrings.MODID + ":textures/armor/paa_1.png", "paa_boots").cloneStats((ArmorFSB) paa_helmet).setMaxStackSize(1);
 	
 	public static final Item australium_iii = new ArmorAustralium(MainRegistry.enumArmorMaterialAusIII, -1, EntityEquipmentSlot.CHEST, "australium_iii").setMaxStackSize(1);
-	
+    public static final Item rod_zirnox_empty = new ItemBase("rod_zirnox_empty").setMaxStackSize(64).setCreativeTab(MainRegistry.controlTab);
+    public static final Item rod_zirnox_tritium = new ItemBase("rod_zirnox_tritium").setMaxStackSize(1).setCreativeTab(MainRegistry.controlTab).setContainerItem(ModItems.rod_zirnox_empty);
+    public static final Item rod_zirnox = new ItemZirnoxRod("rod_zirnox").setContainerItem(ModItems.rod_zirnox_empty);
+    public static final Item rod_zirnox_depleted = new ItemZirnoxRodDepleted("rod_zirnox_depleted").setContainerItem(ModItems.rod_zirnox_empty);
+
 	public static final Item asbestos_helmet = new ArmorFSB(MainRegistry.enumArmorMaterialAsbestos, -1, EntityEquipmentSlot.HEAD, RefStrings.MODID + ":textures/armor/asbestos_1.png", "asbestos_helmet").setThreshold(2.0F).setFireproof(true).setOverlay(RefStrings.MODID + ":textures/misc/overlay_asbestos.png").setMaxStackSize(1);
 	public static final Item asbestos_plate = new ArmorFSB(MainRegistry.enumArmorMaterialAsbestos, -1, EntityEquipmentSlot.CHEST, RefStrings.MODID + ":textures/armor/asbestos_1.png", "asbestos_plate").setThreshold(2.0F).setFireproof(true).setMaxStackSize(1);
 	public static final Item asbestos_legs = new ArmorFSB(MainRegistry.enumArmorMaterialAsbestos, -1, EntityEquipmentSlot.LEGS, RefStrings.MODID + ":textures/armor/asbestos_2.png", "asbestos_legs").setThreshold(2.0F).setFireproof(true).setMaxStackSize(1);
@@ -1432,11 +1438,19 @@ public class ModItems {
 	public static final Item nuclear_waste_vitrified = new ItemContaminating(ItemHazard.wstv * ItemHazard.powder, "nuclear_waste_vitrified").setCreativeTab(MainRegistry.partsTab);
 	public static final Item nuclear_waste_vitrified_tiny = new ItemContaminating(ItemHazard.wstv * ItemHazard.powder_tiny, "nuclear_waste_vitrified_tiny").setCreativeTab(MainRegistry.partsTab);
 	public static final Item waste_uranium = new ItemContaminating(15F, "waste_uranium").setCreativeTab(MainRegistry.partsTab);
+	public static final Item waste_natural_uranium = new ItemBase("waste_natural_uranium");
+	public static final Item waste_u233 = new ItemBase("waste_u233");
+	public static final Item waste_u235 = new ItemBase("waste_u235");
+	public static final Item waste_zfb_mox = new ItemBase("waste_zfb_mox");
 	public static final Item waste_thorium = new ItemContaminating(10F, "waste_thorium").setCreativeTab(MainRegistry.partsTab);
 	public static final Item waste_plutonium = new ItemContaminating(15F, "waste_plutonium").setCreativeTab(MainRegistry.partsTab);
 	public static final Item waste_mox = new ItemContaminating(15F, "waste_mox").setCreativeTab(MainRegistry.partsTab);
 	public static final Item waste_schrabidium = new ItemContaminating(40F, false, true, "waste_schrabidium").setCreativeTab(MainRegistry.partsTab);
 	public static final Item waste_uranium_hot = new ItemContaminating(15F, true, "waste_uranium_hot").setCreativeTab(MainRegistry.partsTab);
+	public static final Item waste_natural_uranium_hot = new ItemBase("waste_natural_uranium_hot");
+	public static final Item waste_u233_hot = new ItemBase("waste_u233_hot");
+	public static final Item waste_u235_hot = new ItemBase("waste_u235_hot");
+	public static final Item waste_zfb_mox_hot = new ItemBase("waste_zfb_mox_hot");
 	public static final Item waste_thorium_hot = new ItemContaminating(10F, true, "waste_thorium_hot").setCreativeTab(MainRegistry.partsTab);
 	public static final Item waste_plutonium_hot = new ItemContaminating(15F, true, "waste_plutonium_hot").setCreativeTab(MainRegistry.partsTab);
 	public static final Item waste_mox_hot = new ItemContaminating(15F, true, "waste_mox_hot").setCreativeTab(MainRegistry.partsTab);

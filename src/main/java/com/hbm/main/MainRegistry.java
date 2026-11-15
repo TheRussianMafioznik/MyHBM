@@ -244,6 +244,7 @@ import com.hbm.inventory.CyclotronRecipes;
 import com.hbm.inventory.HadronRecipes;
 import com.hbm.inventory.MagicRecipes;
 import com.hbm.inventory.OreDictManager;
+import com.hbm.inventory.PUREXRecipes;
 import com.hbm.inventory.RefineryRecipes;
 import com.hbm.inventory.WasteDrumRecipes;
 import com.hbm.inventory.SILEXRecipes;
@@ -300,9 +301,6 @@ import com.hbm.tileentity.bomb.TileEntityNukePrototype;
 import com.hbm.tileentity.bomb.TileEntityNukeSolinium;
 import com.hbm.tileentity.bomb.TileEntityNukeTsar;
 import com.hbm.tileentity.bomb.TileEntityRailgun;
-import com.hbm.tileentity.network.energy.TileEntityCableBaseNT;
-import com.hbm.tileentity.network.energy.TileEntityCableSwitch;
-import com.hbm.tileentity.network.energy.TileEntityMachineDetector;
 import com.hbm.tileentity.deco.TileEntityDecoBlock;
 import com.hbm.tileentity.deco.TileEntityDecoBlockAlt;
 import com.hbm.tileentity.deco.TileEntityDecoPoleSatelliteReceiver;
@@ -736,6 +734,8 @@ public class MainRegistry {
 		reg(TileEntityMachineArcFurnace.class, "tileentity_machine_arc_furnace");
 		reg(TileEntityMachineElectricFurnace.class, "tileentity_machine_electric_furnace");
 		reg(TileEntityWasteDrum.class, "tileentity_waste_drum");
+		reg(TileEntityReactorZirnox.class, "tileentity_zirnox");
+        reg(TileEntityMachinePUREX.class, "tileentity_purex");
 		reg(TileEntityWasteDrumt2.class, "tileentity_waste_drum_t2");
 		reg(TileEntityMachineOilWell.class, "tileentity_machine_oil_well");
 		reg(TileEntityMachinePumpjack.class, "tileentity_machine_pumpjack");
@@ -1203,6 +1203,7 @@ public class MainRegistry {
 		CompressorRecipes.register();
 		PyroOvenRecipes.registerRecipes(); //solid fuel recipes read the combustion values
 		HbmDetox.init();
+		PUREXRecipes.registerRecipes();
 
 		FluidContainerRegistry.registerContainer(Item.getItemFromBlock(ModBlocks.lox_barrel), ModItems.tank_steel, new FluidStack(ModForgeFluids.oxygen, 10000));
 		FluidContainerRegistry.registerContainer(Item.getItemFromBlock(ModBlocks.pink_barrel), ModItems.tank_steel, new FluidStack(ModForgeFluids.kerosene, 10000));

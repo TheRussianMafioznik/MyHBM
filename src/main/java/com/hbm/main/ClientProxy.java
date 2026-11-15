@@ -615,6 +615,7 @@ public class ClientProxy extends ServerProxy {
 
 		HbmKeybinds.register();
 	    ClientRegistry.bindTileEntitySpecialRenderer(TileEntityReactorZirnox.class, new RenderZirnox());
+		ClientRegistry.bindTileEntitySpecialRenderer(TileEntityMachinePUREX.class, new RenderPUREX());
 		ClientRegistry.bindTileEntitySpecialRenderer(TileEntityMachinePress.class, new RenderPress());
 		ClientRegistry.bindTileEntitySpecialRenderer(TileEntityMachineAssembler.class, new RenderAssembler());
         ClientRegistry.bindTileEntitySpecialRenderer(TileEntityMachineAssembly.class, new RenderAssembly());
@@ -2220,6 +2221,8 @@ public class ClientProxy extends ServerProxy {
         MinecraftForge.EVENT_BUS.register(new RenderTurretControlOverlay());
         MinecraftForge.EVENT_BUS.register(new com.hbm.render.event.RenderTurretLaser());
 		ModItems.redstone_sword.setTileEntityItemStackRenderer(ItemRedstoneSwordRender.INSTANCE);
+		Item.getItemFromBlock(ModBlocks.reactor_zirnox).setTileEntityItemStackRenderer(new ItemRenderZirnox());
+        Item.getItemFromBlock(ModBlocks.machine_purex).setTileEntityItemStackRenderer(new ItemRenderPUREX());
 		ModItems.assembly_template.setTileEntityItemStackRenderer(AssemblyTemplateRender.INSTANCE);
 		ModItems.chemistry_template.setTileEntityItemStackRenderer(ChemTemplateRender.INSTANCE);
 		ModItems.gun_b92.setTileEntityItemStackRenderer(ItemRenderGunAnim.INSTANCE);

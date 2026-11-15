@@ -1026,8 +1026,8 @@ public class JeiRecipes {
 			return wasteDrumRecipes;
 		wasteDrumRecipes = new ArrayList<WasteDrumRecipe>();
 
-		for(Map.Entry<Item, ItemStack> entry : WasteDrumRecipes.recipes.entrySet()){
-			wasteDrumRecipes.add(new WasteDrumRecipe(new ItemStack(entry.getKey()), entry.getValue()));
+		for(Map.Entry<ComparableStack, ItemStack> entry : WasteDrumRecipes.recipes.entrySet()){
+			wasteDrumRecipes.add(new WasteDrumRecipe(entry.getKey().toStack(), entry.getValue()));
 		}
 
 		return wasteDrumRecipes;

@@ -370,6 +370,16 @@ public class GuiHandler implements IGuiHandler {
 				return new ContainerWasteDrum(player.inventory, (TileEntityWasteDrum) entity);
 			}
 			return null;
+				case ModBlocks.guiID_reactor_zirnox:
+			if(entity instanceof TileEntityReactorZirnox) {
+				return new ContainerReactorZirnox(player.inventory, (TileEntityReactorZirnox) entity);
+			}
+			return null;
+		case ModBlocks.guiID_machine_purex:
+			if(entity instanceof TileEntityMachinePUREX) {
+				return new ContainerMachinePUREX(player.inventory, (TileEntityMachinePUREX) entity);
+			}
+			return null;	
 		case ModBlocks.guiID_waste_drum_t2:
 			if(entity instanceof TileEntityWasteDrumt2) {
 				return new ContainerWasteDrumt2(player.inventory, (TileEntityWasteDrumt2) entity);
@@ -1071,6 +1081,16 @@ public class GuiHandler implements IGuiHandler {
 		case ModBlocks.guiID_waste_drum:
 			if(entity instanceof TileEntityWasteDrum) {
 				return new GUIWasteDrum(player.inventory, (TileEntityWasteDrum) entity);
+			}
+			return null;
+					case ModBlocks.guiID_reactor_zirnox:
+			if(entity instanceof TileEntityReactorZirnox) {
+				return new GUIReactorZirnox(player.inventory, (TileEntityReactorZirnox) entity);
+			}
+			return null;
+		case ModBlocks.guiID_machine_purex:
+			if(entity instanceof TileEntityMachinePUREX) {
+				return new GUIMachinePUREX(player.inventory, (TileEntityMachinePUREX) entity);
 			}
 			return null;
 		case ModBlocks.guiID_waste_drum_t2:

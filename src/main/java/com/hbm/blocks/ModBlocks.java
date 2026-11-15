@@ -1382,6 +1382,10 @@ public class ModBlocks {
 	//zirnox
 	public static final int guiID_reactor_zirnox = 900;
     public static final Block reactor_zirnox = new ReactorZirnox(Material.IRON, "machine_zirnox").setHardness(5.0F).setResistance(10.0F).setCreativeTab(MainRegistry.machineTab);
+    
+    //purex
+    public static final int guiID_machine_purex = 901;
+    public static final Block machine_purex = new MachinePUREX(Material.IRON, "machine_purex").setHardness(5.0F).setResistance(10.0F).setCreativeTab(MainRegistry.machineTab);
 
 	//Big reactor
 	public static final Block reactor_element = new BlockReactor(Material.IRON, "reactor_element").setHardness(5.0F).setResistance(10.0F).setCreativeTab(MainRegistry.machineTab);

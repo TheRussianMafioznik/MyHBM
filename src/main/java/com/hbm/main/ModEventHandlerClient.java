@@ -308,24 +308,27 @@ public class ModEventHandlerClient {
 			ModelLoader.registerItemVariants(c.getItem(), list);
 		}
 
-		for(Item item : ModItems.ALL_ITEMS) {
-			registerModel(item, 0);
+				for(Item item : ModItems.ALL_ITEMS) {
+			if (item != ModItems.rod_zirnox && item != ModItems.rod_zirnox_depleted) {
+				registerModel(item, 0);
+			}
 		}
+				ResourceLocation[] zirnoxVariants = new ResourceLocation[ItemZirnoxRod.EnumZirnoxType.VALUES.length];
 		for (ItemZirnoxRod.EnumZirnoxType type : ItemZirnoxRod.EnumZirnoxType.VALUES) {
-    ModelLoader.setCustomModelResourceLocation(
-        ModItems.rod_zirnox,
-        type.ordinal(),
-        new ModelResourceLocation(ModItems.rod_zirnox.getRegistryName() + "_" + type.name().toLowerCase(java.util.Locale.US), "inventory")
-    );
-}
+			ResourceLocation loc = new ResourceLocation(ModItems.rod_zirnox.getRegistryName() + "_" + type.name().toLowerCase(java.util.Locale.US));
+			zirnoxVariants[type.ordinal()] = loc;
+			ModelLoader.setCustomModelResourceLocation(ModItems.rod_zirnox, type.ordinal(), new ModelResourceLocation(loc, "inventory"));
+		}
+		ModelLoader.registerItemVariants(ModItems.rod_zirnox, zirnoxVariants);
 
-for (ItemZirnoxRodDepleted.EnumZirnoxTypeDepleted type : ItemZirnoxRodDepleted.EnumZirnoxTypeDepleted.VALUES) {
-    ModelLoader.setCustomModelResourceLocation(
-        ModItems.rod_zirnox_depleted,
-        type.ordinal(),
-        new ModelResourceLocation(ModItems.rod_zirnox_depleted.getRegistryName() + "_" + type.name().toLowerCase(java.util.Locale.US), "inventory")
-    );
-}
+		ResourceLocation[] zirnoxDepletedVariants = new ResourceLocation[ItemZirnoxRodDepleted.EnumZirnoxTypeDepleted.VALUES.length];
+		for (ItemZirnoxRodDepleted.EnumZirnoxTypeDepleted type : ItemZirnoxRodDepleted.EnumZirnoxTypeDepleted.VALUES) {
+			ResourceLocation loc = new ResourceLocation(ModItems.rod_zirnox_depleted.getRegistryName() + "_" + type.name().toLowerCase(java.util.Locale.US));
+			zirnoxDepletedVariants[type.ordinal()] = loc;
+			ModelLoader.setCustomModelResourceLocation(ModItems.rod_zirnox_depleted, type.ordinal(), new ModelResourceLocation(loc, "inventory"));
+		}
+		ModelLoader.registerItemVariants(ModItems.rod_zirnox_depleted, zirnoxDepletedVariants);
+
 		for(Block block : ModBlocks.ALL_BLOCKS) {
 			if (block == ModBlocks.crate_iron || block == ModBlocks.crate_steel ||
 					block == ModBlocks.crate_desh || block == ModBlocks.crate_tungsten) {

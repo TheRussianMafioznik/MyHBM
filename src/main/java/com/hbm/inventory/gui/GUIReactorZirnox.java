@@ -19,6 +19,8 @@ import net.minecraft.client.resources.I18n;
 import net.minecraft.entity.player.InventoryPlayer;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.util.ResourceLocation;
+import net.minecraftforge.fluids.Fluid;
+import net.minecraftforge.fluids.FluidTank;
 
 public class GUIReactorZirnox extends GuiInfoContainer {
 
@@ -38,12 +40,24 @@ public class GUIReactorZirnox extends GuiInfoContainer {
         super.drawScreen(mouseX, mouseY, f);
         super.renderHoveredToolTip(mouseX, mouseY);
 
-        FFUtils.renderTankInfo(this, mouseX, mouseY, guiLeft + 160, guiTop + 108, 18, 12, zirnox.tanks, zirnox.types);
-        FFUtils.renderTankInfo(this, mouseX, mouseY, guiLeft + 142, guiTop + 108, 18, 12, zirnox.tanks, zirnox.types);
-        FFUtils.renderTankInfo(this, mouseX, mouseY, guiLeft + 178, guiTop + 108, 18, 12, zirnox.tanks, zirnox.types);
+        int idxSteam = 0;
+        int idxCO2 = 1;
+        int idxWater = 2;
 
-        this.drawCustomInfo(mouseX, mouseY, guiLeft + 160, guiTop + 33, 18, 17, new String[] { "Temperature:", "   " + Math.round((zirnox.heat) * 0.00001 * 780 + 20) + "°C" });
-        this.drawCustomInfo(mouseX, mouseY, guiLeft + 178, guiTop + 33, 18, 17, new String[] { "Pressure:", "   " + Math.round((zirnox.pressure) * 0.00001 * 30) + " bar" });
+        FluidTank tankSteam = zirnox.tanks[idxSteam];
+        FluidTank tankCO2 = zirnox.tanks[idxCO2];
+        FluidTank tankWater = zirnox.tanks[idxWater];
+
+        Fluid typeSteam = zirnox.types[idxSteam];
+        Fluid typeCO2 = zirnox.types[idxCO2];
+        Fluid typeWater = zirnox.types[idxWater];
+
+        FFUtils.renderTankInfo(this, mouseX, mouseY, guiLeft + 160, guiTop + 108, 18, 12, tankSteam, typeSteam);
+        FFUtils.renderTankInfo(this, mouseX, mouseY, guiLeft + 142, guiTop + 108, 18, 12, tankCO2, typeCO2);
+        FFUtils.renderTankInfo(this, mouseX, mouseY, guiLeft + 178, guiTop + 108, 18, 12, tankWater, typeWater);
+
+        this.drawCustomInfo(this, mouseX, mouseY, guiLeft + 160, guiTop + 33, 18, 17, new String[] { "Temperature:", "   " + Math.round((zirnox.heat) * 0.00001 * 780 + 20) + "°C" });
+        this.drawCustomInfo(this, mouseX, mouseY, guiLeft + 178, guiTop + 33, 18, 17, new String[] { "Pressure:", "   " + Math.round((zirnox.pressure) * 0.00001 * 30) + " bar" });
 
         String[] coolantText = I18nUtil.resolveKeyArray("desc.gui.zirnox.coolant");
         this.drawCustomInfoStat(mouseX, mouseY, guiLeft - 16, guiTop + 36, 16, 16, guiLeft - 8, guiTop + 36 + 16, coolantText);
@@ -51,12 +65,12 @@ public class GUIReactorZirnox extends GuiInfoContainer {
         String[] pressureText = I18nUtil.resolveKeyArray("desc.gui.zirnox.pressure");
         this.drawCustomInfoStat(mouseX, mouseY, guiLeft - 16, guiTop + 36 + 16, 16, 16, guiLeft - 8, guiTop + 36 + 16 + 16, pressureText);
 
-        if(zirnox.tanks.getFluidAmount() <= 0) {
+        if(tankCO2.getFluidAmount() <= 0) {
             String[] warning1 = I18nUtil.resolveKeyArray("desc.gui.zirnox.warning1");
             this.drawCustomInfoStat(mouseX, mouseY, guiLeft - 16, guiTop + 36 + 32, 16, 16, guiLeft - 8, guiTop + 36 + 32 + 16, warning1);
         }
 
-        if(zirnox.tanks.getFluidAmount() < 4000) {
+        if(tankWater.getFluidAmount() < 4000) {
             String[] warning2 = I18nUtil.resolveKeyArray("desc.gui.zirnox.warning2");
             this.drawCustomInfoStat(mouseX, mouseY, guiLeft - 16, guiTop + 36 + 32 + 16, 16, 16, guiLeft - 8, guiTop + 36 + 32 + 16 + 16, warning2);
         }
@@ -96,7 +110,9 @@ public class GUIReactorZirnox extends GuiInfoContainer {
         Minecraft.getMinecraft().getTextureManager().bindTexture(texture);
         drawTexturedModalRect(guiLeft, guiTop, 0, 0, xSize, ySize);
 
-        // Отрисовка шкал жидкостей, температуры и давления
+        int idxCO2 = 1;
+        int idxWater = 2;
+
         int steamScale = zirnox.getGaugeScaled(14, 0);
         drawRect(guiLeft + 162, guiTop + 113, guiLeft + 162 + steamScale, guiTop + 115, 0xFF7F0000);
 
@@ -125,10 +141,10 @@ public class GUIReactorZirnox extends GuiInfoContainer {
         this.drawInfoPanel(guiLeft - 16, guiTop + 36, 16, 16, 2);
         this.drawInfoPanel(guiLeft - 16, guiTop + 36 + 16, 16, 16, 3);
 
-        if(zirnox.tanks.getFluidAmount() <= 0)
+        if(zirnox.tanks[idxCO2].getFluidAmount() <= 0)
             this.drawInfoPanel(guiLeft - 16, guiTop + 36 + 32, 16, 16, 6);
 
-        if(zirnox.tanks.getFluidAmount() <= 4000)
+        if(zirnox.tanks[idxWater].getFluidAmount() <= 4000)
             this.drawInfoPanel(guiLeft - 16, guiTop + 36 + 32 + 16, 16, 16, 6);
     }
 }

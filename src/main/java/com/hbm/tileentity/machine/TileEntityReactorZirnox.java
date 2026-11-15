@@ -29,8 +29,6 @@ import net.minecraft.util.EnumFacing;
 import net.minecraft.util.ITickable;
 import net.minecraft.util.SoundCategory;
 import net.minecraft.util.math.AxisAlignedBB;
-import net.minecraft.util.math.BlockPos;
-import net.minecraft.util.math.MathHelper;
 import net.minecraftforge.common.capabilities.Capability;
 import net.minecraftforge.fluids.Fluid;
 import net.minecraftforge.fluids.FluidRegistry;
@@ -303,12 +301,12 @@ world.setBlockToAir(pos.add(ox, oy, oz));
 world.playSound(null, pos.getX(), pos.getY() + 2, pos.getZ(), HBMSoundHandler.rbmk_explosion, SoundCategory.BLOCKS, 10.0F, 1.0F);
 world.createExplosion(null, pos.getX(), pos.getY() + 3, pos.getZ(), 12.0F, true);
 ExplosionNukeGeneric.waste(world, pos.getX(), pos.getY(), pos.getZ(), 35);
-if (MobConfig.enableElementals) {
-List players = world.getEntitiesWithinAABB(EntityPlayer.class, new AxisAlignedBB(pos).grow(100));
-for (EntityPlayer player : players) {
-player.getEntityData().getCompoundTag(EntityPlayer.PERSISTED_NBT_TAG).setBoolean("radMark", true);
-}
-}
+        if (MobConfig.enableElementals) {
+            List<EntityPlayer> players = world.getEntitiesWithinAABB(EntityPlayer.class, new AxisAlignedBB(pos).grow(100));
+            for (EntityPlayer player : players) {
+                player.getEntityData().getCompoundTag(EntityPlayer.PERSISTED_NBT_TAG).setBoolean("radMark", true);
+            }
+        }
 }
 public void fillFluidInit(FluidTank tank) {
 ForgeDirection dir = ForgeDirection.getOrientation(this.getBlockMetadata() - BlockDummyable.offset);
@@ -319,7 +317,7 @@ FFUtils.fillFluid(this, tank, world, pos.add(rot.offsetX * -3, 1, rot.offsetZ * 
 FFUtils.fillFluid(this, tank, world, pos.add(rot.offsetX * -3, 3, rot.offsetZ * -3), 8000);
 }
 @Override
-public  T getCapability(Capability capability, EnumFacing facing) {
+public <T> T getCapability(Capability<T> capability, EnumFacing facing) {
 if (capability == CapabilityFluidHandler.FLUID_HANDLER_CAPABILITY)
 return CapabilityFluidHandler.FLUID_HANDLER_CAPABILITY.cast(this);
 return super.getCapability(capability, facing);

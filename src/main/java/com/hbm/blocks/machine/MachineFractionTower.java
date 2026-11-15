@@ -23,7 +23,6 @@ import net.minecraft.util.EnumHand;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.text.TextComponentString;
 import net.minecraft.util.text.TextComponentTranslation;
-import net.minecraft.util.text.TextFormatting;
 import net.minecraft.world.World;
 import net.minecraftforge.fluids.Fluid;
 import net.minecraftforge.fluids.FluidStack;
@@ -152,11 +151,6 @@ public class MachineFractionTower extends BlockDummyable implements ILookOverlay
 				text.add((i < 1 ? ("§a" + "-> ") : ("§c" + "<- ")) + "§r" + frac.types[i].getLocalizedName(new FluidStack(frac.types[i], 1)) + ": " + frac.tanks[i].getFluidAmount() + "/" + frac.tanks[i].getCapacity() + "mB");
 			}
 		}
-
-		//heat is pooled across the whole stack, so the overlay reports the stack and not this single tower
-		int[] chain = frac.getChainHeat();
-		text.add("§e" + String.format("%,d", chain[0]) + " / " + String.format("%,d", chain[1] * TileEntityMachineFractionTower.maxHeat) + " TU");
-		text.add("§e" + String.format("%,d", chain[1] * TileEntityMachineFractionTower.heatPerOp) + " TU/s");
 
 		ILookOverlay.printGeneric(event, I18nUtil.resolveKey(getTranslationKey() + ".name"), 0xffff00, 0x404000, text);
 	}

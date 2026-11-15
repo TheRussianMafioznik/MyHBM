@@ -8,8 +8,6 @@ import com.hbm.util.Tuple.Quartet;
 import com.hbm.tileentity.IBufPacketReceiver;
 import com.hbm.tileentity.TileEntityLoadedBase;
 
-import api.hbm.tile.IHeatSource;
-
 import io.netty.buffer.ByteBuf;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.tileentity.TileEntity;
@@ -29,19 +27,12 @@ import net.minecraftforge.fml.common.network.ByteBufUtils;
 import net.minecraftforge.fml.relauncher.Side;
 import net.minecraftforge.fml.relauncher.SideOnly;
 
-public class TileEntityMachineFractionTower extends TileEntityLoadedBase implements IBufPacketReceiver, ITickable, IFluidHandler {
+public class TileEntityMachineFractionTower extends TileEntityLoadedBase implements ITickable, IFluidHandler {
 	
 	public FluidTank[] tanks;
 	public Fluid[] types;
 
-	public int heat = 0;
-	public static final int maxHeat = 200_000;
-	//per tower per fractionate call, and that call drains 100mB once a second
-	public static final int heatPerOp = 3_000;
-	public static final double diffusion = 0.05D;
-	//towers are 3 blocks tall, a stacked one sits exactly this far up
 	private static final int stackStep = 3;
-	private static final int maxChain = 64;
 
 	public TileEntityMachineFractionTower() {
 		super();
@@ -72,35 +63,22 @@ public class TileEntityMachineFractionTower extends TileEntityLoadedBase impleme
 
 		if(!world.isRemote) {
 
-			this.heat *= 0.999;
-			this.tryPullHeat();
-
 			TileEntity stack = world.getTileEntity(pos.up(stackStep));
-
 
 			if(stack instanceof TileEntityMachineFractionTower) {
 				TileEntityMachineFractionTower frac = (TileEntityMachineFractionTower) stack;
 
-				//the stack shares one heat pool, otherwise only the bottom tower could ever pay for an operation
-				int pool = this.heat + frac.heat;
-				this.heat = pool - pool / 2;
-				frac.heat = pool / 2;
-
-				//make types equal
 				for(int i = 0; i < 3; i++) {
 					frac.setTankType(i, types[i]);
 				}
 				
-				//the feedstock is levelled out like the heat, so every tower runs dry at the same time
 				if(types[0] != null) {
-					//anything under one operation in the tower above slides down to where new feed arrives, or it would sit there forever
 					int rest = frac.tanks[0].getFluidAmount() % 100;
 					if(rest > 0 && tanks[0].getCapacity() - tanks[0].getFluidAmount() >= rest) {
 						frac.tanks[0].drain(rest, true);
 						tanks[0].fill(new FluidStack(types[0], rest), true);
 					}
 
-					//levelling only moves whole operations of 100mB
 					int move = (tanks[0].getFluidAmount() - frac.tanks[0].getFluidAmount()) / 200 * 100;
 
 					if(move > 0) {
@@ -118,7 +96,6 @@ public class TileEntityMachineFractionTower extends TileEntityLoadedBase impleme
 					}
 				}
 
-				//the products still go all the way down, they leave the stack at the bottom
 				int left = Math.min(frac.tanks[1].getFluidAmount(), tanks[1].getCapacity() - tanks[1].getFluidAmount());
 				int right = Math.min(frac.tanks[2].getFluidAmount(), tanks[2].getCapacity() - tanks[2].getFluidAmount());
 
@@ -153,7 +130,6 @@ public class TileEntityMachineFractionTower extends TileEntityLoadedBase impleme
 				buf.writeBoolean(false);
 			}
 		}
-		buf.writeInt(heat);
 	}
 
 	@Override
@@ -174,13 +150,10 @@ public class TileEntityMachineFractionTower extends TileEntityLoadedBase impleme
 				tanks[i].setFluid(null);
 			}
 		}
-		this.heat = buf.readInt();
 	}
 	
 	private void setupTanks() {
-		
 		Quartet<Fluid, Fluid, Integer, Integer> quart = RefineryRecipes.getFractions(types[0]);
-		
 		if(quart != null) {
 			setTankType(1, quart.getW());
 			setTankType(2, quart.getX());
@@ -188,69 +161,16 @@ public class TileEntityMachineFractionTower extends TileEntityLoadedBase impleme
 	}
 	
 	private void fractionate() {
-		
 		Quartet<Fluid, Fluid, Integer, Integer> quart = RefineryRecipes.getFractions(types[0]);
-		
 		if(quart != null) {
-			
 			int left = quart.getY();
 			int right = quart.getZ();
-			
-			if(heat >= heatPerOp && tanks[0].getFluidAmount() >= 100 && hasSpace(left, right)) {
+			if(tanks[0].getFluidAmount() >= 100 && hasSpace(left, right)) {
 				tanks[0].drain(100, true);
 				tanks[1].fill(new FluidStack(types[1], left), true);
 				tanks[2].fill(new FluidStack(types[2], right), true);
-				heat -= heatPerOp;
 			}
 		}
-	}
-	
-	//only the bottom tower can reach a heater, everything above it sits on another tower
-	private void tryPullHeat() {
-
-		if(this.heat >= maxHeat) return;
-
-		TileEntity con = world.getTileEntity(pos.down());
-
-		if(con instanceof IHeatSource source) {
-			int diff = source.getHeatStored() - this.heat;
-
-			if(diff > 0) {
-				diff = (int) Math.ceil(diff * diffusion);
-				source.useUpHeat(diff);
-				this.heat = Math.min(this.heat + diff, maxHeat);
-			}
-		}
-	}
-
-	public TileEntityMachineFractionTower getBottomTower() {
-
-		TileEntityMachineFractionTower bottom = this;
-
-		for(int i = 0; i < maxChain; i++) {
-			TileEntity te = world.getTileEntity(bottom.pos.down(stackStep));
-			if(!(te instanceof TileEntityMachineFractionTower)) break;
-			bottom = (TileEntityMachineFractionTower) te;
-		}
-
-		return bottom;
-	}
-
-	/** {stored heat, tower count} of the whole stack this tower belongs to */
-	public int[] getChainHeat() {
-
-		int stored = 0;
-		int count = 0;
-		TileEntityMachineFractionTower tower = getBottomTower();
-
-		while(tower != null && count < maxChain) {
-			stored += tower.heat;
-			count++;
-			TileEntity te = world.getTileEntity(tower.pos.up(stackStep));
-			tower = te instanceof TileEntityMachineFractionTower ? (TileEntityMachineFractionTower) te : null;
-		}
-
-		return new int[] { stored, count };
 	}
 
 	private boolean hasSpace(int left, int right) {
@@ -260,7 +180,6 @@ public class TileEntityMachineFractionTower extends TileEntityLoadedBase impleme
 	@Override
 	public void readFromNBT(NBTTagCompound nbt) {
 		super.readFromNBT(nbt);
-		heat = nbt.getInteger("heat");
 		FFUtils.deserializeTankArray(nbt.getTagList("tanks", 10), tanks);
 		for(int i=0; i<tanks.length; i++){
 			if(tanks[i].getFluid() != null){
@@ -282,7 +201,6 @@ public class TileEntityMachineFractionTower extends TileEntityLoadedBase impleme
 			}
 		}
 		nbt.setTag("tanks", FFUtils.serializeTankArray(tanks));
-		nbt.setInteger("heat", heat);
 		return nbt;
 	}
 
@@ -301,7 +219,6 @@ public class TileEntityMachineFractionTower extends TileEntityLoadedBase impleme
 	
 	@Override
 	public AxisAlignedBB getRenderBoundingBox() {
-		
 		if(bb == null) {
 			bb = new AxisAlignedBB(
 					pos.getX() - 1,
@@ -312,7 +229,6 @@ public class TileEntityMachineFractionTower extends TileEntityLoadedBase impleme
 					pos.getZ() + 2
 					);
 		}
-		
 		return bb;
 	}
 	

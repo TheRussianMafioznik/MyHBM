@@ -103,48 +103,58 @@ public class GUIReactorZirnox extends GuiInfoContainer {
         this.fontRenderer.drawString(I18n.format("container.inventory"), 8, this.ySize - 96, 4210752);
     }
 
-    @Override
+                @Override
     protected void drawGuiContainerBackgroundLayer(float p_146976_1_, int p_146976_2_, int p_146976_3_) {
         super.drawDefaultBackground();
         GL11.glColor4f(1.0F, 1.0F, 1.0F, 1.0F);
         Minecraft.getMinecraft().getTextureManager().bindTexture(texture);
         drawTexturedModalRect(guiLeft, guiTop, 0, 0, xSize, ySize);
 
+        int idxSteam = 0;
         int idxCO2 = 1;
         int idxWater = 2;
 
-        int steamScale = zirnox.getGaugeScaled(14, 0);
-        drawRect(guiLeft + 162, guiTop + 113, guiLeft + 162 + steamScale, guiTop + 115, 0xFF7F0000);
+        // Линейные красные индикаторы для CO2, Пара и Воды
+        int steamOffset = (int) (14.0 * zirnox.tanks[idxSteam].getFluidAmount() / Math.max(1, zirnox.tanks[idxSteam].getCapacity()));
+        drawRect(guiLeft + 162 + steamOffset, guiTop + 113, guiLeft + 164 + steamOffset, guiTop + 118, 0xFF7F0000);
 
-        int co2Scale = zirnox.getGaugeScaled(14, 1);
-        drawRect(guiLeft + 144, guiTop + 113, guiLeft + 144 + co2Scale, guiTop + 115, 0xFF7F0000);
+        int co2Offset = (int) (14.0 * zirnox.tanks[idxCO2].getFluidAmount() / Math.max(1, zirnox.tanks[idxCO2].getCapacity()));
+        drawRect(guiLeft + 144 + co2Offset, guiTop + 113, guiLeft + 146 + co2Offset, guiTop + 118, 0xFF7F0000);
 
-        int waterScale = zirnox.getGaugeScaled(14, 2);
-        drawRect(guiLeft + 180, guiTop + 113, guiLeft + 180 + waterScale, guiTop + 115, 0xFF7F0000);
+        int waterOffset = (int) (14.0 * zirnox.tanks[idxWater].getFluidAmount() / Math.max(1, zirnox.tanks[idxWater].getCapacity()));
+        drawRect(guiLeft + 180 + waterOffset, guiTop + 113, guiLeft + 182 + waterOffset, guiTop + 118, 0xFF7F0000);
 
-        int heatScale = zirnox.getGaugeScaled(12, 3);
-        drawRect(guiLeft + 168, guiTop + 47 - heatScale, guiLeft + 170, guiTop + 47, 0xFF7F0000);
+        // Стрелки температуры и давления на круглых циферблатах
+        drawGaugeNeedle(guiLeft + 169, guiTop + 42, (double) zirnox.heat / 100000.0, 5);
+        drawGaugeNeedle(guiLeft + 187, guiTop + 42, (double) zirnox.pressure / 100000.0, 5);
 
-        int pressureScale = zirnox.getGaugeScaled(12, 4);
-        drawRect(guiLeft + 186, guiTop + 47 - pressureScale, guiLeft + 188, guiTop + 47, 0xFF7F0000);
-
+        // Зелёные лампочки на управляющих стержнях и кнопке питания при включённом реакторе
         if(zirnox.isOn) {
-            for(int x = 0; x < 4; x++)
-                for(int y = 0; y < 4; y++)
-                    drawTexturedModalRect(guiLeft + 7 + 36 * x, guiTop + 15 + 36 * y, 238, 238, 18, 18);
-            for(int x = 0; x < 3; x++)
-                for(int y = 0; y < 3; y++)
-                    drawTexturedModalRect(guiLeft + 25 + 36 * x, guiTop + 33 + 36 * y, 238, 238, 18, 18);
-            drawTexturedModalRect(guiLeft + 142, guiTop + 15, 220, 238, 18, 18);
+            for(int x = 0; x < 4; x++) {
+                for(int y = 0; y < 4; y++) {
+                    drawRect(guiLeft + 13 + 36 * x, guiTop + 21 + 36 * y, guiLeft + 19 + 36 * x, guiTop + 27 + 36 * y, 0xFF00D000);
+                }
+            }
+            for(int x = 0; x < 3; x++) {
+                for(int y = 0; y < 3; y++) {
+                    drawRect(guiLeft + 31 + 36 * x, guiTop + 39 + 36 * y, guiLeft + 37 + 36 * x, guiTop + 45 + 36 * y, 0xFF00D000);
+                }
+            }
+            // Верхний зелёный индикатор
+            drawRect(guiLeft + 148, guiTop + 21, guiLeft + 154, guiTop + 27, 0xFF00D000);
+
+            // Сама кнопка включения (становится зелёной вместо красной)
+            drawRect(guiLeft + 145, guiTop + 36, guiLeft + 157, guiTop + 48, 0xFF00A800);
+            drawRect(guiLeft + 148, guiTop + 39, guiLeft + 154, guiTop + 45, 0xFF003800);
+            drawRect(guiLeft + 150, guiTop + 41, guiLeft + 152, guiTop + 43, 0xFF00E000);
         }
+    }
 
-        this.drawInfoPanel(guiLeft - 16, guiTop + 36, 16, 16, 2);
-        this.drawInfoPanel(guiLeft - 16, guiTop + 36 + 16, 16, 16, 3);
-
-        if(zirnox.tanks[idxCO2].getFluidAmount() <= 0)
-            this.drawInfoPanel(guiLeft - 16, guiTop + 36 + 32, 16, 16, 6);
-
-        if(zirnox.tanks[idxWater].getFluidAmount() <= 4000)
-            this.drawInfoPanel(guiLeft - 16, guiTop + 36 + 32 + 16, 16, 16, 6);
+    private void drawGaugeNeedle(int cx, int cy, double progress, int radius) {
+        double clamped = Math.max(0.0, Math.min(1.0, progress));
+        double angle = Math.toRadians(-135.0 + clamped * 270.0);
+        int tipX = cx + (int) Math.round(Math.sin(angle) * radius);
+        int tipY = cy - (int) Math.round(Math.cos(angle) * radius);
+        drawRect(Math.min(cx, tipX), Math.min(cy, tipY), Math.max(cx, tipX) + 1, Math.max(cy, tipY) + 1, 0xFF7F0000);
     }
 }

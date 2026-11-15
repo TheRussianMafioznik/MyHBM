@@ -8,7 +8,6 @@ import com.hbm.tileentity.TileEntityLoadedBase;
 
 import io.netty.buffer.ByteBuf;
 import net.minecraft.nbt.NBTTagCompound;
-import net.minecraft.tileentity.TileEntity;
 import net.minecraft.util.EnumFacing;
 import net.minecraft.util.ITickable;
 import net.minecraft.util.math.AxisAlignedBB;
@@ -83,19 +82,24 @@ public class TileEntitySolarBoiler extends TileEntityLoadedBase implements IBufP
         FFUtils.fillFluid(this, tank, world, pos, cap * 100);
     }
 
-    @Override
+        @Override
     public void serialize(ByteBuf buf) {
-        for(int i = 0; i < tanks.length; i++) {
-            if(types[i] != null) {
-                tanks[i].setFluid(new FluidStack(types[i], tanks[i].getFluidAmount()));
-            } else {
-                tanks[i].setFluid(null);
+        if (tanks == null) return;
+        for (int i = 0; i < tanks.length; i++) {
+            if (tanks[i] == null) {
+                buf.writeBoolean(false);
+                continue;
             }
-            buf.writeBoolean(types[i] != null);
-            if(types[i] != null) {
-                ByteBufUtils.writeUTF8String(buf, FluidRegistry.getFluidName(types[i]));
+            String fluidName = (types != null && types[i] != null) ? FluidRegistry.getFluidName(types[i]) : null;
+            if (fluidName != null) {
+                tanks[i].setFluid(new FluidStack(types[i], tanks[i].getFluidAmount()));
+                buf.writeBoolean(true);
+                ByteBufUtils.writeUTF8String(buf, fluidName);
                 buf.writeInt(tanks[i].getFluidAmount());
                 buf.writeInt(tanks[i].getCapacity());
+            } else {
+                tanks[i].setFluid(null);
+                buf.writeBoolean(false);
             }
         }
         buf.writeInt(heat);

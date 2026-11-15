@@ -61,18 +61,24 @@ public final class FMLNetworkHook {
         throw new NoSuchFieldException(clz.getName());
     }
 
-    private static void releaseCustomPayloadData(Object pkt) throws Throwable {
+        private static void releaseCustomPayloadData(Object pkt) throws Throwable {
         if (pkt instanceof SPacketCustomPayload sp) {
             Object o = U.getReference(sp, SP_DATA_OFF);
             if (o != null) {
                 U.putReference(sp, SP_DATA_OFF, null);
-                ((ByteBuf) o).release();
+                ByteBuf buf = (ByteBuf) o;
+                if (buf.refCnt() > 0) {
+                    buf.release();
+                }
             }
         } else if (pkt instanceof CPacketCustomPayload cp) {
             Object o = U.getReference(cp, CP_DATA_OFF);
             if (o != null) {
                 U.putReference(cp, CP_DATA_OFF, null);
-                ((ByteBuf) o).release();
+                ByteBuf buf = (ByteBuf) o;
+                if (buf.refCnt() > 0) {
+                    buf.release();
+                }
             }
         }
     }
@@ -169,7 +175,9 @@ public final class FMLNetworkHook {
             // retaining them, or b) routed their packets through vanilla that reuses packet instances, or c) performed
             // incorrect reference counting. This is a bug on their side. Known mods:
             // - Ancient Warfare 2: problem b). Patched with AncientWarfareNetworkTransformer.
+            if (payload != null && payload.refCnt() > 0) {
             payload.release();
+            }
         }
     }
 

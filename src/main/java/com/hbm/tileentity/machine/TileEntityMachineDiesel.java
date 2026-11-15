@@ -248,22 +248,29 @@ public class TileEntityMachineDiesel extends TileEntityMachineBase implements IT
 		}
 	}
 
-	@Override
+		@Override
 	public void onChunkUnload() {
-		if(audio != null) {
-			audio.stopSound();
-			audio = null;
+		if (world.isRemote) {
+			stopAudio();
 		}
 	}
 
 	@Override
 	public void invalidate() {
 		super.invalidate();
-		if(audio != null) {
+		if (world.isRemote) {
+			stopAudio();
+		}
+	}
+
+	@SideOnly(Side.CLIENT)
+	private void stopAudio() {
+		if (audio != null) {
 			audio.stopSound();
 			audio = null;
 		}
 	}
+
 
 	@Override
 	public long getPower() {

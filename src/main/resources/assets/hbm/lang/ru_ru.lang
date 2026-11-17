@@ -5348,9 +5348,9 @@ chat.wiring.already=Кабель уже проведён!
 chat.wiring.not_enough_wire=Не хватает провода!
 desc.cable_drum=§bПКМ с проводом в левой руке, чтобы его намотать
 # ZIRNOX & PUREX Localization
-tile.machine_zirnox.name=Углекислотный реактор ZIRNOX
+tile.machine_zirnox.name=Ядерныйу реактор ZIRNOX
 tile.machine_purex.name=Установка переработки PUREX
-container.zirnox=Реактор ZIRNOX
+container.zirnox=Ядерный Реактор ZIRNOX
 container.machinePUREX=Установка PUREX
 fluid.carbondioxide=Углекислый газ
 item.waste_natural_uranium.name=Ядерные отходы природного урана

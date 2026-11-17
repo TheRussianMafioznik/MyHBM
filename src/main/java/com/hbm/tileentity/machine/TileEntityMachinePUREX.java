@@ -1,16 +1,22 @@
 package com.hbm.tileentity.machine;
 
-import api.hbm.energy.IEnergyUser;
+import java.nio.charset.StandardCharsets;
+
 import com.hbm.forgefluid.FFUtils;
+import com.hbm.interfaces.IControlReceiver;
 import com.hbm.inventory.PUREXRecipes;
 import com.hbm.inventory.PUREXRecipes.PUREXRecipe;
+import com.hbm.inventory.RecipesCommon.AStack;
 import com.hbm.items.machine.ItemMachineUpgrade;
 import com.hbm.items.machine.ItemMachineUpgrade.UpgradeType;
 import com.hbm.lib.Library;
 import com.hbm.tileentity.TileEntityMachineBase;
+
 import api.hbm.energy.IBatteryItem;
+import api.hbm.energy.IEnergyUser;
 import io.netty.buffer.ByteBuf;
 import net.minecraft.block.state.IBlockState;
+import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.util.EnumFacing;
@@ -19,6 +25,7 @@ import net.minecraft.util.math.AxisAlignedBB;
 import net.minecraft.util.math.BlockPos;
 import net.minecraftforge.common.capabilities.Capability;
 import net.minecraftforge.fluids.Fluid;
+import net.minecraftforge.fluids.FluidRegistry;
 import net.minecraftforge.fluids.FluidStack;
 import net.minecraftforge.fluids.FluidTank;
 import net.minecraftforge.fluids.capability.CapabilityFluidHandler;
@@ -27,16 +34,17 @@ import net.minecraftforge.fluids.capability.IFluidTankProperties;
 import net.minecraftforge.fml.relauncher.Side;
 import net.minecraftforge.fml.relauncher.SideOnly;
 
-public class TileEntityMachinePUREX extends TileEntityMachineBase implements ITickable, IEnergyUser, IFluidHandler {
+public class TileEntityMachinePUREX extends TileEntityMachineBase implements ITickable, IEnergyUser, IFluidHandler, IControlReceiver {
 
     public FluidTank[] tanks;
-    public Fluid[] types = new Fluid[3];
+    public Fluid[] types;
 
     public long power;
     public long maxPower = 1_000_000;
     public int progress = 0;
     public int maxProgress = 100;
     public boolean didProcess = false;
+    public String selectedRecipe = "null";
 
     public boolean frame = false;
     public int anim;
@@ -46,9 +54,11 @@ public class TileEntityMachinePUREX extends TileEntityMachineBase implements ITi
 
     public TileEntityMachinePUREX() {
         super(13);
-        tanks = new FluidTank[3];
-        for (int i = 0; i < 3; i++) {
-            tanks[i] = new FluidTank(24000);
+        int tankCount = 4;
+        this.types = new Fluid[tankCount];
+        this.tanks = new FluidTank[tankCount];
+        for (int i = 0; i < tankCount; i++) {
+            this.tanks[i] = new FluidTank(24000);
         }
     }
 
@@ -57,7 +67,7 @@ public class TileEntityMachinePUREX extends TileEntityMachineBase implements ITi
         return "container.machinePUREX";
     }
 
-        @Override
+    @Override
     public void update() {
         if (!world.isRemote) {
             this.power = Library.chargeTEFromItems(inventory, 0, power, maxPower);
@@ -65,22 +75,31 @@ public class TileEntityMachinePUREX extends TileEntityMachineBase implements ITi
 
             didProcess = false;
 
-            PUREXRecipe activeRecipe = null;
-            int activeSlot = -1;
+            int idx0 = 0;
+            int idx1 = 1;
+            int idx2 = 2;
 
-            for (int slot = 4; slot <= 6; slot++) {
-                ItemStack stack = inventory.getStackInSlot(slot);
-                if (!stack.isEmpty()) {
-                    PUREXRecipe rec = PUREXRecipes.getRecipe(stack, tanks[0].getFluid(), tanks[1].getFluid(), tanks[2].getFluid());
-                    if (rec != null && canFitOutputs(rec.outputs)) {
-                        activeRecipe = rec;
-                        activeSlot = slot;
-                        break;
-                    }
+            ItemStack[] inSlots = new ItemStack[] {
+                inventory.getStackInSlot(4),
+                inventory.getStackInSlot(5),
+                inventory.getStackInSlot(6)
+            };
+            FluidStack[] inTanks = new FluidStack[] {
+                tanks[idx0].getFluid(),
+                tanks[idx1].getFluid(),
+                tanks[idx2].getFluid()
+            };
+
+            PUREXRecipe activeRecipe = PUREXRecipes.getRecipeById(this.selectedRecipe);
+            if (activeRecipe != null) {
+                if (!activeRecipe.matches(inSlots, inTanks)) {
+                    activeRecipe = null;
                 }
+            } else {
+                activeRecipe = PUREXRecipes.findMatchingRecipe(inSlots, inTanks);
             }
 
-            if (activeRecipe != null) {
+            if (activeRecipe != null && canFitOutputs(activeRecipe)) {
                 int speedLvl = getUpgradeLevel(UpgradeType.SPEED);
                 int powerLvl = getUpgradeLevel(UpgradeType.POWER);
                 int overdriveLvl = getUpgradeLevel(UpgradeType.OVERDRIVE);
@@ -98,8 +117,8 @@ public class TileEntityMachinePUREX extends TileEntityMachineBase implements ITi
 
                     if (this.progress >= this.maxProgress) {
                         this.progress = 0;
-                        consumeInputs(activeSlot, activeRecipe);
-                        produceOutputs(activeRecipe.outputs);
+                        consumeInputs(activeRecipe);
+                        produceOutputs(activeRecipe);
                         this.markDirty();
                     }
                 }
@@ -107,7 +126,7 @@ public class TileEntityMachinePUREX extends TileEntityMachineBase implements ITi
                 this.progress = 0;
             }
 
-            for (int i = 0; i < 3; i++) {
+            for (int i = 0; i < 4; i++) {
                 types[i] = tanks[i].getFluid() != null ? tanks[i].getFluid().getFluid() : null;
             }
 
@@ -136,15 +155,23 @@ public class TileEntityMachinePUREX extends TileEntityMachineBase implements ITi
         return Math.min(level, 3);
     }
 
-    private boolean canFitOutputs(ItemStack[] outputs) {
-        ItemStack[] sim = new ItemStack[6];
-        for (int i = 0; i < 6; i++) {
+    private boolean canFitOutputs(PUREXRecipe recipe) {
+        int outTankIdx = 3;
+        if (recipe.outputFluid != null) {
+            if (tanks[outTankIdx].fill(recipe.outputFluid, false) < recipe.outputFluid.amount) {
+                return false;
+            }
+        }
+
+        int outSlotCount = 6;
+        ItemStack[] sim = new ItemStack[outSlotCount];
+        for (int i = 0; i < outSlotCount; i++) {
             sim[i] = inventory.getStackInSlot(7 + i).copy();
         }
 
-        for (ItemStack out : outputs) {
+        for (ItemStack out : recipe.outputs) {
             int rem = out.getCount();
-            for (int i = 0; i < 6; i++) {
+            for (int i = 0; i < outSlotCount; i++) {
                 if (sim[i].isEmpty()) {
                     sim[i] = out.copy();
                     rem = 0;
@@ -162,8 +189,19 @@ public class TileEntityMachinePUREX extends TileEntityMachineBase implements ITi
         return true;
     }
 
-    private void consumeInputs(int itemSlot, PUREXRecipe recipe) {
-        inventory.extractItem(itemSlot, 1, false);
+    private void consumeInputs(PUREXRecipe recipe) {
+        for (AStack req : recipe.inputs) {
+            int needed = req.count();
+            for (int slot = 4; slot <= 6; slot++) {
+                ItemStack st = inventory.getStackInSlot(slot);
+                if (!st.isEmpty() && req.matchesRecipe(st, true)) {
+                    int take = Math.min(needed, st.getCount());
+                    inventory.extractItem(slot, take, false);
+                    needed -= take;
+                    if (needed <= 0) break;
+                }
+            }
+        }
         for (FluidStack req : recipe.inputFluids) {
             for (int i = 0; i < 3; i++) {
                 if (tanks[i].getFluid() != null && tanks[i].getFluid().getFluid() == req.getFluid()) {
@@ -174,14 +212,32 @@ public class TileEntityMachinePUREX extends TileEntityMachineBase implements ITi
         }
     }
 
-    private void produceOutputs(ItemStack[] outputs) {
-        for (ItemStack out : outputs) {
+    private void produceOutputs(PUREXRecipe recipe) {
+        int outTankIdx = 3;
+        if (recipe.outputFluid != null) {
+            tanks[outTankIdx].fill(recipe.outputFluid.copy(), true);
+        }
+        for (ItemStack out : recipe.outputs) {
             ItemStack rem = out.copy();
             for (int i = 7; i <= 12; i++) {
                 rem = inventory.insertItem(i, rem, false);
                 if (rem.isEmpty()) break;
             }
         }
+    }
+
+    @Override
+    public void receiveControl(NBTTagCompound data) {
+        if (data.hasKey("selection")) {
+            this.selectedRecipe = data.getString("selection");
+            this.progress = 0;
+            this.markDirty();
+        }
+    }
+
+    @Override
+    public boolean hasPermission(EntityPlayer player) {
+        return this.isUseableByPlayer(player);
     }
 
     @Override
@@ -192,11 +248,16 @@ public class TileEntityMachinePUREX extends TileEntityMachineBase implements ITi
         buf.writeInt(progress);
         buf.writeInt(maxProgress);
         buf.writeBoolean(didProcess);
-        for (int i = 0; i < 3; i++) {
+
+        byte[] selBytes = (selectedRecipe != null ? selectedRecipe : "null").getBytes(StandardCharsets.UTF_8);
+        buf.writeInt(selBytes.length);
+        buf.writeBytes(selBytes);
+
+        for (int i = 0; i < 4; i++) {
             FluidStack fs = tanks[i].getFluid();
             buf.writeInt(fs != null ? fs.amount : 0);
             String name = fs != null ? fs.getFluid().getName() : "";
-            byte[] bytes = name.getBytes(java.nio.charset.StandardCharsets.UTF_8);
+            byte[] bytes = name.getBytes(StandardCharsets.UTF_8);
             buf.writeInt(bytes.length);
             buf.writeBytes(bytes);
         }
@@ -210,76 +271,88 @@ public class TileEntityMachinePUREX extends TileEntityMachineBase implements ITi
         this.progress = buf.readInt();
         this.maxProgress = buf.readInt();
         this.didProcess = buf.readBoolean();
-        for (int i = 0; i < 3; i++) {
+
+        int selLen = buf.readInt();
+        byte[] selBytes = new byte[selLen];
+        buf.readBytes(selBytes);
+        this.selectedRecipe = new String(selBytes, StandardCharsets.UTF_8);
+
+        for (int i = 0; i < 4; i++) {
             int amount = buf.readInt();
             int len = buf.readInt();
-            byte[] bytes = new byte[len];
-            buf.readBytes(bytes);
-            String name = new String(bytes, java.nio.charset.StandardCharsets.UTF_8);
-            if (!name.isEmpty() && amount > 0) {
-                Fluid f = net.minecraftforge.fluids.FluidRegistry.getFluid(name);
-                if (f != null) {
-                    tanks[i].setFluid(new FluidStack(f, amount));
-                    types[i] = f;
-                }
-            } else {
-                tanks[i].setFluid(null);
-                types[i] = null;
-            }
-        }
-    }
-
-    @Override
-    public void readFromNBT(NBTTagCompound nbt) {
-        super.readFromNBT(nbt);
-        this.power = nbt.getLong("power");
-        this.progress = nbt.getInteger("progress");
-        FFUtils.deserializeTankArray(nbt.getTagList("tanks", 10), tanks);
-    }
-
-    @Override
-    public NBTTagCompound writeToNBT(NBTTagCompound nbt) {
-        nbt.setLong("power", power);
-        nbt.setInteger("progress", progress);
-        nbt.setTag("tanks", FFUtils.serializeTankArray(tanks));
-        return super.writeToNBT(nbt);
-    }
-
-    @Override
-    public boolean isItemValidForSlot(int slot, ItemStack stack) {
-        if (slot == 0) return stack.getItem() instanceof IBatteryItem;
-        if (slot >= 2 && slot <= 3) return stack.getItem() instanceof ItemMachineUpgrade;
-        if (slot >= 4 && slot <= 6) return PUREXRecipes.isValidInput(stack);
-        return false;
-    }
-
-    @Override
-    public boolean canExtractItem(int slot, ItemStack stack, int side) {
-        return slot >= 7 && slot <= 12;
-    }
-
-    @Override
-    public int[] getAccessibleSlotsFromSide(EnumFacing side) {
-        return new int[] { 4, 5, 6, 7, 8, 9, 10, 11, 12 };
-    }
-
-    @Override public long getPower() { return power; }
-    @Override public void setPower(long power) { this.power = power; }
-    @Override public long getMaxPower() { return maxPower; }
-
+byte[] bytes = new byte[len];
+buf.readBytes(bytes);
+String name = new String(bytes, StandardCharsets.UTF_8);
+if (!name.isEmpty() && amount > 0) {
+Fluid f = FluidRegistry.getFluid(name);
+if (f != null) {
+tanks[i].setFluid(new FluidStack(f, amount));
+types[i] = f;
+}
+} else {
+tanks[i].setFluid(null);
+types[i] = null;
+}
+}
+}
+@Override
+public void readFromNBT(NBTTagCompound nbt) {
+super.readFromNBT(nbt);
+this.power = nbt.getLong("power");
+this.progress = nbt.getInteger("progress");
+if (nbt.hasKey("selectedRecipe")) {
+this.selectedRecipe = nbt.getString("selectedRecipe");
+}
+FFUtils.deserializeTankArray(nbt.getTagList("tanks", 10), tanks);
+}
+@Override
+public NBTTagCompound writeToNBT(NBTTagCompound nbt) {
+nbt.setLong("power", power);
+nbt.setInteger("progress", progress);
+nbt.setString("selectedRecipe", selectedRecipe != null ? selectedRecipe : "null");
+nbt.setTag("tanks", FFUtils.serializeTankArray(tanks));
+return super.writeToNBT(nbt);
+}
+@Override
+public boolean isItemValidForSlot(int slot, ItemStack stack) {
+if (slot == 0) return stack.getItem() instanceof IBatteryItem;
+if (slot >= 2 && slot <= 3) return stack.getItem() instanceof ItemMachineUpgrade;
+if (slot >= 4 && slot <= 6) return PUREXRecipes.isValidInput(stack);
+return false;
+}
+@Override
+public boolean canExtractItem(int slot, ItemStack stack, int side) {
+return slot >= 7 && slot <= 12;
+}
+@Override
+public int[] getAccessibleSlotsFromSide(EnumFacing side) {
+return new int[] { 4, 5, 6, 7, 8, 9, 10, 11, 12 };
+}
+@Override public long getPower() { return power; }
+@Override public void setPower(long power) { this.power = power; }
+@Override public long getMaxPower() { return maxPower; }
     @Override
     public <T> T getCapability(Capability<T> capability, EnumFacing facing) {
-if (capability == CapabilityFluidHandler.FLUID_HANDLER_CAPABILITY)
-return CapabilityFluidHandler.FLUID_HANDLER_CAPABILITY.cast(this);
-return super.getCapability(capability, facing);
-}
+        if (capability == CapabilityFluidHandler.FLUID_HANDLER_CAPABILITY)
+            return CapabilityFluidHandler.FLUID_HANDLER_CAPABILITY.cast(this);
+        return super.getCapability(capability, facing);
+    }
 @Override
 public boolean hasCapability(Capability<?> capability, EnumFacing facing) {
 return capability == CapabilityFluidHandler.FLUID_HANDLER_CAPABILITY || super.hasCapability(capability, facing);
 }
 @Override
 public IFluidTankProperties[] getTankProperties() {
-return new IFluidTankProperties[] { tanks[0].getTankProperties()[0], tanks[1].getTankProperties()[0], tanks[2].getTankProperties()[0] };
+int i0 = 0;
+int i1 = 1;
+int i2 = 2;
+int i3 = 3;
+return new IFluidTankProperties[] {
+tanks[i0].getTankProperties()[i0],
+tanks[i1].getTankProperties()[i0],
+tanks[i2].getTankProperties()[i0],
+tanks[i3].getTankProperties()[i0]
+};
 }
 @Override
 public int fill(FluidStack resource, boolean doFill) {
@@ -296,8 +369,20 @@ return tanks[i].fill(resource, doFill);
 }
 return 0;
 }
-@Override public FluidStack drain(FluidStack resource, boolean doDrain) { return null; }
-@Override public FluidStack drain(int maxDrain, boolean doDrain) { return null; }
+@Override
+public FluidStack drain(FluidStack resource, boolean doDrain) {
+int outTankIdx = 3;
+if (resource == null || tanks[outTankIdx].getFluid() == null) return null;
+if (tanks[outTankIdx].getFluid().getFluid() == resource.getFluid()) {
+return tanks[outTankIdx].drain(resource.amount, doDrain);
+}
+return null;
+}
+@Override
+public FluidStack drain(int maxDrain, boolean doDrain) {
+int outTankIdx = 3;
+return tanks[outTankIdx].drain(maxDrain, doDrain);
+}
 @Override
 public AxisAlignedBB getRenderBoundingBox() {
 if (bb == null) {

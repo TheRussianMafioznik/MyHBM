@@ -99,7 +99,7 @@ public final class FMLNetworkHook {
         return pkt;
     }
 
-    @SuppressWarnings("unused")
+        @SuppressWarnings("unused")
     public static void networkDispatcherWrite(NetworkDispatcher self, ChannelHandlerContext ctx, Object msg, ChannelPromise promise) throws Throwable {
         if (!(msg instanceof FMLProxyPacket pkt)) {
             ctx.write(msg, promise);
@@ -113,7 +113,9 @@ public final class FMLNetworkHook {
             final Side side = (Side) U.getReference(self, SIDE_OFF);
 
             if (side == Side.CLIENT) { // Client -> Server
-                PacketBuffer pb = new PacketBuffer(payload.retainedSlice());
+                // Безопасное копирование вместо retainedSlice()
+                ByteBuf safeCopy = Unpooled.copiedBuffer(payload);
+                PacketBuffer pb = new PacketBuffer(safeCopy);
                 CPacketCustomPayload out;
 
                 if (local) {
@@ -135,7 +137,9 @@ public final class FMLNetworkHook {
 
             } else { // Server -> Client
                 if (local) {
-                    PacketBuffer pb = new PacketBuffer(payload.retainedSlice());
+                    // Безопасное копирование вместо retainedSlice()
+                    ByteBuf safeCopy = Unpooled.copiedBuffer(payload);
+                    PacketBuffer pb = new PacketBuffer(safeCopy);
                     SPacketCustomPayload out = createUncheckedSPacket(pkt.channel(), pb);
                     final ChannelFuture f = ctx.write(out, promise);
                     f.addListener((ChannelFutureListener) future -> {
@@ -164,20 +168,14 @@ public final class FMLNetworkHook {
                             throw new RuntimeException(e);
                         }
                     });
-                    // flush each part immediately instead of letting up to 255 parts (~255MB) pile up
-                    // in the Netty outbound buffer until some later, unrelated flush
                     ctx.flush();
                 }
             }
         } finally {
-            // We retained slices for the packets, so we release the original reference from the FMLProxyPacket
-            // This may throw IllegalReferenceCountException iff some other mod a) reused packets without properly
-            // retaining them, or b) routed their packets through vanilla that reuses packet instances, or c) performed
-            // incorrect reference counting. This is a bug on their side. Known mods:
-            // - Ancient Warfare 2: problem b). Patched with AncientWarfareNetworkTransformer.
-            if (payload != null && payload.refCnt() > 0) {
-            payload.release();
-            }
+            // Очищаем исходный буфер, так как FMLProxyPacket обычно ожидает освобождения при отправке
+            //if (payload != null && payload.refCnt() > 0) { 
+            //    payload.release();
+            //}
         }
     }
 
@@ -190,7 +188,8 @@ public final class FMLNetworkHook {
 
         try {
             if (len < PART_SIZE) {
-                PacketBuffer pb = new PacketBuffer(buf.retainedSlice(ri, len));
+                ByteBuf safeCopy = buf.copy(ri, len);
+                PacketBuffer pb = new PacketBuffer(safeCopy);
                 ret.add(new SPacketCustomPayload(self.channel(), pb));
                 return ret;
             }
@@ -209,9 +208,10 @@ public final class FMLNetworkHook {
             for (int x = 0; x < parts; x++) {
                 int dataLen = Math.min(PART_SIZE - 1, len - offset);
 
-                ByteBuf slice = buf.retainedSlice(ri + offset, dataLen);
+                // Копируем нужный кусок данных без изменения refCnt исходного буфера
+                ByteBuf sliceCopy = buf.copy(ri + offset, dataLen);
                 ByteBuf header = Unpooled.buffer(1, 1).writeByte(x & 0xFF);
-                ByteBuf combined = Unpooled.wrappedBuffer(header, slice);
+                ByteBuf combined = Unpooled.wrappedBuffer(header, sliceCopy);
                 PacketBuffer pb = new PacketBuffer(combined);
 
                 try {

@@ -214,6 +214,7 @@ import com.hbm.entity.projectile.EntityShrapnel;
 import com.hbm.entity.projectile.EntitySparkBeam;
 import com.hbm.entity.projectile.EntityTom;
 import com.hbm.entity.projectile.EntityWaterSplash;
+import com.hbm.entity.projectile.EntityZirnoxDebris;
 import com.hbm.entity.siege.SiegeTier;
 import com.hbm.explosion.ExplosionNukeGeneric;
 import com.hbm.forgefluid.FFPipeNetwork;
@@ -735,6 +736,7 @@ public class MainRegistry {
 		reg(TileEntityMachineElectricFurnace.class, "tileentity_machine_electric_furnace");
 		reg(TileEntityWasteDrum.class, "tileentity_waste_drum");
 		reg(TileEntityReactorZirnox.class, "tileentity_zirnox");
+		GameRegistry.registerTileEntity(TileEntityZirnoxDestroyed.class, new ResourceLocation(RefStrings.MODID, "tileentity_zirnox_destroyed"));
         reg(TileEntityMachinePUREX.class, "tileentity_purex");
 		reg(TileEntityWasteDrumt2.class, "tileentity_waste_drum_t2");
 		reg(TileEntityMachineOilWell.class, "tileentity_machine_oil_well");
@@ -1081,7 +1083,7 @@ public class MainRegistry {
 		EntityRegistry.registerModEntity(new ResourceLocation(RefStrings.MODID, "entity_elder_one"), EntityQuackos.class, "entity_elder_one", i++, MainRegistry.instance, 1000, 1, true, 0xFFFFFF, 0xFFBF00);
 		EntityRegistry.registerModEntity(new ResourceLocation(RefStrings.MODID, "entity_ntm_fbi"), EntityFBI.class, "entity_ntm_fbi", i++, MainRegistry.instance, 1000, 1, true, 0xE79255, 0x1F3849);
 		EntityRegistry.registerModEntity(new ResourceLocation(RefStrings.MODID, "entity_firework_ball"), EntityFireworks.class, "entity_firework_ball", i++, MainRegistry.instance, 1000, 1, true);
-		
+		EntityRegistry.registerModEntity(new ResourceLocation(RefStrings.MODID, "entity_zirnox_debris"), EntityZirnoxDebris.class, "entity_zirnox_debris", i++, MainRegistry.instance, 1000, 1, true);
 		EntityRegistry.registerModEntity(new ResourceLocation(RefStrings.MODID, "entity_rbmk_debris"), EntityRBMKDebris.class, "entity_rbmk_debris", i++, MainRegistry.instance, 1000, 1, true);
 		EntityRegistry.registerModEntity(new ResourceLocation(RefStrings.MODID, "entity_spear"), EntitySpear.class, "entity_spear", i++, MainRegistry.instance, 1000, 1, true);
 		EntityRegistry.registerModEntity(new ResourceLocation(RefStrings.MODID, "entity_missile_volcano"), EntityMissileVolcano.class, "entity_missile_volcano", i++, MainRegistry.instance, 1000, 1, true);

@@ -12,7 +12,7 @@ import com.hbm.packet.NBTControlPacket;
 import com.hbm.packet.PacketDispatcher;
 import com.hbm.tileentity.machine.TileEntityReactorZirnox;
 import com.hbm.util.I18nUtil;
-
+import net.minecraft.client.renderer.GlStateManager;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.audio.PositionedSoundRecord;
 import net.minecraft.client.resources.I18n;
@@ -103,9 +103,10 @@ public class GUIReactorZirnox extends GuiInfoContainer {
         this.fontRenderer.drawString(I18n.format("container.inventory"), 8, this.ySize - 96, 4210752);
     }
 
-                @Override
+        @Override
     protected void drawGuiContainerBackgroundLayer(float p_146976_1_, int p_146976_2_, int p_146976_3_) {
         super.drawDefaultBackground();
+        GlStateManager.color(1.0F, 1.0F, 1.0F, 1.0F);
         GL11.glColor4f(1.0F, 1.0F, 1.0F, 1.0F);
         Minecraft.getMinecraft().getTextureManager().bindTexture(texture);
         drawTexturedModalRect(guiLeft, guiTop, 0, 0, xSize, ySize);
@@ -114,47 +115,121 @@ public class GUIReactorZirnox extends GuiInfoContainer {
         int idxCO2 = 1;
         int idxWater = 2;
 
-        // Линейные красные индикаторы для CO2, Пара и Воды
-        int steamOffset = (int) (14.0 * zirnox.tanks[idxSteam].getFluidAmount() / Math.max(1, zirnox.tanks[idxSteam].getCapacity()));
-        drawRect(guiLeft + 162 + steamOffset, guiTop + 113, guiLeft + 164 + steamOffset, guiTop + 118, 0xFF7F0000);
+        // Линейные индикаторы CO2, Пара и Воды (аккуратные указатели строго внутри шкалы)
+        drawSmoothLinearGauge(guiLeft + 144, guiTop + 115, this.zLevel, (double) zirnox.tanks[idxCO2].getFluidAmount() / Math.max(1, zirnox.tanks[idxCO2].getCapacity()), 2, 2, 0.5, 14, 0x7F0000);
+        drawSmoothLinearGauge(guiLeft + 162, guiTop + 115, this.zLevel, (double) zirnox.tanks[idxSteam].getFluidAmount() / Math.max(1, zirnox.tanks[idxSteam].getCapacity()), 2, 2, 0.5, 14, 0x7F0000);
+        drawSmoothLinearGauge(guiLeft + 180, guiTop + 115, this.zLevel, (double) zirnox.tanks[idxWater].getFluidAmount() / Math.max(1, zirnox.tanks[idxWater].getCapacity()), 2, 2, 0.5, 14, 0x7F0000);
 
-        int co2Offset = (int) (14.0 * zirnox.tanks[idxCO2].getFluidAmount() / Math.max(1, zirnox.tanks[idxCO2].getCapacity()));
-        drawRect(guiLeft + 144 + co2Offset, guiTop + 113, guiLeft + 146 + co2Offset, guiTop + 118, 0xFF7F0000);
+        // Круглые стрелки температуры и давления на циферблатах (от левого нижнего края шкалы к правому)
+        drawSmoothGauge(guiLeft + 169, guiTop + 42, this.zLevel, (double) zirnox.heat / 100000.0, 5, 2, 1, 0x7F0000);
+        drawSmoothGauge(guiLeft + 187, guiTop + 42, this.zLevel, (double) zirnox.pressure / 100000.0, 5, 2, 1, 0x7F0000);
 
-        int waterOffset = (int) (14.0 * zirnox.tanks[idxWater].getFluidAmount() / Math.max(1, zirnox.tanks[idxWater].getCapacity()));
-        drawRect(guiLeft + 180 + waterOffset, guiTop + 113, guiLeft + 182 + waterOffset, guiTop + 118, 0xFF7F0000);
+        // Сброс цвета OpenGL перед отрисовкой текстур
+        GlStateManager.color(1.0F, 1.0F, 1.0F, 1.0F);
+        GL11.glColor4f(1.0F, 1.0F, 1.0F, 1.0F);
 
-        // Стрелки температуры и давления на круглых циферблатах
-        drawGaugeNeedle(guiLeft + 169, guiTop + 42, (double) zirnox.heat / 100000.0, 5);
-        drawGaugeNeedle(guiLeft + 187, guiTop + 42, (double) zirnox.pressure / 100000.0, 5);
-
-        // Зелёные лампочки на управляющих стержнях и кнопке питания при включённом реакторе
-        if(zirnox.isOn) {
-            for(int x = 0; x < 4; x++) {
-                for(int y = 0; y < 4; y++) {
-                    drawRect(guiLeft + 13 + 36 * x, guiTop + 21 + 36 * y, guiLeft + 19 + 36 * x, guiTop + 27 + 36 * y, 0xFF00D000);
+        // Зелёные диоды при работающем реакторе
+        if (zirnox.isOn) {
+            for (int x = 0; x < 4; x++) {
+                for (int y = 0; y < 4; y++) {
+                    drawGreenLed(guiLeft + 13 + 36 * x, guiTop + 21 + 36 * y);
                 }
             }
-            for(int x = 0; x < 3; x++) {
-                for(int y = 0; y < 3; y++) {
-                    drawRect(guiLeft + 31 + 36 * x, guiTop + 39 + 36 * y, guiLeft + 37 + 36 * x, guiTop + 45 + 36 * y, 0xFF00D000);
+            for (int x = 0; x < 3; x++) {
+                for (int y = 0; y < 3; y++) {
+                    drawGreenLed(guiLeft + 31 + 36 * x, guiTop + 39 + 36 * y);
                 }
             }
-            // Верхний зелёный индикатор
-            drawRect(guiLeft + 148, guiTop + 21, guiLeft + 154, guiTop + 27, 0xFF00D000);
+            drawGreenLed(guiLeft + 148, guiTop + 21);
+        }
 
-            // Сама кнопка включения (становится зелёной вместо красной)
-            drawRect(guiLeft + 145, guiTop + 36, guiLeft + 157, guiTop + 48, 0xFF00A800);
-            drawRect(guiLeft + 148, guiTop + 39, guiLeft + 154, guiTop + 45, 0xFF003800);
-            drawRect(guiLeft + 150, guiTop + 41, guiLeft + 152, guiTop + 43, 0xFF00E000);
+        // Родные боковые вкладки из GuiInfoContainer (gui_utility.png) со сброшенным белым цветом
+        GlStateManager.color(1.0F, 1.0F, 1.0F, 1.0F);
+        GL11.glColor4f(1.0F, 1.0F, 1.0F, 1.0F);
+        this.drawInfoPanel(guiLeft - 16, guiTop + 36, 16, 16, 2);
+        this.drawInfoPanel(guiLeft - 16, guiTop + 36 + 16, 16, 16, 3);
+
+        if (zirnox.tanks[idxCO2].getFluidAmount() <= 0) {
+            this.drawInfoPanel(guiLeft - 16, guiTop + 36 + 32, 16, 16, 6);
+        }
+        if (zirnox.tanks[idxWater].getFluidAmount() < 4000) {
+            this.drawInfoPanel(guiLeft - 16, guiTop + 36 + 32 + 16, 16, 16, 7);
         }
     }
 
-    private void drawGaugeNeedle(int cx, int cy, double progress, int radius) {
-        double clamped = Math.max(0.0, Math.min(1.0, progress));
-        double angle = Math.toRadians(-135.0 + clamped * 270.0);
-        int tipX = cx + (int) Math.round(Math.sin(angle) * radius);
-        int tipY = cy - (int) Math.round(Math.cos(angle) * radius);
-        drawRect(Math.min(cx, tipX), Math.min(cy, tipY), Math.max(cx, tipX) + 1, Math.max(cy, tipY) + 1, 0xFF7F0000);
+    private void drawGreenLed(int x, int y) {
+        drawRect(x + 2, y, x + 4, y + 6, 0xFF28B428);
+        drawRect(x, y + 2, x + 6, y + 4, 0xFF28B428);
+        drawRect(x + 1, y + 1, x + 5, y + 5, 0xFF3CE63C);
+        drawRect(x + 1, y + 1, x + 3, y + 3, 0xFFA0FFA0);
+    }
+
+    private void drawSmoothGauge(int x, int y, double z, double progress, double tipLength, double backLength, double backSide, int color) {
+        GlStateManager.disableTexture2D();
+        progress = Math.max(0.0, Math.min(1.0, progress));
+        // 0.0 -> -135 градусов (левый низ шкалы), 0.5 -> 0 (верх), 1.0 -> +135 градусов (правый низ)
+        double angle = Math.toRadians(-135.0 + progress * 270.0);
+
+        double sin = Math.sin(angle);
+        double cos = Math.cos(angle);
+
+        double tipX = tipLength * sin;
+        double tipY = -tipLength * cos;
+        double leftX = -backSide * cos - backLength * sin;
+        double leftY = -backSide * sin + backLength * cos;
+        double rightX = backSide * cos - backLength * sin;
+        double rightY = backSide * sin + backLength * cos;
+
+        double mult = 1.5;
+        GL11.glBegin(GL11.GL_TRIANGLES);
+        GL11.glColor4f(0.0F, 0.0F, 0.0F, 1.0F);
+        GL11.glVertex3d(x + tipX * mult, y + tipY * mult, z);
+        GL11.glVertex3d(x + leftX * mult, y + leftY * mult, z);
+        GL11.glVertex3d(x + rightX * mult, y + rightY * mult, z);
+
+        float r = ((color >> 16) & 255) / 255.0F;
+        float g = ((color >> 8) & 255) / 255.0F;
+        float b = (color & 255) / 255.0F;
+        GL11.glColor4f(r, g, b, 1.0F);
+        GL11.glVertex3d(x + tipX, y + tipY, z);
+        GL11.glVertex3d(x + leftX, y + leftY, z);
+        GL11.glVertex3d(x + rightX, y + rightY, z);
+        GL11.glEnd();
+
+        GL11.glColor4f(1.0F, 1.0F, 1.0F, 1.0F);
+        GlStateManager.color(1.0F, 1.0F, 1.0F, 1.0F);
+        GlStateManager.enableTexture2D();
+    }
+
+    private void drawSmoothLinearGauge(int x, int y, double z, double progress, double tipLength, double backLength, double backSide, double scale, int color) {
+        GlStateManager.disableTexture2D();
+        scale = Math.max(scale, 1.0);
+        double deltaX = Math.max(0.0, Math.min(1.0, progress)) * scale;
+
+        double[] px = { 0, -backSide, -backSide, backSide, backSide };
+        double[] py = { -tipLength, 0, backLength, backLength, 0 };
+
+        double mult = 1.5;
+        GL11.glBegin(GL11.GL_POLYGON);
+        GL11.glColor4f(0.0F, 0.0F, 0.0F, 1.0F);
+        for (int i = 0; i < 5; i++) {
+            double vy = (i == 2 || i == 3) ? py[i] : py[i] * mult;
+            GL11.glVertex3d(x + deltaX + px[i] * mult, y + vy, z);
+        }
+        GL11.glEnd();
+
+        float r = ((color >> 16) & 255) / 255.0F;
+        float g = ((color >> 8) & 255) / 255.0F;
+        float b = (color & 255) / 255.0F;
+        GL11.glBegin(GL11.GL_POLYGON);
+        GL11.glColor4f(r, g, b, 1.0F);
+        for (int i = 0; i < 5; i++) {
+            GL11.glVertex3d(x + deltaX + px[i], y + py[i], z);
+        }
+        GL11.glEnd();
+
+        GL11.glColor4f(1.0F, 1.0F, 1.0F, 1.0F);
+        GlStateManager.color(1.0F, 1.0F, 1.0F, 1.0F);
+        GlStateManager.enableTexture2D();
     }
 }

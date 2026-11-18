@@ -4,6 +4,7 @@ import java.util.HashMap;
 import java.util.List;
 
 import com.hbm.blocks.BlockDummyable;
+import com.hbm.blocks.ModBlocks;
 import com.hbm.config.MobConfig;
 import com.hbm.explosion.ExplosionNukeGeneric;
 import com.hbm.forgefluid.FFUtils;
@@ -40,6 +41,9 @@ import net.minecraftforge.fluids.capability.IFluidTankProperties;
 import net.minecraftforge.fml.common.network.NetworkRegistry.TargetPoint;
 import net.minecraftforge.fml.relauncher.Side;
 import net.minecraftforge.fml.relauncher.SideOnly;
+import com.hbm.entity.projectile.EntityZirnoxDebris;
+import com.hbm.entity.projectile.EntityZirnoxDebris.DebrisType;
+import com.hbm.handler.MultiblockHandlerXR;
 
 public class TileEntityReactorZirnox extends TileEntityMachineBase implements ITickable, IControlReceiver, IFluidHandler {
 
@@ -282,32 +286,89 @@ if (this.pressure > maxPressure || this.heat > maxHeat) {
 meltdown();
 }
 }
-private void meltdown() {
-for (int i = 0; i < inventory.getSlots(); i++) {
-this.inventory.setStackInSlot(i, ItemStack.EMPTY);
-}
-NBTTagCompound data = new NBTTagCompound();
-data.setString("type", "rbmkmush");
-data.setFloat("scale", 4);
-PacketDispatcher.wrapper.sendToAllAround(new AuxParticlePacketNT(data, pos.getX() + 0.5, pos.getY() + 0.5, pos.getZ() + 0.5), new TargetPoint(world.provider.getDimension(), pos.getX() + 0.5, pos.getY() + 0.5, pos.getZ() + 0.5, 250));
-MainRegistry.proxy.effectNT(data);
-for (int ox = -2; ox <= 2; ox++) {
-for (int oz = -2; oz <= 2; oz++) {
-for (int oy = 0; oy <= 4; oy++) {
-world.setBlockToAir(pos.add(ox, oy, oz));
-}
-}
-}
-world.playSound(null, pos.getX(), pos.getY() + 2, pos.getZ(), HBMSoundHandler.rbmk_explosion, SoundCategory.BLOCKS, 10.0F, 1.0F);
-world.createExplosion(null, pos.getX(), pos.getY() + 3, pos.getZ(), 12.0F, true);
-ExplosionNukeGeneric.waste(world, pos.getX(), pos.getY(), pos.getZ(), 35);
+    private void spawnDebris(DebrisType type) {
+        EntityZirnoxDebris debris = new EntityZirnoxDebris(world, pos.getX() + 0.5D, pos.getY() + 4D, pos.getZ() + 0.5D, type);
+        debris.motionX = world.rand.nextGaussian() * 0.75D;
+        debris.motionZ = world.rand.nextGaussian() * 0.75D;
+        debris.motionY = 0.01D + world.rand.nextDouble() * 1.25D;
+
+        if (type == DebrisType.CONCRETE) {
+            debris.motionX *= 0.25D;
+            debris.motionY += world.rand.nextDouble();
+            debris.motionZ *= 0.25D;
+        }
+
+        if (type == DebrisType.EXCHANGER) {
+            debris.motionX += 0.5D;
+            debris.motionY *= 0.1D;
+            debris.motionZ += 0.5D;
+        }
+
+        world.spawnEntity(debris);
+    }
+
+    private void zirnoxDebris() {
+        for (int i = 0; i < 2; i++) {
+            spawnDebris(DebrisType.EXCHANGER);
+        }
+        for (int i = 0; i < 20; i++) {
+            spawnDebris(DebrisType.CONCRETE);
+            spawnDebris(DebrisType.BLANK);
+        }
+        for (int i = 0; i < 10; i++) {
+            spawnDebris(DebrisType.ELEMENT);
+            spawnDebris(DebrisType.GRAPHITE);
+            spawnDebris(DebrisType.SHRAPNEL);
+        }
+    }
+
+    		@SuppressWarnings("deprecation")
+	private void meltdown() {
+		for (int i = 0; i < inventory.getSlots(); i++) {
+			this.inventory.setStackInSlot(i, ItemStack.EMPTY);
+		}
+		NBTTagCompound data = new NBTTagCompound();
+		data.setString("type", "rbmkmush");
+		data.setFloat("scale", 4);
+		PacketDispatcher.wrapper.sendToAllAround(new AuxParticlePacketNT(data, pos.getX() + 0.5, pos.getY() + 0.5, pos.getZ() + 0.5), new TargetPoint(world.provider.getDimension(), pos.getX() + 0.5, pos.getY() + 0.5, pos.getZ() + 0.5, 250));
+		MainRegistry.proxy.effectNT(data);
+
+		int meta = this.getBlockMetadata();
+		for (int ox = -2; ox <= 2; ox++) {
+			for (int oz = -2; oz <= 2; oz++) {
+				for (int oy = 0; oy <= 4; oy++) {
+					world.setBlockToAir(pos.add(ox, oy, oz));
+				}
+			}
+		}
+
+		world.playSound(null, pos.getX(), pos.getY() + 2, pos.getZ(), HBMSoundHandler.rbmk_explosion, SoundCategory.BLOCKS, 10.0F, 1.0F);
+		world.createExplosion(null, pos.getX(), pos.getY() + 3, pos.getZ(), 12.0F, false);
+		zirnoxDebris();
+		ExplosionNukeGeneric.waste(world, pos.getX(), pos.getY(), pos.getZ(), 35);
+		if (MobConfig.enableElementals) {
+			List<EntityPlayer> players = world.getEntitiesWithinAABB(EntityPlayer.class, new AxisAlignedBB(pos).grow(100));
+			for (EntityPlayer player : players) {
+				player.getEntityData().getCompoundTag(EntityPlayer.PERSISTED_NBT_TAG).setBoolean("radMark", true);
+			}
+		}
+
+        int[] dimensions = { 1, 0, 2, 2, 2, 2 };
+        world.setBlockState(pos, ModBlocks.zirnox_destroyed.getStateFromMeta(meta), 3);
+        MultiblockHandlerXR.fillSpace(world, pos.getX(), pos.getY(), pos.getZ(), dimensions, ModBlocks.zirnox_destroyed, ForgeDirection.getOrientation(meta - BlockDummyable.offset));
+
+        world.playSound(null, pos.getX(), pos.getY() + 2, pos.getZ(), HBMSoundHandler.rbmk_explosion, SoundCategory.BLOCKS, 10.0F, 1.0F);
+        world.createExplosion(null, pos.getX(), pos.getY() + 3, pos.getZ(), 12.0F, true);
+        zirnoxDebris();
+        ExplosionNukeGeneric.waste(world, pos.getX(), pos.getY(), pos.getZ(), 35);
+
         if (MobConfig.enableElementals) {
             List<EntityPlayer> players = world.getEntitiesWithinAABB(EntityPlayer.class, new AxisAlignedBB(pos).grow(100));
             for (EntityPlayer player : players) {
                 player.getEntityData().getCompoundTag(EntityPlayer.PERSISTED_NBT_TAG).setBoolean("radMark", true);
             }
         }
-}
+    }
 public void fillFluidInit(FluidTank tank) {
 ForgeDirection dir = ForgeDirection.getOrientation(this.getBlockMetadata() - BlockDummyable.offset);
 ForgeDirection rot = dir.getRotation(ForgeDirection.UP);

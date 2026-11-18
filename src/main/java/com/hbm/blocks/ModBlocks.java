@@ -1396,6 +1396,7 @@ public class ModBlocks {
 	public static final Block reactor_conductor = new BlockReactor(Material.IRON, "reactor_conductor").setHardness(5.0F).setResistance(10.0F).setCreativeTab(MainRegistry.machineTab);
 	public static final Block reactor_computer = new ReactorCore(Material.IRON, "reactor_computer").setHardness(5.0F).setResistance(10.0F).setCreativeTab(MainRegistry.machineTab);
 	public static final int guiID_reactor_multiblock = 26;
+	public static final Block zirnox_destroyed = new ZirnoxDestroyed(Material.IRON, "zirnox_destroyed");
 	
 	//Fusion fellas
 	public static final Block fusion_conductor = new BlockReactor(Material.IRON, "fusion_conductor").setHardness(5.0F).setResistance(10.0F).setCreativeTab(MainRegistry.machineTab);

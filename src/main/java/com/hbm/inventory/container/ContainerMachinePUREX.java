@@ -31,10 +31,10 @@ public class ContainerMachinePUREX extends Container {
             this.addSlotToContainer(new SlotItemHandler(te.inventory, 4 + i, 8 + i * 18, 90));
         }
 
-        // Solid Output (7-12)
-        for (int row = 0; row < 2; row++) {
-            for (int col = 0; col < 3; col++) {
-                this.addSlotToContainer(new SlotMachineOutput(te.inventory, 7 + row * 3 + col, 80 + col * 18, 36 + row * 18));
+                // Выходные слоты (7-12): 2 столбца (x = 80, 98) и 3 ряда (y = 36, 54, 72)
+        for (int i = 0; i < 3; i++) {
+            for (int j = 0; j < 2; j++) {
+                this.addSlotToContainer(new SlotItemHandler(te.inventory, 7 + i * 2 + j, 80 + j * 18, 36 + i * 18));
             }
         }
 

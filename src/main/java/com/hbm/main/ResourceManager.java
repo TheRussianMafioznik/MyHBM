@@ -65,9 +65,16 @@ public class ResourceManager {
 	//F6 TANKS
 	public static final IModelCustom tank = new HFRWavefrontObject(new ResourceLocation(RefStrings.MODID, "models/tank.obj")).asVBO();
 	
-	//zirnox
+			//zirnox
 	public static final ResourceLocation zirnox_tex = new ResourceLocation(RefStrings.MODID, "textures/models/machines/zirnox.png");
-    public static final IModelCustom zirnox = AdvancedModelLoader.loadModel(new ResourceLocation(RefStrings.MODID, "models/zirnox.obj"));
+	public static final IModelCustom zirnox = AdvancedModelLoader.loadModel(new ResourceLocation(RefStrings.MODID, "models/zirnox.obj"));
+	public static final ResourceLocation zirnox_destroyed_tex = new ResourceLocation(RefStrings.MODID, "textures/models/machines/zirnox_destroyed.png");
+	public static final IModelCustom zirnox_destroyed = AdvancedModelLoader.loadModel(new ResourceLocation(RefStrings.MODID, "models/zirnox_destroyed.obj"));
+	public static final IModelCustom deb_zirnox_blank = AdvancedModelLoader.loadModel(new ResourceLocation(RefStrings.MODID, "models/zirnox/deb_blank.obj"));
+	public static final IModelCustom deb_zirnox_element = AdvancedModelLoader.loadModel(new ResourceLocation(RefStrings.MODID, "models/zirnox/deb_element.obj"));
+	public static final IModelCustom deb_zirnox_shrapnel = AdvancedModelLoader.loadModel(new ResourceLocation(RefStrings.MODID, "models/zirnox/deb_shrapnel.obj"));
+	public static final IModelCustom deb_zirnox_concrete = AdvancedModelLoader.loadModel(new ResourceLocation(RefStrings.MODID, "models/zirnox/deb_concrete.obj"));
+	public static final IModelCustom deb_zirnox_exchanger = AdvancedModelLoader.loadModel(new ResourceLocation(RefStrings.MODID, "models/zirnox/deb_exchanger.obj"));
 
 	//purex
 	public static final IModelCustom purex = AdvancedModelLoader.loadModel(new ResourceLocation(RefStrings.MODID, "models/machines/purex.obj"));

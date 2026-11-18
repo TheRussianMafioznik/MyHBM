@@ -39,11 +39,14 @@ public class GUIMachinePUREX extends GuiInfoContainer {
     public void drawScreen(int mouseX, int mouseY, float f) {
         super.drawScreen(mouseX, mouseY, f);
 
-        int outIdx = 3;
+                PUREXRecipe activeSel = PUREXRecipes.getRecipeById(this.purex.selectedRecipe);
         for (int i = 0; i < 3; i++) {
-            FFUtils.renderTankInfo(this, mouseX, mouseY, guiLeft + 8 + i * 18, guiTop + 18, 16, 52, purex.tanks[i], purex.types[i]);
+            net.minecraftforge.fluids.Fluid expected = (activeSel != null && i < activeSel.inputFluids.length) ? activeSel.inputFluids[i].getFluid() : purex.types[i];
+            FFUtils.renderTankInfo(this, mouseX, mouseY, guiLeft + 8 + i * 18, guiTop + 18, 16, 52, purex.tanks[i], expected);
         }
-        FFUtils.renderTankInfo(this, mouseX, mouseY, guiLeft + 116, guiTop + 36, 16, 52, purex.tanks[outIdx], purex.types[outIdx]);
+        int outIdx = 3;
+        net.minecraftforge.fluids.Fluid expectedOut = (activeSel != null && activeSel.outputFluid != null) ? activeSel.outputFluid.getFluid() : purex.types[outIdx];
+        FFUtils.renderTankInfo(this, mouseX, mouseY, guiLeft + 116, guiTop + 36, 16, 52, purex.tanks[outIdx], expectedOut);
 
         this.drawElectricityInfo(this, mouseX, mouseY, guiLeft + 152, guiTop + 18, 16, 61, purex.power, purex.maxPower);
 
@@ -107,15 +110,25 @@ public class GUIMachinePUREX extends GuiInfoContainer {
         ItemStack icon = (recipe != null) ? recipe.getIcon() : new ItemStack(ModItems.template_folder);
         renderGuiItem(icon, 8, 126);
 
-        // Полупрозрачные призраки входных предметов в слотах 4-6
-        if (recipe != null && recipe.inputs != null) {
-            for (int i = 0; i < recipe.inputs.length && i < 3; i++) {
-                Slot slot = this.inventorySlots.inventorySlots.get(4 + i);
-                if (!slot.getHasStack()) {
-                    List<ItemStack> variants = PUREXRecipes.getVariants(recipe.inputs[i]);
-                    if (!variants.isEmpty()) {
-                        int idx = (int) ((System.currentTimeMillis() / 1000L) % variants.size());
-                        renderGuiItem(variants.get(idx), slot.xPos, slot.yPos);
+                // Полупрозрачные призраки входных (4-6) и выходных (7-12) предметов
+        if (recipe != null) {
+            if (recipe.inputs != null) {
+                for (int i = 0; i < recipe.inputs.length && i < 3; i++) {
+                    Slot slot = this.inventorySlots.inventorySlots.get(4 + i);
+                    if (!slot.getHasStack()) {
+                        List<ItemStack> variants = PUREXRecipes.getVariants(recipe.inputs[i]);
+                        if (!variants.isEmpty()) {
+                            int idx = (int) ((System.currentTimeMillis() / 1000L) % variants.size());
+                            renderGuiItem(variants.get(idx), slot.xPos, slot.yPos);
+                        }
+                    }
+                }
+            }
+            if (recipe.outputs != null) {
+                for (int i = 0; i < recipe.outputs.length && i < 6; i++) {
+                    Slot slot = this.inventorySlots.inventorySlots.get(7 + i);
+                    if (!slot.getHasStack()) {
+                        renderGuiItem(recipe.outputs[i], slot.xPos, slot.yPos);
                     }
                 }
             }
@@ -125,10 +138,20 @@ public class GUIMachinePUREX extends GuiInfoContainer {
             GlStateManager.color(1F, 1F, 1F, 0.5F);
             GlStateManager.enableBlend();
             this.zLevel = 300F;
-            for (int i = 0; i < recipe.inputs.length && i < 3; i++) {
-                Slot slot = this.inventorySlots.inventorySlots.get(4 + i);
-                if (!slot.getHasStack()) {
-                    drawTexturedModalRect(guiLeft + slot.xPos, guiTop + slot.yPos, slot.xPos, slot.yPos, 16, 16);
+            if (recipe.inputs != null) {
+                for (int i = 0; i < recipe.inputs.length && i < 3; i++) {
+                    Slot slot = this.inventorySlots.inventorySlots.get(4 + i);
+                    if (!slot.getHasStack()) {
+                        drawTexturedModalRect(guiLeft + slot.xPos, guiTop + slot.yPos, slot.xPos, slot.yPos, 16, 16);
+                    }
+                }
+            }
+            if (recipe.outputs != null) {
+                for (int i = 0; i < recipe.outputs.length && i < 6; i++) {
+                    Slot slot = this.inventorySlots.inventorySlots.get(7 + i);
+                    if (!slot.getHasStack()) {
+                        drawTexturedModalRect(guiLeft + slot.xPos, guiTop + slot.yPos, slot.xPos, slot.yPos, 16, 16);
+                    }
                 }
             }
             this.zLevel = 0F;
@@ -136,15 +159,36 @@ public class GUIMachinePUREX extends GuiInfoContainer {
             GlStateManager.disableBlend();
         }
 
-        int outIdx = 3;
+                        int outIdx = 3;
         for (int i = 0; i < 3; i++) {
-            if (purex.tanks[i].getFluid() != null && purex.tanks[i].getFluidAmount() > 0) {
-                FFUtils.drawLiquid(purex.tanks[i], guiLeft, guiTop, this.zLevel, 16, 52, 8 + i * 18, 70);
-            }
+            renderTankFluid(purex.tanks[i], guiLeft + 8 + i * 18, guiTop + 18, 16, 52);
         }
-        if (purex.tanks[outIdx].getFluid() != null && purex.tanks[outIdx].getFluidAmount() > 0) {
-            FFUtils.drawLiquid(purex.tanks[outIdx], guiLeft, guiTop, this.zLevel, 16, 52, 116, 88);
+        renderTankFluid(purex.tanks[outIdx], guiLeft + 116, guiTop + 36, 16, 52);
+    }
+
+    private void renderTankFluid(net.minecraftforge.fluids.FluidTank tank, int x, int y, int width, int height) {
+        if (tank == null || tank.getFluid() == null || tank.getFluidAmount() <= 0) return;
+        net.minecraftforge.fluids.FluidStack fs = tank.getFluid();
+        net.minecraftforge.fluids.Fluid fluid = fs.getFluid();
+        if (fluid == null || fluid.getStill(fs) == null) return;
+
+        net.minecraft.client.renderer.texture.TextureAtlasSprite sprite = Minecraft.getMinecraft().getTextureMapBlocks().getAtlasSprite(fluid.getStill(fs).toString());
+        Minecraft.getMinecraft().getTextureManager().bindTexture(net.minecraft.client.renderer.texture.TextureMap.LOCATION_BLOCKS_TEXTURE);
+
+        int color = fluid.getColor(fs);
+        float r = ((color >> 16) & 0xFF) / 255.0F;
+        float g = ((color >> 8) & 0xFF) / 255.0F;
+        float b = (color & 0xFF) / 255.0F;
+        GlStateManager.color(r, g, b, 1.0F);
+
+        int filledHeight = (int) Math.ceil((double) fs.amount * height / Math.max(1, tank.getCapacity()));
+        int drawY = y + height - filledHeight;
+
+        for (int dy = 0; dy < filledHeight; dy += 16) {
+            int sliceH = Math.min(16, filledHeight - dy);
+            drawTexturedModalRect(x, drawY + dy, sprite, width, sliceH);
         }
+        GlStateManager.color(1.0F, 1.0F, 1.0F, 1.0F);
     }
 
     private void renderGuiItem(ItemStack stack, int x, int y) {

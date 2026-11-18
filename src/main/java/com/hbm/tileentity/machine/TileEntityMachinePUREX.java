@@ -126,8 +126,25 @@ public class TileEntityMachinePUREX extends TileEntityMachineBase implements ITi
                 this.progress = 0;
             }
 
-            for (int i = 0; i < 4; i++) {
-                types[i] = tanks[i].getFluid() != null ? tanks[i].getFluid().getFluid() : null;
+                        for (int i = 0; i < 4; i++) {
+                if (tanks[i].getFluid() != null) {
+                    types[i] = tanks[i].getFluid().getFluid();
+                } else {
+                    types[i] = null;
+                }
+            }
+
+            PUREXRecipe sel = PUREXRecipes.getRecipeById(this.selectedRecipe);
+            if (sel != null) {
+                for (int i = 0; i < sel.inputFluids.length && i < 3; i++) {
+                    if (tanks[i].getFluid() == null) {
+                        types[i] = sel.inputFluids[i].getFluid();
+                    }
+                }
+                            int outTankIdx = 3;
+            if (sel.outputFluid != null && tanks[outTankIdx].getFluid() == null) {
+                types[outTankIdx] = sel.outputFluid.getFluid();
+            }
             }
 
             this.networkPackNT(100);
@@ -354,21 +371,26 @@ tanks[i2].getTankProperties()[i0],
 tanks[i3].getTankProperties()[i0]
 };
 }
-@Override
-public int fill(FluidStack resource, boolean doFill) {
-if (resource == null) return 0;
-for (int i = 0; i < 3; i++) {
-if (tanks[i].getFluid() != null && tanks[i].getFluid().getFluid() == resource.getFluid()) {
-return tanks[i].fill(resource, doFill);
-}
-}
-for (int i = 0; i < 3; i++) {
-if (tanks[i].getFluid() == null) {
-return tanks[i].fill(resource, doFill);
-}
-}
-return 0;
-}
+    @Override
+    public int fill(FluidStack resource, boolean doFill) {
+        if (resource == null) return 0;
+        for (int i = 0; i < 3; i++) {
+            if (tanks[i].getFluid() != null && tanks[i].getFluid().getFluid() == resource.getFluid()) {
+                return tanks[i].fill(resource, doFill);
+            }
+        }
+        for (int i = 0; i < 3; i++) {
+            if (tanks[i].getFluid() == null && types[i] == resource.getFluid()) {
+                return tanks[i].fill(resource, doFill);
+            }
+        }
+        for (int i = 0; i < 3; i++) {
+            if (tanks[i].getFluid() == null && types[i] == null) {
+                return tanks[i].fill(resource, doFill);
+            }
+        }
+        return 0;
+    }
 @Override
 public FluidStack drain(FluidStack resource, boolean doDrain) {
 int outTankIdx = 3;

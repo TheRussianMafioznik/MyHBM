@@ -1452,16 +1452,16 @@ tasks.register('updateBuildScript') {
     }
 }
 
-if (!project.getGradle().startParameter.isOffline() && !Boolean.getBoolean('DISABLE_BUILDSCRIPT_UPDATE_CHECK') && isNewBuildScriptVersionAvailable()) {
-    if (autoUpdateBuildScript.toBoolean()) {
-        performBuildScriptUpdate()
-    } else {
-        out.style(Style.SuccessHeader).println("Build script update available! Run 'gradle updateBuildScript'")
-        if (gradle.gradleVersion != buildscriptGradleVersion) {
-            out.style(Style.SuccessHeader).println("updateBuildScript can update gradle from ${gradle.gradleVersion} to ${buildscriptGradleVersion}\n")
-        }
-    }
-}
+// if (!project.getGradle().startParameter.isOffline() && !Boolean.getBoolean('DISABLE_BUILDSCRIPT_UPDATE_CHECK') && isNewBuildScriptVersionAvailable()) {
+//    if (autoUpdateBuildScript.toBoolean()) {
+//        performBuildScriptUpdate()
+//    } else {
+//        out.style(Style.SuccessHeader).println("Build script update available! Run 'gradle updateBuildScript'")
+//        if (gradle.gradleVersion != buildscriptGradleVersion) {
+//            out.style(Style.SuccessHeader).println("updateBuildScript can update gradle from ${gradle.gradleVersion} to ${buildscriptGradleVersion}\n")
+//        }
+//    }
+// }
 
 static URL availableBuildScriptUrl() {
     new URL("https://raw.githubusercontent.com/GregTechCEu/Buildscripts/master/build.gradle")

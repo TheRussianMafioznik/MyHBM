@@ -96,6 +96,16 @@ public class CraftingManager {
 		addRecipeAuto(new ItemStack(ModBlocks.conveyor_chute, 3), new Object[] { "IGI", "IGI", "ICI" , 'I', IRON.ingot(), 'G', ModBlocks.steel_grate, 'C', ModBlocks.conveyor });
 		addRecipeAuto(new ItemStack(ModBlocks.conveyor_lift, 3), new Object[] { "IGI", "IGI", "ICI" , 'I', IRON.ingot(), 'G', ModBlocks.chain, 'C', ModBlocks.conveyor });
 		
+		// --- Рецепт для Air Intake (Воздухозаборник) ---
+        // Добавлен вручную для исправления наследуемого бага.
+        // Форма крафта 3x3:
+        // [G] [P] [G]
+        // [P] [M] [P]
+        // [G] [T] [G]
+        // G = Steel Grate, P = Steel Plate, M = Motor, T = Steel Tank
+        
+        addRecipeAuto(new ItemStack(ModBlocks.machine_intake, 1), new Object[] { "GGG", "PMP", "PTP", 'G', ModBlocks.steel_grate, 'P', STEEL.plate(), 'M', ModItems.motor, 'T', ModItems.tank_steel });
+        // --- Конец рецепта Air Intake ---
 		Object[] craneCasing = new Object[] {
 				Blocks.STONEBRICK, 1,
 				IRON.ingot(), 2,

@@ -12,7 +12,6 @@ import com.hbm.interfaces.IMultiBlock;
 import com.hbm.inventory.EngineRecipes;
 import com.hbm.lib.InventoryHelper;
 import com.hbm.main.MainRegistry;
-import com.hbm.tileentity.machine.TileEntityMachineDiesel;
 import com.hbm.tileentity.machine.dummy.TileEntityDummy;
 import com.hbm.tileentity.machine.oil.TileEntityMachineGasFlare;
 

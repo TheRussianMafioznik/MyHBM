@@ -18,13 +18,11 @@ import com.hbm.items.machine.ItemMachineUpgrade.UpgradeType;
 import com.hbm.lib.HBMSoundHandler;
 import com.hbm.lib.Library;
 import com.hbm.main.MainRegistry;
-import com.hbm.particle.ParticleRBMKFlame;
 import com.hbm.sound.AudioWrapper;
 import com.hbm.tileentity.IBufPacketReceiver;
 import com.hbm.tileentity.IGUIProvider;
 import com.hbm.tileentity.TileEntityMachineBase;
 import io.netty.buffer.ByteBuf;
-import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiScreen;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.init.SoundEvents;
@@ -72,7 +70,7 @@ public class TileEntityMachineGasFlare extends TileEntityMachineBase implements 
 	private AudioWrapper audio;
 
 	@SideOnly(Side.CLIENT)
-	private ParticleRBMKFlame flameParticle;
+    private Object flameParticle;
 
 	//mB of a gas burnt per one soot powder, 0 = no soot; built on demand, ModForgeFluids is not ready at class load
 	public static Fluid[] getSootFluids() {
@@ -264,28 +262,33 @@ public class TileEntityMachineGasFlare extends TileEntityMachineBase implements 
 					audio.updatePitch(0.6F);
 					audio.updateRange(15.0F);
 				}
-			} else {
+						} else {
 				if(audio != null) {
 					audio.stopSound();
 					audio = null;
 				}
 			}
 
-			if(doesBurn) {
-				if(flameParticle == null || flameParticle.isDead()) {
-					flameParticle = new ParticleRBMKFlame(world, pos.getX() + 1.5, pos.getY() + 10.8, pos.getZ() + 1.5, 200);
-					flameParticle.setParticleScale(0.4F);
-					Minecraft.getMinecraft().effectRenderer.addEffect(flameParticle);
-				}
-			} else {
-				if(flameParticle != null && !flameParticle.isDead()) {
-					flameParticle.kill();
-					flameParticle = null;
-				}
-			}
+			updateClientEffects();
 		}
 	}
 
+	@SideOnly(Side.CLIENT)
+	private void updateClientEffects() {
+		if(doesBurn) {
+			if(flameParticle == null || ((com.hbm.particle.ParticleRBMKFlame) flameParticle).isDead()) {
+				com.hbm.particle.ParticleRBMKFlame p = new com.hbm.particle.ParticleRBMKFlame(world, pos.getX() + 1.5, pos.getY() + 10.8, pos.getZ() + 1.5, 200);
+				p.setParticleScale(0.4F);
+				net.minecraft.client.Minecraft.getMinecraft().effectRenderer.addEffect(p);
+				flameParticle = p;
+			}
+		} else {
+			if(flameParticle != null && !((com.hbm.particle.ParticleRBMKFlame) flameParticle).isDead()) {
+				((com.hbm.particle.ParticleRBMKFlame) flameParticle).kill();
+				flameParticle = null;
+			}
+		}
+	}
 	@Override
 	public void serialize(ByteBuf buf) {
 		buf.writeBoolean(isOn);

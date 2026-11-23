@@ -93,15 +93,6 @@ public class TileEntityCableBaseNT extends TileEntityLoadedBase implements ITick
 	}
 
 	@Override
-	public long transferPower(long power) {
-		
-		if(this.network == null)
-			return power;
-		
-		return this.network.transferPower(power);
-	}
-
-	@Override
 	public IPowerNet getPowerNet() {
 		return this.network;
 	}

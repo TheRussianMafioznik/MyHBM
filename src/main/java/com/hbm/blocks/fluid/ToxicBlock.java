@@ -3,12 +3,11 @@ package com.hbm.blocks.fluid;
 import java.util.Random;
 
 import com.hbm.blocks.ModBlocks;
+import com.hbm.saveddata.RadiationSavedData;
 import com.hbm.util.ContaminationUtil;
 import com.hbm.util.ContaminationUtil.ContaminationType;
 import com.hbm.util.ContaminationUtil.HazardType;
-import com.hbm.saveddata.RadiationSavedData;
 
-import net.minecraft.block.Block;
 import net.minecraft.block.material.Material;
 import net.minecraft.block.state.IBlockState;
 import net.minecraft.entity.Entity;
@@ -23,15 +22,12 @@ import net.minecraftforge.fluids.Fluid;
 
 public class ToxicBlock extends BlockFluidClassic {
 
-	private DamageSource damageSource;
-	
 	public ToxicBlock(Fluid fluid, Material material, DamageSource source, String s) {
 		super(fluid, material);
 		this.setTranslationKey(s);
 		this.setRegistryName(s);
 		this.setCreativeTab(null);
 		this.setQuantaPerBlock(4);
-		this.damageSource = source;
 		this.displacements.put(this, false);
 		
 		ModBlocks.ALL_BLOCKS.add(this);
@@ -81,6 +77,7 @@ public class ToxicBlock extends BlockFluidClassic {
 		super.updateTick(world, pos, state, rand);
 	}
 
+	@SuppressWarnings("deprecation")
 	private IBlockState getRandomSellafite(World world){
 		int n = world.rand.nextInt(100);
 		if(n < 2) return ModBlocks.sellafield_core.getStateFromMeta(world.rand.nextInt(4));
@@ -94,7 +91,7 @@ public class ToxicBlock extends BlockFluidClassic {
 		if(world.getBlockState(pos).getMaterial() != ModBlocks.fluidtoxic) {
 			IBlockState state = world.getBlockState(pos);
 			if(state.getMaterial().isLiquid()) return true;
-			if(state.getMaterial() == Material.ROCK && state.getBlock().getExplosionResistance(null) < 1000 && (state.getBlock() !=ModBlocks.sellafield_2 && state.getBlock() !=ModBlocks.sellafield_3 && state.getBlock() !=ModBlocks.sellafield_4 && state.getBlock() !=ModBlocks.sellafield_core)) return true;
+			if(state.getMaterial() == Material.ROCK && state.getBlock().getExplosionResistance(world, pos, null, null) < 1000 && (state.getBlock() != ModBlocks.sellafield_2 && state.getBlock() != ModBlocks.sellafield_3 && state.getBlock() != ModBlocks.sellafield_4 && state.getBlock() != ModBlocks.sellafield_core)) return true;
 		}
 		return false;
 	}

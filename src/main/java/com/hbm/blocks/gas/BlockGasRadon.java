@@ -2,12 +2,11 @@ package com.hbm.blocks.gas;
 
 import java.util.Random;
 
-import com.hbm.lib.ForgeDirection;
-import com.hbm.capability.HbmLivingProps;
-import com.hbm.util.ArmorRegistry;
 import com.hbm.handler.ArmorUtil;
-import com.hbm.util.ContaminationUtil;
+import com.hbm.lib.ForgeDirection;
+import com.hbm.util.ArmorRegistry;
 import com.hbm.util.ArmorRegistry.HazardClass;
+import com.hbm.util.ContaminationUtil;
 import com.hbm.util.ContaminationUtil.ContaminationType;
 import com.hbm.util.ContaminationUtil.HazardType;
 

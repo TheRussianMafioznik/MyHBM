@@ -3,7 +3,6 @@ package com.hbm.blocks.bomb;
 import java.util.Random;
 
 import com.hbm.blocks.ModBlocks;
-import com.hbm.explosion.ExplosionLarge;
 import com.hbm.explosion.ExplosionNT;
 import com.hbm.explosion.ExplosionNT.ExAttrib;
 import com.hbm.interfaces.IBomb;
@@ -43,7 +42,6 @@ public class DetMiner3 extends Block implements IBomb {
 			explosion.overrideResolution(64);
 			explosion.explode();
 
-			//ExplosionLarge.spawnParticles(world, pos.getX() + 0.5, pos.getY() + 0.5, pos.getZ() + 0.5, 30);
 		}
 	}
 	

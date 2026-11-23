@@ -1,15 +1,11 @@
 package api.hbm.energy;
 
-import com.hbm.packet.AuxParticlePacketNT;
-import com.hbm.packet.PacketDispatcher;
 import com.hbm.render.amlfrom1710.Vec3;
 import com.hbm.lib.ForgeDirection;
 
-import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.tileentity.TileEntity;
 import net.minecraft.world.World;
-import net.minecraftforge.fml.common.network.NetworkRegistry.TargetPoint;
 
 /**
  * For anything that connects to power and can be transferred power to, the bottom-level interface.
@@ -58,10 +54,9 @@ public interface IEnergyConnector extends ILoadedTile {
 	 * @param y
 	 * @param z
 	 */
-	public default void trySubscribe(World world, BlockPos pos, ForgeDirection dir) {
+		public default void trySubscribe(World world, BlockPos pos, ForgeDirection dir) {
 
 		TileEntity te = world.getTileEntity(pos);
-		boolean red = false;
 		
 		if(te instanceof IEnergyConductor) {
 			IEnergyConductor con = (IEnergyConductor) te;
@@ -71,23 +66,7 @@ public interface IEnergyConnector extends ILoadedTile {
 			
 			if(con.getPowerNet() != null && !con.getPowerNet().isSubscribed(this))
 				con.getPowerNet().subscribe(this);
-			
-			if(con.getPowerNet() != null)
-				red = true;
 		}
-		
-		// if(particleDebug) {//
-		// 	NBTTagCompound data = new NBTTagCompound();
-		// 	data.setString("type", "network");
-		// 	data.setString("mode", "power");
-		// 	double posX = pos.getX() + 0.5 + dir.offsetX * 0.5 + world.rand.nextDouble() * 0.5 - 0.25;
-		// 	double posY = pos.getY() + 0.5 + dir.offsetY * 0.5 + world.rand.nextDouble() * 0.5 - 0.25;
-		// 	double posZ = pos.getZ() + 0.5 + dir.offsetZ * 0.5 + world.rand.nextDouble() * 0.5 - 0.25;
-		// 	data.setDouble("mX", -dir.offsetX * (red ? 0.025 : 0.1));
-		// 	data.setDouble("mY", -dir.offsetY * (red ? 0.025 : 0.1));
-		// 	data.setDouble("mZ", -dir.offsetZ * (red ? 0.025 : 0.1));
-		// 	PacketDispatcher.wrapper.sendToAllAround(new AuxParticlePacketNT(data, posX, posY, posZ), new TargetPoint(world.provider.getDimension(), posX, posY, posZ, 25));
-		// }
 	}
 	
 	public default void tryUnsubscribe(World world, BlockPos pos) {

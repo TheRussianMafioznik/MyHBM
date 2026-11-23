@@ -1,27 +1,28 @@
 package com.hbm.blocks.generic;
 
-import java.util.Map;
 import java.util.Random;
 
-import com.hbm.blocks.BlockControlPanelType;
+import javax.annotation.Nonnull;
+
+import org.lwjgl.opengl.GL11;
+
 import com.hbm.blocks.ModBlocks;
 import com.hbm.handler.threading.PacketThreading;
 import com.hbm.interfaces.ICustomSelectionBox;
-import com.hbm.inventory.control_panel.*;
+import com.hbm.inventory.control_panel.Control;
+import com.hbm.inventory.control_panel.ControlEvent;
+import com.hbm.inventory.control_panel.ControlPanel;
+import com.hbm.inventory.control_panel.DataValueFloat;
 import com.hbm.items.ModItems;
 import com.hbm.main.ClientProxy;
 import com.hbm.main.MainRegistry;
 import com.hbm.packet.NBTControlPacket;
-import com.hbm.packet.PacketDispatcher;
 import com.hbm.tileentity.machine.TileEntityControlPanel;
 
 import net.minecraft.block.BlockContainer;
-import net.minecraft.block.BlockHorizontal;
 import net.minecraft.block.material.Material;
-import net.minecraft.block.properties.IProperty;
 import net.minecraft.block.properties.PropertyBool;
 import net.minecraft.block.properties.PropertyDirection;
-import net.minecraft.block.properties.PropertyEnum;
 import net.minecraft.block.state.BlockFaceShape;
 import net.minecraft.block.state.BlockStateContainer;
 import net.minecraft.block.state.IBlockState;
@@ -43,9 +44,6 @@ import net.minecraft.world.IBlockAccess;
 import net.minecraft.world.World;
 import net.minecraftforge.fml.relauncher.Side;
 import net.minecraftforge.fml.relauncher.SideOnly;
-import org.lwjgl.opengl.GL11;
-
-import javax.annotation.Nonnull;
 
 public class BlockControlPanel extends BlockContainer implements ICustomSelectionBox {
 
@@ -90,6 +88,7 @@ public class BlockControlPanel extends BlockContainer implements ICustomSelectio
 
 	@Nonnull
 	@Override
+	@SuppressWarnings("deprecation")
 	public AxisAlignedBB getBoundingBox(IBlockState state, IBlockAccess source, BlockPos pos) {
 		TileEntity te = source.getTileEntity(pos);
 		if (te instanceof TileEntityControlPanel) {
@@ -158,8 +157,6 @@ public class BlockControlPanel extends BlockContainer implements ICustomSelectio
 	public boolean renderBox(World world, EntityPlayer player, IBlockState state, BlockPos pos, double x, double y, double z, float partialTicks){
 		TileEntityControlPanel control = (TileEntityControlPanel)world.getTileEntity(pos);
 		Control ctrl = control.panel.getSelectedControl(player.getPositionEyes(partialTicks), player.getLook(partialTicks));
-		//if(control.panel.controls.size() > 0)
-		//	ctrl = control.panel.controls.get(0);
 		if(ctrl != null){
 			GL11.glPushMatrix();
 			GL11.glTranslated(x, y, z);

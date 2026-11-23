@@ -37,10 +37,10 @@ public class BlockDepth extends Block {
 		return super.getPlayerRelativeBlockHardness(state, player, worldIn, pos);
 	}
 
-	@Override
+		@Override
 	public void addInformation(ItemStack stack, World player, List<String> tooltip, ITooltipFlag advanced) {
 		super.addInformation(stack, player, tooltip, advanced);
-		float hardness = this.getExplosionResistance(null);
+		float hardness = this.blockResistance / 5.0F;
 		tooltip.add("§d[" + I18nUtil.resolveKey("trait.unmineable") + "]");
 		tooltip.add("§e" + I18nUtil.resolveKey("trait.destroybyexplosion"));
 		if(hardness > 50){

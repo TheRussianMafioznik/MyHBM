@@ -11,7 +11,6 @@ import com.hbm.explosion.ExplosionNT;
 import com.hbm.explosion.ExplosionNT.ExAttrib;
 import com.hbm.handler.threading.PacketThreading;
 import com.hbm.packet.AuxParticlePacketNT;
-import com.hbm.packet.PacketDispatcher;
 
 import net.minecraft.block.Block;
 import net.minecraft.block.material.Material;

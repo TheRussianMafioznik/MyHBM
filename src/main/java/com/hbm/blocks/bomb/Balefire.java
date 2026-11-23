@@ -1,7 +1,5 @@
 package com.hbm.blocks.bomb;
 
-import java.util.Random;
-
 import com.hbm.blocks.ModBlocks;
 import com.hbm.potion.HbmPotion;
 
@@ -37,26 +35,28 @@ public class Balefire extends BlockFire {
 			b != ModBlocks.baleonitite_core);
 	}
 
-	@Override 
+		@Override
+	@SuppressWarnings("deprecation")
 	public int getFlammability(Block b){
-		if(b != ModBlocks.baleonitite_slaked && 
-			b != ModBlocks.baleonitite_1 && 
-			b != ModBlocks.baleonitite_2 && 
-			b != ModBlocks.baleonitite_3 && 
-			b != ModBlocks.baleonitite_4 && 
+		if(b != ModBlocks.baleonitite_slaked &&
+			b != ModBlocks.baleonitite_1 &&
+			b != ModBlocks.baleonitite_2 &&
+			b != ModBlocks.baleonitite_3 &&
+			b != ModBlocks.baleonitite_4 &&
 			b != ModBlocks.baleonitite_core){
 			return 20000;
 		}
-		return super.getEncouragement(b);
+		return super.getFlammability(b);
 	}
 
-	@Override 
+	@Override
+	@SuppressWarnings("deprecation")
 	public int getEncouragement(Block b){
-		if(b != ModBlocks.baleonitite_slaked && 
-			b != ModBlocks.baleonitite_1 && 
-			b != ModBlocks.baleonitite_2 && 
-			b != ModBlocks.baleonitite_3 && 
-			b != ModBlocks.baleonitite_4 && 
+		if(b != ModBlocks.baleonitite_slaked &&
+			b != ModBlocks.baleonitite_1 &&
+			b != ModBlocks.baleonitite_2 &&
+			b != ModBlocks.baleonitite_3 &&
+			b != ModBlocks.baleonitite_4 &&
 			b != ModBlocks.baleonitite_core){
 			return 20000;
 		}

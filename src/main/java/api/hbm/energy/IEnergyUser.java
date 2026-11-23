@@ -1,14 +1,10 @@
 package api.hbm.energy;
 
-import com.hbm.packet.AuxParticlePacketNT;
-import com.hbm.packet.PacketDispatcher;
 import com.hbm.lib.ForgeDirection;
 
-import net.minecraft.nbt.NBTTagCompound;
-import net.minecraft.util.math.BlockPos;
 import net.minecraft.tileentity.TileEntity;
+import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.World;
-import net.minecraftforge.fml.common.network.NetworkRegistry.TargetPoint;
 
 /**
  * For machines and things that have an energy buffer and are affected by EMPs
@@ -50,11 +46,16 @@ public interface IEnergyUser extends IEnergyConnector {
 	 * @param z
 	 * @param dir
 	 */
+		/**
+	 * Standard implementation of sending power
+	 * @param world
+	 * @param pos
+	 * @param dir
+	 */
 	public default void sendPower(World world, BlockPos pos, ForgeDirection dir) {
 		
 		TileEntity te = world.getTileEntity(pos);
 		boolean wasSubscribed = false;
-		boolean red = false;
 		
 		// first we make sure we're not subscribed to the network that we'll be supplying
 		if(te instanceof IEnergyConductor) {
@@ -74,7 +75,6 @@ public interface IEnergyUser extends IEnergyConnector {
 				long oldPower = this.getPower();
 				long transfer = oldPower - con.transferPower(oldPower);
 				this.setPower(oldPower - transfer);
-				red = true;
 			}
 		}
 		
@@ -86,18 +86,5 @@ public interface IEnergyUser extends IEnergyConnector {
 				con.getPowerNet().subscribe(this);
 			}
 		}
-		
-		// if(particleDebug) {
-		// 	NBTTagCompound data = new NBTTagCompound();
-		// 	data.setString("type", "network");
-		// 	data.setString("mode", "power");
-		// 	double posX = pos.getX() + 0.5 + dir.offsetX * 0.5 + world.rand.nextDouble() * 0.5 - 0.25;
-		// 	double posY = pos.getY() + 0.5 + dir.offsetY * 0.5 + world.rand.nextDouble() * 0.5 - 0.25;
-		// 	double posZ = pos.getZ() + 0.5 + dir.offsetZ * 0.5 + world.rand.nextDouble() * 0.5 - 0.25;
-		// 	data.setDouble("mX", dir.offsetX * (red ? 0.025 : 0.1));
-		// 	data.setDouble("mY", dir.offsetY * (red ? 0.025 : 0.1));
-		// 	data.setDouble("mZ", dir.offsetZ * (red ? 0.025 : 0.1));
-		// 	PacketDispatcher.wrapper.sendToAllAround(new AuxParticlePacketNT(data, posX, posY, posZ), new TargetPoint(world.provider.getDimension(), posX, posY, posZ, 25));
-		// }
 	}
 }

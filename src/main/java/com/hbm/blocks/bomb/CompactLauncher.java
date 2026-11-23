@@ -106,7 +106,6 @@ public class CompactLauncher extends BlockContainer implements IMultiBlock, IBom
 	
 	@Override
 	public void onBlockPlacedBy(World world, BlockPos pos, IBlockState state, EntityLivingBase placer, ItemStack stack) {
-		TileEntityCompactLauncher te = (TileEntityCompactLauncher) world.getTileEntity(pos);
 		
 		if(!(world.getBlockState(pos.add(1, 0, 1)).getMaterial().isReplaceable() &&
 				world.getBlockState(pos.add(1, 0, 0)).getMaterial().isReplaceable() &&

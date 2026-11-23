@@ -20,7 +20,6 @@ import net.minecraftforge.fluids.Fluid;
 
 public class RadWaterBlock extends BlockFluidClassic {
 
-	private DamageSource damageSource;
 	
 	public RadWaterBlock(Fluid fluid, Material material, DamageSource source, String s) {
 		super(fluid, material);
@@ -28,9 +27,7 @@ public class RadWaterBlock extends BlockFluidClassic {
 		this.setRegistryName(s);
 		this.setCreativeTab(null);
 		this.setQuantaPerBlock(4);
-		this.damageSource = source;
 		this.displacements.put(this, false);
-		
 		ModBlocks.ALL_BLOCKS.add(this);
 	}
 	
@@ -40,11 +37,6 @@ public class RadWaterBlock extends BlockFluidClassic {
 			return true;
 		return super.canDisplace(world, pos);
 	}
-	
-	// @Override
-	// public boolean displaceIfPossible(World world, BlockPos pos) {
-	// 	return super.displaceIfPossible(world, pos);
-	// }
 
 	@Override
 	public void onEntityCollision(World worldIn, BlockPos pos, IBlockState state, Entity entityIn) {

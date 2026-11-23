@@ -2,23 +2,19 @@ package com.hbm.blocks.bomb;
 
 import java.util.Random;
 
+import com.hbm.blocks.ModBlocks;
 import com.hbm.entity.effect.EntityCloudFleijaRainbow;
 import com.hbm.entity.logic.EntityNukeExplosionMK3;
-import com.hbm.blocks.ModBlocks;
-import com.hbm.explosion.ExplosionLarge;
-import com.hbm.explosion.ExplosionNT;
-import com.hbm.explosion.ExplosionNT.ExAttrib;
 import com.hbm.interfaces.IBomb;
-import net.minecraft.init.SoundEvents;
-import net.minecraft.util.SoundCategory;
 
 import net.minecraft.block.Block;
 import net.minecraft.block.material.Material;
 import net.minecraft.block.state.IBlockState;
 import net.minecraft.init.Items;
+import net.minecraft.init.SoundEvents;
 import net.minecraft.item.Item;
+import net.minecraft.util.SoundCategory;
 import net.minecraft.util.math.BlockPos;
-import net.minecraft.world.Explosion;
 import net.minecraft.world.World;
 
 public class DetMiner4 extends Block implements IBomb {
@@ -62,11 +58,6 @@ public class DetMiner4 extends Block implements IBomb {
 			    	}
 		}
 	}
-	
-	// @Override
-	// public void onExplosionDestroy(World worldIn, BlockPos pos, Explosion explosionIn) {
-	// 	this.explode(worldIn, pos);
-	// }
 	
 	@Override
 	public void neighborChanged(IBlockState state, World world, BlockPos pos, Block blockIn, BlockPos fromPos) {

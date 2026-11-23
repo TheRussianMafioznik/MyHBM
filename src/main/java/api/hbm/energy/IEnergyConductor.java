@@ -91,9 +91,9 @@ public interface IEnergyConductor extends IEnergyConnector {
 	 * DEFAULT: Connects to all six neighboring blocks.
 	 * @return
 	 */
-	public default List<BlockPos> getConnectionPoints() {
+	default List<BlockPos> getConnectionPoints() {
 
-		List<BlockPos> pos = new ArrayList();
+		List<BlockPos> pos = new ArrayList<>();
 		TileEntity tile = (TileEntity) this;
 		
 		for(ForgeDirection dir : ForgeDirection.VALID_DIRECTIONS) {
@@ -109,13 +109,12 @@ public interface IEnergyConductor extends IEnergyConnector {
 	 * Perhaps this indicates a minor flaw in the new API, but I physically lack the ability to worry about it.
 	 */
 	@Override
-	public default boolean isLoaded() {
+	default boolean isLoaded() {
 		return true;
 	}
 
-	//TODO: check if this standard implementation doesn't break anything (it shouldn't but right now it's a bit redundant) also: remove duplicate implementations
 	@Override
-	public default long transferPower(long power) {
+	default long transferPower(long power) {
 		
 		if(this.getPowerNet() == null)
 			return power;
@@ -127,7 +126,7 @@ public interface IEnergyConductor extends IEnergyConnector {
 	 * Returns whether the conductor has mutliblock proxies which need to be taken into consideration for re-eval.
 	 * @return
 	 */
-	public default boolean hasProxies() {
+	default boolean hasProxies() {
 		return false;
 	}
 	
@@ -135,7 +134,7 @@ public interface IEnergyConductor extends IEnergyConnector {
 	 * Returns the identities (position-based) of proxies which resolve into the conductor's own identity.
 	 * @return
 	 */
-	public default List<Integer> getProxies() {
-		return new ArrayList();
+	default List<Integer> getProxies() {
+		return new ArrayList<>();
 	}
 }

@@ -1,17 +1,13 @@
 package com.hbm.blocks.generic;
 
-import java.util.ArrayList;
 import java.util.Random;
 
-import com.hbm.blocks.BlockDummyable;
 import com.hbm.blocks.ModBlocks;
-import com.hbm.capability.HbmLivingProps;
-import com.hbm.capability.HbmLivingProps.ContaminationEffect;
 import com.hbm.interfaces.IItemHazard;
-import com.hbm.util.ContaminationUtil;
 import com.hbm.items.ModItems;
 import com.hbm.modules.ItemHazardModule;
 import com.hbm.potion.HbmPotion;
+import com.hbm.util.ContaminationUtil;
 
 import net.minecraft.block.Block;
 import net.minecraft.block.SoundType;
@@ -22,7 +18,6 @@ import net.minecraft.block.state.BlockStateContainer;
 import net.minecraft.block.state.IBlockState;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.EntityLivingBase;
-import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.init.Blocks;
 import net.minecraft.item.Item;
 import net.minecraft.potion.PotionEffect;

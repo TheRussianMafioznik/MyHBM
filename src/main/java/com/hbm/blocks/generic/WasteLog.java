@@ -3,12 +3,11 @@ package com.hbm.blocks.generic;
 import java.util.Random;
 
 import com.hbm.blocks.ModBlocks;
-import com.hbm.items.ModItems;
 import com.hbm.interfaces.IItemHazard;
-import com.hbm.modules.ItemHazardModule;
+import com.hbm.items.ModItems;
 import com.hbm.main.MainRegistry;
+import com.hbm.modules.ItemHazardModule;
 
-import net.minecraft.block.Block;
 import net.minecraft.block.BlockLog;
 import net.minecraft.block.BlockRotatedPillar;
 import net.minecraft.block.SoundType;

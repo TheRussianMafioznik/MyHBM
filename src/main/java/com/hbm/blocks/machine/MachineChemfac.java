@@ -1,10 +1,12 @@
 package com.hbm.blocks.machine;
 
+import javax.annotation.Nullable;
+
 import com.hbm.blocks.BlockDummyable;
 import com.hbm.lib.ForgeDirection;
-import com.hbm.lib.InventoryHelper;
 import com.hbm.tileentity.TileEntityProxyCombo;
 import com.hbm.tileentity.machine.TileEntityMachineChemfac;
+
 import net.minecraft.block.material.Material;
 import net.minecraft.block.state.IBlockState;
 import net.minecraft.entity.player.EntityPlayer;
@@ -13,8 +15,6 @@ import net.minecraft.util.EnumFacing;
 import net.minecraft.util.EnumHand;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.World;
-
-import javax.annotation.Nullable;
 
 public class MachineChemfac extends BlockDummyable {
 	public MachineChemfac(Material materialIn, String s) {
@@ -47,7 +47,7 @@ public class MachineChemfac extends BlockDummyable {
 		z += dir.offsetZ * o;
 		ForgeDirection rot = dir.getRotation(ForgeDirection.DOWN);
 
-		this.safeRem = true;
+		BlockDummyable.safeRem = true;
 
 		for (int i = -3; i < 3; i++) {
 			this.makeExtra(world, x + rot.offsetX * 2 + dir.offsetX * i, y + 3, z + rot.offsetZ * 2 + dir.offsetZ * i);
@@ -60,7 +60,7 @@ public class MachineChemfac extends BlockDummyable {
 			this.makeExtra(world, x - rot.offsetX * 4 + dir.offsetX * i, y + 2, z - rot.offsetZ * 4 + dir.offsetZ * i);
 		}
 
-		this.safeRem = false;
+		BlockDummyable.safeRem = false;
 	}
 
 	@Override

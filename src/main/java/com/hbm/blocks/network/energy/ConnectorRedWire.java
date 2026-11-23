@@ -1,41 +1,22 @@
 package com.hbm.blocks.network.energy;
 
+import javax.annotation.Nullable;
 
-import com.google.common.collect.ImmutableMap;
-import com.hbm.blocks.network.energy.PylonBase;
 import com.hbm.tileentity.network.energy.TileEntityConnector;
-import net.minecraft.block.Block;
+
 import net.minecraft.block.material.Material;
 import net.minecraft.block.properties.PropertyDirection;
 import net.minecraft.block.state.BlockStateContainer;
 import net.minecraft.block.state.IBlockState;
-import net.minecraft.client.renderer.block.model.IBakedModel;
-import net.minecraft.client.renderer.block.model.ModelResourceLocation;
-import net.minecraft.client.renderer.block.model.ModelRotation;
-import net.minecraft.client.renderer.texture.TextureMap;
-import net.minecraft.client.renderer.vertex.DefaultVertexFormats;
-import net.minecraft.client.util.ITooltipFlag;
 import net.minecraft.entity.EntityLivingBase;
-import net.minecraft.item.ItemBlock;
-import net.minecraft.item.ItemStack;
 import net.minecraft.tileentity.TileEntity;
 import net.minecraft.util.EnumFacing;
-import net.minecraft.util.ResourceLocation;
 import net.minecraft.util.math.AxisAlignedBB;
 import net.minecraft.util.math.BlockPos;
-import net.minecraft.util.text.TextFormatting;
 import net.minecraft.world.IBlockAccess;
 import net.minecraft.world.World;
-import net.minecraftforge.client.event.ModelBakeEvent;
-import net.minecraftforge.client.model.IModel;
-import net.minecraftforge.client.model.ModelLoader;
-import net.minecraftforge.client.model.ModelLoaderRegistry;
-import net.minecraftforge.fml.common.registry.ForgeRegistries;
-import org.jetbrains.annotations.Nullable;
 
-import java.util.List;
-
-//TODO: throw in dummy baked model into it to override the particles
+// Note: needs a dummy baked model to override break particles
 public class ConnectorRedWire extends PylonBase {
 
     public static final PropertyDirection FACING = PropertyDirection.create("facing");
@@ -49,7 +30,6 @@ public class ConnectorRedWire extends PylonBase {
     private static final AxisAlignedBB AABB_NORTH = new AxisAlignedBB(min, min, min, max, max, 1.0D);
     private static final AxisAlignedBB AABB_EAST = new AxisAlignedBB(0.0D, min, min, max, max, max);
     private static final AxisAlignedBB AABB_WEST = new AxisAlignedBB(min, min, min, 1.0D, max, max);
-
 
     public ConnectorRedWire(Material mat, String reg) {
         super(mat, reg);
@@ -81,15 +61,21 @@ public class ConnectorRedWire extends PylonBase {
 
     @Override
     public AxisAlignedBB getBoundingBox(IBlockState state, IBlockAccess world, BlockPos pos) {
-        EnumFacing facing = state.getValue(FACING);
-        return switch (facing) {
-            case NORTH -> AABB_NORTH;
-            case SOUTH -> AABB_SOUTH;
-            case WEST -> AABB_WEST;
-            case EAST -> AABB_EAST;
-            case UP -> AABB_UP;
-            case DOWN -> AABB_DOWN;
-        };
+        switch (state.getValue(FACING)) {
+            case NORTH:
+                return AABB_NORTH;
+            case SOUTH:
+                return AABB_SOUTH;
+            case WEST:
+                return AABB_WEST;
+            case EAST:
+                return AABB_EAST;
+            case DOWN:
+                return AABB_DOWN;
+            case UP:
+            default:
+                return AABB_UP;
+        }
     }
 
     @Nullable
@@ -113,4 +99,3 @@ public class ConnectorRedWire extends PylonBase {
         return new BlockStateContainer(this, FACING);
     }
 }
-

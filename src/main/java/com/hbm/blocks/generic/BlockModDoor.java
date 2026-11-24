@@ -199,12 +199,13 @@ public class BlockModDoor extends Block {
 	/**
 	 * Checks if this block can be placed exactly at the given position.
 	 */
+		@Override
 	public boolean canPlaceBlockAt(World worldIn, BlockPos pos) {
-		if(pos.getY() >= worldIn.getHeight() - 1) {
+		if (pos.getY() >= worldIn.getHeight() - 1) {
 			return false;
 		} else {
 			IBlockState state = worldIn.getBlockState(pos.down());
-			return (state.isTopSolid() || state.getBlockFaceShape(worldIn, pos.down(), EnumFacing.UP) == BlockFaceShape.SOLID) && super.canPlaceBlockAt(worldIn, pos) && super.canPlaceBlockAt(worldIn, pos.up());
+			return (state.isSideSolid(worldIn, pos.down(), EnumFacing.UP) || state.getBlockFaceShape(worldIn, pos.down(), EnumFacing.UP) == BlockFaceShape.SOLID) && super.canPlaceBlockAt(worldIn, pos) && super.canPlaceBlockAt(worldIn, pos.up());
 		}
 	}
 

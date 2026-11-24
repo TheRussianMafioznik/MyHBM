@@ -88,7 +88,7 @@ public class MachineReactor extends BlockDummyable implements IRadResistantBlock
 	@Override
 	public void addInformation(ItemStack stack, World player, List<String> tooltip, ITooltipFlag advanced) {
 		super.addInformation(stack, player, tooltip, advanced);
-		float hardness = this.getExplosionResistance(null);
+		float hardness = this.blockResistance / 5.0F;
 		tooltip.add("§2[" + I18nUtil.resolveKey("trait.radshield") + "]");
 		if(hardness > 50) {
 			tooltip.add("§6" + I18nUtil.resolveKey("trait.blastres", hardness));

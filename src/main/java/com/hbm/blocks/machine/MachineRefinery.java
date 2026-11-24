@@ -9,7 +9,6 @@ import com.hbm.interfaces.IMultiBlock;
 import com.hbm.lib.InventoryHelper;
 import com.hbm.main.MainRegistry;
 import com.hbm.tileentity.machine.dummy.TileEntityDummy;
-import com.hbm.tileentity.machine.TileEntityMachineAssembler;
 import com.hbm.tileentity.machine.oil.TileEntityMachineRefinery;
 
 import net.minecraft.block.BlockContainer;
@@ -109,9 +108,7 @@ public class MachineRefinery extends BlockContainer implements IMultiBlock {
 	public void onBlockPlacedBy(World world, BlockPos pos, IBlockState state, EntityLivingBase placer, ItemStack stack) {
 		if(MultiblockHandler.checkSpace(world, pos, MultiblockHandler.refineryDimensions)) {
 			MultiblockHandler.fillUp(world, pos, MultiblockHandler.refineryDimensions, ModBlocks.dummy_block_refinery);
-				
-			//
-			DummyBlockBase.safeBreak = true;
+			 DummyBlockBase.safeBreak = true;
 			world.setBlockState(pos.add(1, 0, 1), ModBlocks.dummy_port_refinery.getDefaultState());
 			TileEntity te = world.getTileEntity(pos.add(1, 0, 1));
 			if(te instanceof TileEntityDummy) {
@@ -137,13 +134,8 @@ public class MachineRefinery extends BlockContainer implements IMultiBlock {
 				dummy.setTarget(pos);
 			}
 			DummyBlockBase.safeBreak = false;
-			//
-				
 		} else {
 			world.destroyBlock(pos, true);
 		}
 	}
-	
-	
-
 }

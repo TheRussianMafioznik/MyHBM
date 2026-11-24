@@ -141,7 +141,7 @@ public class HeatBoiler extends BlockDummyable implements ILookOverlay, ITooltip
 
         TileEntityHeatBoiler boiler = (TileEntityHeatBoiler) te;
 
-        List<String> text = new ArrayList();
+        List<String> text = new ArrayList<>();
 
         for(int i = 0; i < boiler.types.length; i++)
             if(boiler.types[i] != null)

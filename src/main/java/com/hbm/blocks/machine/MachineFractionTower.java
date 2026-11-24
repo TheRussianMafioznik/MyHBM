@@ -144,7 +144,7 @@ public class MachineFractionTower extends BlockDummyable implements ILookOverlay
 		
 		TileEntityMachineFractionTower frac = (TileEntityMachineFractionTower) te;
 		
-		List<String> text = new ArrayList();
+		List<String> text = new ArrayList<>();
 
 		for(int i = 0; i < frac.types.length; i++){
 			if(frac.types[i] != null){

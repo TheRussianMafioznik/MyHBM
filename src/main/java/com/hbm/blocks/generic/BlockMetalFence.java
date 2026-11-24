@@ -38,34 +38,30 @@ public class BlockMetalFence extends BlockFence {
 		return false;
 	}
 	
-	@Override
+		@Override
+	@SuppressWarnings("deprecation")
 	public void addCollisionBoxToList(IBlockState state, World worldIn, BlockPos pos, AxisAlignedBB entityBox, List<AxisAlignedBB> collidingBoxes, Entity entityIn, boolean isActualState) {
-		if (!isActualState)
-        {
-            state = state.getActualState(worldIn, pos);
-        }
+		if (!isActualState) {
+			state = state.getActualState(worldIn, pos);
+		}
 
-        addCollisionBoxToList(pos, entityBox, collidingBoxes, PILLAR_SHORT_AABB);
+		addCollisionBoxToList(pos, entityBox, collidingBoxes, PILLAR_SHORT_AABB);
 
-        if (((Boolean)state.getValue(NORTH)).booleanValue())
-        {
-            addCollisionBoxToList(pos, entityBox, collidingBoxes, NORTH_SHORT_AABB);
-        }
+		if (state.getValue(NORTH)) {
+			addCollisionBoxToList(pos, entityBox, collidingBoxes, NORTH_SHORT_AABB);
+		}
 
-        if (((Boolean)state.getValue(EAST)).booleanValue())
-        {
-            addCollisionBoxToList(pos, entityBox, collidingBoxes, EAST_SHORT_AABB);
-        }
+		if (state.getValue(EAST)) {
+			addCollisionBoxToList(pos, entityBox, collidingBoxes, EAST_SHORT_AABB);
+		}
 
-        if (((Boolean)state.getValue(SOUTH)).booleanValue())
-        {
-            addCollisionBoxToList(pos, entityBox, collidingBoxes, SOUTH_SHORT_AABB);
-        }
+		if (state.getValue(SOUTH)) {
+			addCollisionBoxToList(pos, entityBox, collidingBoxes, SOUTH_SHORT_AABB);
+		}
 
-        if (((Boolean)state.getValue(WEST)).booleanValue())
-        {
-            addCollisionBoxToList(pos, entityBox, collidingBoxes, WEST_SHORT_AABB);
-        }
+		if (state.getValue(WEST)) {
+			addCollisionBoxToList(pos, entityBox, collidingBoxes, WEST_SHORT_AABB);
+		}
 	}
 	
 	@Override

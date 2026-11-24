@@ -226,7 +226,7 @@ public class MachineFENSU extends BlockDummyableMBB implements ILookOverlay {
 			return;
 
 		TileEntityMachineFENSU battery = (TileEntityMachineFENSU) te;
-		List<String> text = new ArrayList();
+		List<String> text = new ArrayList<>();
 		text.add("§6<> §rStored Energy: " + Library.getShortNumber(battery.power) + "/9.22EHE");
 		if(battery.powerDelta == 0)
 			text.add("§e-- §r0HE/s");

@@ -80,7 +80,7 @@ public class HeaterElectric extends BlockDummyable implements ILookOverlay, IToo
 		
 		TileEntityHeaterElectric heater = (TileEntityHeaterElectric) te;
 
-		List<String> text = new ArrayList();
+		List<String> text = new ArrayList<>();
 		text.add(String.format("%,d", heater.heatEnergy) + " TU");
 		text.add("§a-> §r" + heater.getConsumption() + " HE/t");
 		text.add("§c<- §r" + heater.getHeatGen() + " TU/t");

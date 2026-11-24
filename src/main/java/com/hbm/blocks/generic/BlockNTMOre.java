@@ -26,7 +26,7 @@ import net.minecraft.world.World;
 public class BlockNTMOre extends BlockOre implements IItemHazard {
 	
 	ItemHazardModule module;
-	public static int xp;
+	public int xp;
 
 	public BlockNTMOre(String name, int harvestLvl, int xp) {
 		super();

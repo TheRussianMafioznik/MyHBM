@@ -3,11 +3,9 @@ package com.hbm.blocks.machine;
 import java.util.List;
 
 import com.hbm.blocks.ModBlocks;
-import com.hbm.lib.RefStrings;
 import com.hbm.main.MainRegistry;
-
 import com.hbm.util.I18nUtil;
-import net.minecraft.block.Block;
+
 import net.minecraft.block.BlockFalling;
 import net.minecraft.block.BlockHorizontal;
 import net.minecraft.block.SoundType;
@@ -16,9 +14,9 @@ import net.minecraft.block.properties.IProperty;
 import net.minecraft.block.properties.PropertyDirection;
 import net.minecraft.block.state.BlockStateContainer;
 import net.minecraft.block.state.IBlockState;
+import net.minecraft.client.util.ITooltipFlag;
 import net.minecraft.entity.EntityLivingBase;
 import net.minecraft.entity.player.EntityPlayer;
-import net.minecraft.client.util.ITooltipFlag;
 import net.minecraft.item.ItemStack;
 import net.minecraft.util.EnumFacing;
 import net.minecraft.util.EnumHand;

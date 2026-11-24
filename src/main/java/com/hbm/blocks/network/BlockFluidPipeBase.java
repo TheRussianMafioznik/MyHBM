@@ -12,7 +12,6 @@ import com.hbm.tileentity.conductor.TileEntityFFDuctBaseMk2;
 import com.hbm.util.I18nUtil;
 
 import api.hbm.block.IToolable;
-import api.hbm.block.IToolable.ToolType;
 import net.minecraft.block.Block;
 import net.minecraft.block.BlockContainer;
 import net.minecraft.block.material.Material;

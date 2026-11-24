@@ -1,14 +1,13 @@
 package com.hbm.blocks.machine;
 
-import javax.annotation.Nullable;
 import java.util.ArrayList;
 import java.util.List;
+
+import javax.annotation.Nullable;
 
 import com.hbm.blocks.BlockDummyable;
 import com.hbm.blocks.ILookOverlay;
 import com.hbm.blocks.ITooltipProvider;
-import com.hbm.inventory.FluidCombustionRecipes;
-import com.hbm.items.tool.ItemTooling;
 import com.hbm.lib.ForgeDirection;
 import com.hbm.tileentity.TileEntityProxyCombo;
 import com.hbm.tileentity.machine.TileEntityHeaterRadioThermal;
@@ -97,7 +96,7 @@ public class HeaterRadioThermal extends BlockDummyable implements ITooltipProvid
 
         TileEntityHeaterRadioThermal heater = (TileEntityHeaterRadioThermal) te;
 
-        List<String> text = new ArrayList();
+        List<String> text = new ArrayList<>();
         text.add(String.format("%,d", heater.heatEnergy) + " TU");
         text.add("§c<- §r"+String.format("%,d", heater.heatGen) + " TU/t");
 

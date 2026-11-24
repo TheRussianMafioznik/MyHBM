@@ -52,7 +52,7 @@ public class BlockRadResistant extends Block implements IRadResistantBlock {
 	public void addInformation(ItemStack stack, World player, List<String> tooltip, ITooltipFlag advanced) {
 		super.addInformation(stack, player, tooltip, advanced);
 		tooltip.add("§2[" + I18nUtil.resolveKey("trait.radshield") + "]");
-		float hardness = this.getExplosionResistance(null);
+		float hardness = this.blockResistance / 5.0F;
 		if(hardness > 50){
 			tooltip.add("§6" + I18nUtil.resolveKey("trait.blastres", hardness));
 		}

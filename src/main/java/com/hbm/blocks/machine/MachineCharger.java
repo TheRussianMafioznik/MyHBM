@@ -3,25 +3,24 @@ package com.hbm.blocks.machine;
 import java.util.ArrayList;
 import java.util.List;
 
-import com.hbm.lib.Library;
 import com.hbm.blocks.ILookOverlay;
 import com.hbm.blocks.ITooltipProvider;
 import com.hbm.blocks.ModBlocks;
+import com.hbm.lib.Library;
 import com.hbm.tileentity.machine.TileEntityCharger;
 
 import net.minecraft.block.BlockContainer;
-import net.minecraft.block.state.IBlockState;
 import net.minecraft.block.material.Material;
+import net.minecraft.block.state.IBlockState;
 import net.minecraft.client.util.ITooltipFlag;
 import net.minecraft.item.ItemStack;
 import net.minecraft.tileentity.TileEntity;
-import net.minecraft.util.math.BlockPos;
-import net.minecraft.util.math.AxisAlignedBB;
 import net.minecraft.util.EnumBlockRenderType;
+import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.World;
+import net.minecraftforge.client.event.RenderGameOverlayEvent.Pre;
 import net.minecraftforge.fml.relauncher.Side;
 import net.minecraftforge.fml.relauncher.SideOnly;
-import net.minecraftforge.client.event.RenderGameOverlayEvent.Pre;
 
 public class MachineCharger extends BlockContainer implements ITooltipProvider, ILookOverlay {
 	
@@ -67,7 +66,7 @@ public class MachineCharger extends BlockContainer implements ITooltipProvider, 
 		
 		TileEntityCharger charger = (TileEntityCharger) te;
 		
-		List<String> text = new ArrayList();
+		List<String> text = new ArrayList<>();
 
 		if(charger.totalCapacity > 0){
 			text.add(Library.getShortNumber(charger.totalEnergy) + "/" + Library.getShortNumber(charger.totalCapacity) + " HE");

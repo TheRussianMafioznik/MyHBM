@@ -3,43 +3,42 @@ package com.hbm.blocks.network.energy;
 import java.util.ArrayList;
 import java.util.List;
 
-import com.hbm.blocks.ModBlocks;
 import com.hbm.blocks.ILookOverlay;
 import com.hbm.blocks.ITooltipProvider;
-import com.hbm.lib.Library;
+import com.hbm.blocks.ModBlocks;
 import com.hbm.lib.ForgeDirection;
+import com.hbm.lib.Library;
 import com.hbm.tileentity.IBufPacketReceiver;
 import com.hbm.tileentity.TileEntityLoadedBase;
 import com.hbm.util.I18nUtil;
 
 import api.hbm.block.IToolable;
-import api.hbm.block.IToolable.ToolType;
-import api.hbm.energy.IEnergyUser;
-import api.hbm.energy.IEnergyConnectorBlock;
 import api.hbm.energy.IEnergyConnector.ConnectionPriority;
+import api.hbm.energy.IEnergyConnectorBlock;
+import api.hbm.energy.IEnergyUser;
 import io.netty.buffer.ByteBuf;
-import net.minecraft.client.util.ITooltipFlag;
-import net.minecraft.block.properties.IProperty;
-import net.minecraft.block.properties.PropertyDirection;
-import net.minecraft.block.state.BlockStateContainer;
 import net.minecraft.block.BlockContainer;
 import net.minecraft.block.BlockDirectional;
 import net.minecraft.block.material.Material;
+import net.minecraft.block.properties.IProperty;
+import net.minecraft.block.properties.PropertyDirection;
+import net.minecraft.block.state.BlockStateContainer;
 import net.minecraft.block.state.IBlockState;
+import net.minecraft.client.util.ITooltipFlag;
 import net.minecraft.entity.EntityLivingBase;
 import net.minecraft.entity.player.EntityPlayer;
-import net.minecraft.util.math.BlockPos;
-import net.minecraft.util.EnumHand;
-import net.minecraft.util.EnumFacing;
-import net.minecraft.util.Mirror;
-import net.minecraft.util.Rotation;
 import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NBTTagCompound;
-import net.minecraft.util.EnumBlockRenderType;
 import net.minecraft.network.NetworkManager;
 import net.minecraft.network.play.server.SPacketUpdateTileEntity;
 import net.minecraft.tileentity.TileEntity;
+import net.minecraft.util.EnumBlockRenderType;
+import net.minecraft.util.EnumFacing;
+import net.minecraft.util.EnumHand;
 import net.minecraft.util.ITickable;
+import net.minecraft.util.Mirror;
+import net.minecraft.util.Rotation;
+import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.IBlockAccess;
 import net.minecraft.world.World;
 import net.minecraftforge.client.event.RenderGameOverlayEvent.Pre;
@@ -144,7 +143,7 @@ public class CableDiode extends BlockContainer implements IEnergyConnectorBlock,
 		
 		TileEntityDiode diode = (TileEntityDiode) te;
 		
-		List<String> text = new ArrayList();
+		List<String> text = new ArrayList<>();
 		text.add("Max.: " + Library.getShortNumber(diode.getMaxPower()*20) + "HE/s");
 		text.add("Priority: " + diode.priority.name());
 		

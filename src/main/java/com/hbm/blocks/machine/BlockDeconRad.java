@@ -20,7 +20,7 @@ import net.minecraftforge.fml.relauncher.SideOnly;
 
 public class BlockDeconRad extends BlockContainer {
 
-	public static float radRemove;
+	public float radRemove;
 	public BlockDeconRad(Material materialIn, String s, float rad) {
 		super(materialIn);
 		this.setTranslationKey(s);

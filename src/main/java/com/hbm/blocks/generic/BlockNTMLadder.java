@@ -26,6 +26,7 @@ public class BlockNTMLadder extends BlockLadder {
 	}
 	
 	@Override
+    @SuppressWarnings ("deprecation")
 	public AxisAlignedBB getBoundingBox(IBlockState state, IBlockAccess source, BlockPos pos){
 		if(this == ModBlocks.ladder_red_top){
 			return super.getBoundingBox(state, source, pos).setMaxY(0.25);

@@ -37,7 +37,6 @@ public class BlockHazard extends Block implements IItemHazard {
 	ItemHazardModule module;
 	
 	private float radIn = 0.0F;
-	private float radMax = 0.0F;
 	private float rad3d = 0.0F;
 	private ExtDisplayEffect extEffect = null;
 	
@@ -153,7 +152,6 @@ public class BlockHazard extends Block implements IItemHazard {
 	public IItemHazard addRadiation(float radiation) {
 		this.getModule().addRadiation(radiation);
 		this.radIn = radiation * 0.1F;
-		this.radMax = radiation;
 		return this;
 	}
 

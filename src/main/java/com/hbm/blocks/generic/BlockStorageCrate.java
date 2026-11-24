@@ -148,9 +148,9 @@ public class BlockStorageCrate extends BlockContainer {
 			world.spawnEntity(entityitem);
 		}
 
-		this.dropInv = false;
+		BlockStorageCrate.dropInv = false;
 		boolean flag = world.setBlockToAir(pos);
-		this.dropInv = true;
+		BlockStorageCrate.dropInv = true;
 		return flag;
 	}
 
@@ -161,7 +161,7 @@ public class BlockStorageCrate extends BlockContainer {
 
 	@Override
 	public void breakBlock(World worldIn, BlockPos pos, IBlockState state) {
-		if (this.dropInv) {
+		if (BlockStorageCrate.dropInv) {
 			InventoryHelper.dropInventoryItems(worldIn, pos, worldIn.getTileEntity(pos));
 		}
 		super.breakBlock(worldIn, pos, state);

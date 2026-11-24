@@ -1,12 +1,10 @@
 package com.hbm.blocks.network;
 
 import com.hbm.blocks.ModBlocks;
-import com.hbm.lib.ForgeDirection;
 import com.hbm.lib.InventoryHelper;
 import com.hbm.tileentity.network.TileEntityCraneBase;
 import com.hbm.tileentity.network.TileEntityCraneExtractor;
-import com.hbm.tileentity.network.TileEntityCraneInserter;
-import net.minecraft.block.BlockHorizontal;
+
 import net.minecraft.block.material.Material;
 import net.minecraft.block.state.IBlockState;
 import net.minecraft.tileentity.TileEntity;
@@ -42,5 +40,4 @@ public class CraneExtractor extends BlockCraneBase {
         }
         super.breakBlock(world, pos, state);
     }
-
 }

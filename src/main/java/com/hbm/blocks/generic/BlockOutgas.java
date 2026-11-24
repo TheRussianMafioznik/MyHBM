@@ -3,11 +3,10 @@ package com.hbm.blocks.generic;
 import java.util.Random;
 
 import com.hbm.blocks.ModBlocks;
-import com.hbm.interfaces.IItemHazard;
-import com.hbm.lib.ForgeDirection;
 import com.hbm.config.GeneralConfig;
-import com.hbm.saveddata.RadiationSavedData;
+import com.hbm.lib.ForgeDirection;
 import com.hbm.modules.ItemHazardModule;
+import com.hbm.saveddata.RadiationSavedData;
 
 import net.minecraft.block.Block;
 import net.minecraft.block.state.IBlockState;
@@ -17,7 +16,7 @@ import net.minecraft.util.EnumParticleTypes;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.World;
 
-public class BlockOutgas extends BlockNTMOre implements IItemHazard {
+public class BlockOutgas extends BlockNTMOre {
 	
 	boolean randomTick;
 	int rate;

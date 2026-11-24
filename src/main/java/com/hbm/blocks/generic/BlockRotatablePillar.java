@@ -37,7 +37,7 @@ public class BlockRotatablePillar extends BlockRotatedPillar {
 		if(stack.getItem() == Item.getItemFromBlock(ModBlocks.block_euphemium_cluster)){
 			tooltip.add(I18nUtil.resolveKey("tile.block_euphemium_cluster.desc"));
 		}
-		float hardness = this.getExplosionResistance(null);
+		float hardness = this.blockResistance / 5.0F;
 		if(hardness > 50){
 			tooltip.add("§6" + I18nUtil.resolveKey("trait.blastres", hardness));
 		}

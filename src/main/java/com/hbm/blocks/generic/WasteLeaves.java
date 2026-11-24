@@ -124,14 +124,15 @@ public class WasteLeaves extends BlockOldLeaf implements IItemHazard {
 		return Blocks.LEAVES.getRenderLayer();
 	}
 
-	@Override
+		@Override
 	public boolean isOpaqueCube(IBlockState state) {
-		return Blocks.LEAVES.isOpaqueCube(state);
+		return state.isOpaqueCube();
 	}
 
 	@Override
-  	public boolean shouldSideBeRendered(IBlockState blockState, IBlockAccess blockAccess, BlockPos pos, EnumFacing side) {
-		this.leavesFancy = !Blocks.LEAVES.isOpaqueCube(blockState);
+	@SuppressWarnings("deprecation")
+	public boolean shouldSideBeRendered(IBlockState blockState, IBlockAccess blockAccess, BlockPos pos, EnumFacing side) {
+		this.leavesFancy = !blockState.isOpaqueCube();
 		return super.shouldSideBeRendered(blockState, blockAccess, pos, side);
 	}
 

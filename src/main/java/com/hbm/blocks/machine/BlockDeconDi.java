@@ -20,7 +20,7 @@ import net.minecraftforge.fml.relauncher.SideOnly;
 
 public class BlockDeconDi extends BlockContainer {
 
-	public static float digammaRemove;
+	public float digammaRemove;
 	public BlockDeconDi(Material materialIn, String s, float digamma) {
 		super(materialIn);
 		this.setTranslationKey(s);

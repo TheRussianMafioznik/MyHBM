@@ -89,7 +89,7 @@ public class MachinePumpOcean extends BlockDummyable implements ILookOverlay, IT
 		if(!(te instanceof TileEntityMachinePumpOcean pump))
 			return;
 
-		List<String> text = new ArrayList();
+		List<String> text = new ArrayList<>();
 		text.add("§a-> §r" + String.format(Locale.US, "%,d", pump.power) + " / " + String.format(Locale.US, "%,d", TileEntityMachinePumpOcean.maxPower) + "HE");
 		text.add("§c<- §r" + (pump.tank.getFluid() != null ? pump.tank.getFluid().getLocalizedName() : "") + ": " + String.format(Locale.US, "%,d", pump.tank.getFluidAmount()) + " / " + String.format(Locale.US, "%,d", pump.tank.getCapacity()) + "mB");
 

@@ -211,6 +211,7 @@ import net.minecraft.util.BlockRenderLayer;
 import net.minecraft.util.SoundEvent;
 import net.minecraftforge.fml.common.registry.ForgeRegistries;
 
+@SuppressWarnings("deprecation")
 public class ModBlocks {
 
 	//present gui id: 126
@@ -567,17 +568,12 @@ public class ModBlocks {
 	public static final Block deco_rbmk_smooth = new BlockClean(Material.IRON, "deco_rbmk_smooth").setCreativeTab(MainRegistry.blockTab).setHardness(5.0F).setResistance(10.0F);
 
 	// Decorations
-//	public static final Block sign_deco_warning   = new BlockDecoSign("sign_deco_warning", 1.5F, 10.0F).setCreativeTab(MainRegistry.blockTab);
-//	public static final Block sign_deco_parasite_warning  = new BlockDecoSign("sign_deco_parasite_warning", 1.5F, 10.0F).setCreativeTab(MainRegistry.blockTab);
-//	public static final Block sign_deco_radiation_warning = new BlockDecoSign("sign_deco_radiation_warning", 1.5F, 10.0F).setCreativeTab(MainRegistry.blockTab);
-
 
 	public static final Block spinny_light = new BlockSpinnyLight(Material.IRON, "spinny_light").setCreativeTab(MainRegistry.blockTab).setHardness(5.0F).setResistance(5.0F);
 	
 	public static final Block hazmat = new BlockRadResistant(Material.CLOTH, "hazmat").setSoundType(SoundType.CLOTH).setCreativeTab(MainRegistry.blockTab).setHardness(15.0F).setResistance(100.0F);
 	
 	public static final Block tape_recorder = new DecoTapeRecorder(Material.IRON, "tape_recorder").setCreativeTab(MainRegistry.blockTab).setHardness(5.0F).setResistance(15.0F);
-	//Drillgon200: Thank god there was an obj file for this.
 	public static final Block steel_poles = new DecoSteelPoles(Material.IRON, "steel_poles").setCreativeTab(MainRegistry.blockTab).setHardness(5.0F).setResistance(15.0F);
 	public static final Block pole_top = new DecoPoleTop(Material.IRON, "pole_top").setCreativeTab(MainRegistry.blockTab).setHardness(5.0F).setResistance(15.0F);
 	public static final Block pole_satellite_receiver = new DecoPoleSatelliteReceiver(Material.IRON, "pole_satellite_receiver").setCreativeTab(MainRegistry.blockTab).setHardness(5.0F).setResistance(15.0F);

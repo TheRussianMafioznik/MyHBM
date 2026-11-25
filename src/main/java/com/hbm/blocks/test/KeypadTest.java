@@ -40,6 +40,7 @@ public class KeypadTest extends BlockContainer {
 	}
 
 	@Override
+	@SuppressWarnings("deprecation")
 	public AxisAlignedBB getSelectedBoundingBox(IBlockState state, World worldIn, BlockPos pos) {
 		TileEntityKeypadBase te = (TileEntityKeypadBase) worldIn.getTileEntity(pos);
 		AxisAlignedBB key = te.keypad.client().rayTrace(pos);

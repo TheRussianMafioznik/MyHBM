@@ -3,7 +3,6 @@ package com.hbm.config;
 import java.util.HashSet;
 
 import net.minecraftforge.common.config.Configuration;
-import net.minecraftforge.common.config.Property;
 
 public class PotionConfig {
 
@@ -13,7 +12,7 @@ public class PotionConfig {
 
 	public static void loadFromConfig(Configuration config){
 		final String CATEGORY_POTION = "08_potion_effects";
-		potionBlacklist = CommonConfig.createConfigHashSet(config, CATEGORY_POTION, "08.01_hazmatPotionBlacklist", "List of Potions that get blocked while wearing a hazmat suit with bacteria protection - <potion> (String)", "String", new String[]{
+		potionBlacklist = CommonConfig.createConfigStringSet(config, CATEGORY_POTION, "08.01_hazmatPotionBlacklist", "List of Potions that get blocked while wearing a hazmat suit with bacteria protection - <potion> (String)", new String[]{
 			"srparasites:coth",
 			"srparasites:viral"
 		});

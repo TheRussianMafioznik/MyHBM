@@ -8,7 +8,6 @@ import com.hbm.blocks.ITooltipProvider;
 import com.hbm.blocks.ModBlocks;
 import com.hbm.lib.Library;
 import com.hbm.main.MainRegistry;
-import com.hbm.tileentity.IBufPacketReceiver;
 import com.hbm.tileentity.network.energy.TileEntityCableBaseNT;
 import com.hbm.util.I18nUtil;
 
@@ -125,7 +124,7 @@ public class BlockCableGauge extends BlockContainer implements ILookOverlay, ITo
 	}
 
     @Optional.InterfaceList({@Optional.Interface(iface = "li.cil.oc.api.network.SimpleComponent", modid = "OpenComputers")})
-	public static class TileEntityCableGauge extends TileEntityCableBaseNT implements IBufPacketReceiver, SimpleComponent {
+	public static class TileEntityCableGauge extends TileEntityCableBaseNT implements SimpleComponent {
 
 		private long lastMeasurement = 10;
 		private long deltaSecond = 0;

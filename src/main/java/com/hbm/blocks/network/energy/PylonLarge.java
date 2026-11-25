@@ -2,15 +2,14 @@ package com.hbm.blocks.network.energy;
 
 import java.util.List;
 
-import com.hbm.blocks.ModBlocks;
 import com.hbm.blocks.BlockDummyable;
 import com.hbm.blocks.ITooltipProvider;
 import com.hbm.tileentity.network.energy.TileEntityPylonBase;
 import com.hbm.tileentity.network.energy.TileEntityPylonLarge;
 
-import net.minecraft.client.util.ITooltipFlag;
 import net.minecraft.block.material.Material;
 import net.minecraft.block.state.IBlockState;
+import net.minecraft.client.util.ITooltipFlag;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.item.EnumDyeColor;
 import net.minecraft.item.ItemDye;
@@ -97,7 +96,7 @@ public class PylonLarge extends BlockDummyable implements ITooltipProvider {
     }
 
     public void addInformation(ItemStack stack, World worldIn, List<String> list, ITooltipFlag flagIn) {
-        this.addStandardInfo((List)list);
-        super.addInformation(stack, worldIn, (List)list, flagIn);
+        this.addStandardInfo(list);
+        super.addInformation(stack, worldIn, list, flagIn);
     }
 }

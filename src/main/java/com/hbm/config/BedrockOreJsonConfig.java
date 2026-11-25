@@ -2,25 +2,23 @@ package com.hbm.config;
 
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.List;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.List;
 
-import com.google.gson.Gson;
-import com.google.gson.JsonElement;
 import com.google.gson.JsonArray;
+import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.google.gson.stream.JsonWriter;
-
 import com.hbm.main.MainRegistry;
 
 public class BedrockOreJsonConfig {
 
 	public static final String bedrockOreJsonConfigFile = "hbm_bedrock_ores.json";
 
-	public static HashMap<Integer, HashSet<String>> dimOres = new HashMap();
-	public static HashMap<Integer, Boolean> dimWhiteList = new HashMap();
-	public static HashMap<Integer, Integer> dimOreRarity = new HashMap();
+	public static HashMap<Integer, HashSet<String>> dimOres = new HashMap<>();
+	public static HashMap<Integer, Boolean> dimWhiteList = new HashMap<>();
+	public static HashMap<Integer, Integer> dimOreRarity = new HashMap<>();
 
 	public static void init(){
 		if(!loadFromJson()){
@@ -132,7 +130,7 @@ public class BedrockOreJsonConfig {
 	}
 
 	public static void addEntry(int dimID, int rarity, List<String> ores, Boolean isWhiteList){
-		HashSet<String> set = new HashSet();
+		HashSet<String> set = new HashSet<>();
 		for(String ore : ores)
 			set.add(ore);
 		dimOres.put(dimID, set);

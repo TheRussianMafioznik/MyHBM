@@ -179,9 +179,6 @@ public class EntityRADBeast extends EntityMob implements IRadiationImmune {
             return super.attackEntityAsMob(target);
         } else if(dist < 30.0F) {
 
-            double deltaX = target.posX - this.posX;
-            double deltaZ = target.posZ - this.posZ;
-
             if (this.idleTime == 0 && getAttackTarget() != null) {
 
             	RadiationSavedData.incrementRad(world, this.getPosition(), 150, 1000);

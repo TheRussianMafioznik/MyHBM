@@ -73,6 +73,7 @@ public class BlockAirDuct extends BlockContainer {
 	}
 
 	@Override
+	@SuppressWarnings("deprecation")
 	public void addCollisionBoxToList(IBlockState state, World world, BlockPos pos, AxisAlignedBB entityBox, List<AxisAlignedBB> collidingBoxes, Entity entity, boolean isActualState) {
 		addCollisionBoxToList(pos, entityBox, collidingBoxes, new AxisAlignedBB(MIN, MIN, MIN, MAX, MAX, MAX));
 		for(EnumFacing side : EnumFacing.VALUES)

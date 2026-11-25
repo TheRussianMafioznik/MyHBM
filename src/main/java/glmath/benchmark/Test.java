@@ -35,7 +35,6 @@ public class Test {
   public static void main(String[] args) {
     long ns = System.nanoTime(), largest; // warmup
     int i, pos;
-    float value;
     final LinkedList<Testresult> arrayResults = new LinkedList<>();
     final LinkedList<Testresult> bufferResults = new LinkedList<>();
     final LinkedList<Testresult> bufferDResults = new LinkedList<>();
@@ -126,7 +125,6 @@ public class Test {
     for (i = ITERARIONS; i > 0; --i) {
       buffer.rewind();
       for (pos = SIZE - 1; pos >= 0; --pos) {
-        value = buffer.get();
       }
     }
     bufferResults.add(new Testresult("Loop-get buffer", System.nanoTime() - ns));
@@ -135,7 +133,6 @@ public class Test {
     for (i = ITERARIONS; i > 0; --i) {
       buffer.rewind();
       for (pos = SIZE - 1; pos >= 0; --pos) {
-        value = buffer.get(pos);
       }
     }
     bufferResults.add(new Testresult("Index-get buffer", System.nanoTime() - ns));
@@ -190,7 +187,6 @@ public class Test {
     for (i = ITERARIONS; i > 0; --i) {
       bufferD.rewind();
       for (pos = SIZE - 1; pos >= 0; --pos) {
-        value = bufferD.get();
       }
     }
     bufferDResults.add(new Testresult("Loop-get bufferD", System.nanoTime() - ns));
@@ -199,7 +195,6 @@ public class Test {
     for (i = ITERARIONS; i > 0; --i) {
       bufferD.rewind();
       for (pos = SIZE - 1; pos >= 0; --pos) {
-        value = bufferD.get(pos);
       }
     }
     bufferDResults.add(new Testresult("Index-get bufferD", System.nanoTime() - ns));

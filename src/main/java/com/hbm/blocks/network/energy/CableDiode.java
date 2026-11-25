@@ -8,7 +8,6 @@ import com.hbm.blocks.ITooltipProvider;
 import com.hbm.blocks.ModBlocks;
 import com.hbm.lib.ForgeDirection;
 import com.hbm.lib.Library;
-import com.hbm.tileentity.IBufPacketReceiver;
 import com.hbm.tileentity.TileEntityLoadedBase;
 import com.hbm.util.I18nUtil;
 
@@ -127,11 +126,11 @@ public class CableDiode extends BlockContainer implements IEnergyConnectorBlock,
 		return false;
 	}
 
-	@Override
+		@Override
 	public void addInformation(ItemStack stack, World worldIn, List<String> list, ITooltipFlag flagIn) {
-        this.addStandardInfo((List)list);
-        super.addInformation(stack, worldIn, (List)list, flagIn);
-    }
+		this.addStandardInfo(list);
+		super.addInformation(stack, worldIn, list, flagIn);
+	}
 
 	@Override
 	public void printHook(Pre event, World world, int x, int y, int z) {
@@ -160,7 +159,7 @@ public class CableDiode extends BlockContainer implements IEnergyConnectorBlock,
 		return EnumBlockRenderType.MODEL;
 	}
 	
-	public static class TileEntityDiode extends TileEntityLoadedBase implements ITickable, IEnergyUser, IBufPacketReceiver {
+	public static class TileEntityDiode extends TileEntityLoadedBase implements ITickable, IEnergyUser {
 
 		@Override
 		public void serialize(ByteBuf buf) {

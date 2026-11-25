@@ -44,6 +44,7 @@ public class BlockFluidPipeSolid extends BlockFluidPipeBase {
 	}
 
 	@Override
+	@SuppressWarnings("deprecation")
 	public void addCollisionBoxToList(IBlockState state, World worldIn, BlockPos pos, AxisAlignedBB entityBox, List<AxisAlignedBB> collidingBoxes, @Nullable Entity entityIn, boolean isActualState) {
 		Block.addCollisionBoxToList(pos, entityBox, collidingBoxes, Block.FULL_BLOCK_AABB);
 	}

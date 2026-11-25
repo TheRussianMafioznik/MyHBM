@@ -39,7 +39,7 @@ public class WireCoatedRadResistant extends WireCoated implements IRadResistantB
 	public void addInformation(ItemStack stack, World player, List<String> tooltip, ITooltipFlag advanced) {
 		super.addInformation(stack, player, tooltip, advanced);
 		tooltip.add("§2[Radiation Shielding]§r");
-		float hardness = this.getExplosionResistance(null);
+		float hardness = this.blockResistance / 0.5F;
 		if(hardness > 50){
 			tooltip.add("§6Blast Resistance: "+hardness+"§r");
 		}

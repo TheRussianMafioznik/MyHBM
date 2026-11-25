@@ -51,7 +51,7 @@ public class EntityNukeTorex extends Entity implements IConstantRenderer {
 	public double rollerSize = 1;
 	public double heat = 1;
 	public double lastSpawnY = -1;
-	public ArrayList<Cloudlet> cloudlets = new ArrayList();
+	public ArrayList<Cloudlet> cloudlets = new ArrayList<>();
 	public int maxAge = 1000;
 	public float humidity = -1;
 

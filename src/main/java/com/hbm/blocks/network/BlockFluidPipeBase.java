@@ -177,6 +177,7 @@ public abstract class BlockFluidPipeBase extends BlockContainer implements ILook
     }
 
     @Override
+    @SuppressWarnings("deprecation")
     public void addCollisionBoxToList(IBlockState state, World worldIn, BlockPos pos, AxisAlignedBB entityBox,
                                       List<AxisAlignedBB> collidingBoxes, @Nullable Entity entityIn, boolean isActualState) {
         for (AxisAlignedBB aabb : getPipeBoxes(worldIn, pos)) {

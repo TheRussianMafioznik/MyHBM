@@ -5,6 +5,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import com.hbm.blocks.ModBlocks;
+import com.hbm.blocks.generic.BlockHazardMeta;
 import com.hbm.blocks.generic.WasteLog;
 import com.hbm.config.BombConfig;
 import com.hbm.config.CompatibilityConfig;
@@ -208,22 +209,23 @@ public class EntityFalloutUnderGround extends Entity implements IConstantRendere
 			Block bblock = b.getBlock();
 
 			if(bblock instanceof BlockStone || bblock == Blocks.COBBLESTONE) {
-				double ranDist = l * (1D + world.rand.nextDouble()*0.1D);
-				if(ranDist > s1)
-					world.setBlockState(pos, ModBlocks.sellafield_slaked.getStateFromMeta(world.rand.nextInt(4)));
-				else if(ranDist > s2)
-					world.setBlockState(pos, ModBlocks.sellafield_0.getStateFromMeta(world.rand.nextInt(4)));
-				else if(ranDist > s3)
-					world.setBlockState(pos, ModBlocks.sellafield_1.getStateFromMeta(world.rand.nextInt(4)));
-				else if(ranDist > s4)
-					world.setBlockState(pos, ModBlocks.sellafield_2.getStateFromMeta(world.rand.nextInt(4)));
-				else if(ranDist > s5)
-					world.setBlockState(pos, ModBlocks.sellafield_3.getStateFromMeta(world.rand.nextInt(4)));
-				else if(ranDist > s6)
-					world.setBlockState(pos, ModBlocks.sellafield_4.getStateFromMeta(world.rand.nextInt(4)));
-				else if(ranDist <= s6)
-					world.setBlockState(pos, ModBlocks.sellafield_core.getStateFromMeta(world.rand.nextInt(4)));
-				return;
+			double ranDist = l * (1D + world.rand.nextDouble() * 0.1D);
+			int variant = world.rand.nextInt(4);
+			if(ranDist > s1)
+				world.setBlockState(pos, ModBlocks.sellafield_slaked.getDefaultState().withProperty(BlockHazardMeta.META, variant));
+			else if(ranDist > s2)
+				world.setBlockState(pos, ModBlocks.sellafield_0.getDefaultState().withProperty(BlockHazardMeta.META, variant));
+			else if(ranDist > s3)
+				world.setBlockState(pos, ModBlocks.sellafield_1.getDefaultState().withProperty(BlockHazardMeta.META, variant));
+			else if(ranDist > s4)
+				world.setBlockState(pos, ModBlocks.sellafield_2.getDefaultState().withProperty(BlockHazardMeta.META, variant));
+			else if(ranDist > s5)
+				world.setBlockState(pos, ModBlocks.sellafield_3.getDefaultState().withProperty(BlockHazardMeta.META, variant));
+			else if(ranDist > s6)
+				world.setBlockState(pos, ModBlocks.sellafield_4.getDefaultState().withProperty(BlockHazardMeta.META, variant));
+			else if(ranDist <= s6)
+				world.setBlockState(pos, ModBlocks.sellafield_core.getDefaultState().withProperty(BlockHazardMeta.META, variant));
+			return;
 
 			} else if(bblock == Blocks.BEDROCK || bblock == ModBlocks.ore_bedrock_oil || bblock == ModBlocks.ore_bedrock_block){
 				if(world.isAirBlock(pos.up())) world.setBlockState(pos.up(), ModBlocks.toxic_block.getDefaultState());
@@ -384,6 +386,7 @@ public class EntityFalloutUnderGround extends Entity implements IConstantRendere
 		}
 	}
 
+	@SuppressWarnings("deprecation")
 	public void placeBlockFromDist(double dist, Block b, BlockPos pos){
 		double ranDist = dist * (1D + world.rand.nextDouble()*0.2);
 		if(ranDist > s1)

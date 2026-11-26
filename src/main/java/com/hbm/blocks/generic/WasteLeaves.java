@@ -126,7 +126,7 @@ public class WasteLeaves extends BlockOldLeaf implements IItemHazard {
 
 		@Override
 	public boolean isOpaqueCube(IBlockState state) {
-		return state.isOpaqueCube();
+		return false;
 	}
 
 	@Override

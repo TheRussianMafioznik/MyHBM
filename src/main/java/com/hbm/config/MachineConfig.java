@@ -41,7 +41,7 @@ public class MachineConfig {
 
 	public static int uuMixerFluidRatio = 100;
 	public static boolean uuMixerFluidListIsWhitelist = false;
-	public static HashSet blacklistedMixerFluids;
+	public static HashSet<String> blacklistedMixerFluids;
 
 	public static int crateByteSize = 8;
 

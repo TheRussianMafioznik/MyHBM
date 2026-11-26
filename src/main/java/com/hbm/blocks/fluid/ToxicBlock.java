@@ -3,6 +3,7 @@ package com.hbm.blocks.fluid;
 import java.util.Random;
 
 import com.hbm.blocks.ModBlocks;
+import com.hbm.blocks.generic.BlockHazardMeta;
 import com.hbm.saveddata.RadiationSavedData;
 import com.hbm.util.ContaminationUtil;
 import com.hbm.util.ContaminationUtil.ContaminationType;
@@ -77,15 +78,15 @@ public class ToxicBlock extends BlockFluidClassic {
 		super.updateTick(world, pos, state, rand);
 	}
 
-	@SuppressWarnings("deprecation")
-	private IBlockState getRandomSellafite(World world){
+	private IBlockState getRandomSellafite(World world) {
 		int n = world.rand.nextInt(100);
-		if(n < 2) return ModBlocks.sellafield_core.getStateFromMeta(world.rand.nextInt(4));
-		if(n < 20) return ModBlocks.sellafield_4.getStateFromMeta(world.rand.nextInt(4));
-		if(n < 60) return ModBlocks.sellafield_3.getStateFromMeta(world.rand.nextInt(4));
-		return ModBlocks.sellafield_2.getStateFromMeta(world.rand.nextInt(4));
+		int variant = world.rand.nextInt(4);
+		if(n < 2) return ModBlocks.sellafield_core.getDefaultState().withProperty(BlockHazardMeta.META, variant);
+		if(n < 20) return ModBlocks.sellafield_4.getDefaultState().withProperty(BlockHazardMeta.META, variant);
+		if(n < 60) return ModBlocks.sellafield_3.getDefaultState().withProperty(BlockHazardMeta.META, variant);
+		return ModBlocks.sellafield_2.getDefaultState().withProperty(BlockHazardMeta.META, variant);
 	}
-	
+
 	public boolean reactToBlocks(World world, BlockPos pos) {
 		if(!world.isBlockLoaded(pos)) return false;
 		if(world.getBlockState(pos).getMaterial() != ModBlocks.fluidtoxic) {

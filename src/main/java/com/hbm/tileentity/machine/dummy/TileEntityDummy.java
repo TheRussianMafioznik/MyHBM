@@ -3,6 +3,7 @@ package com.hbm.tileentity.machine.dummy;
 import com.hbm.handler.DummyBlockRegistry;
 import com.hbm.tileentity.TileEntityMachineBase;
 import net.minecraft.nbt.NBTTagCompound;
+import net.minecraft.network.NetworkManager;
 import net.minecraft.network.play.server.SPacketUpdateTileEntity;
 import net.minecraft.tileentity.TileEntity;
 import net.minecraft.util.ITickable;
@@ -37,6 +38,7 @@ public class TileEntityDummy extends TileEntity implements ITickable {
 		super.onChunkUnload();
 		unregisterDummy();
 	}
+
 	private void tryRegisterDummy() {
 		if (this.world == null || this.world.isRemote || this.target == null || this.isRegistered) {
 			return;
@@ -56,6 +58,7 @@ public class TileEntityDummy extends TileEntity implements ITickable {
 			DummyBlockRegistry.register(this.world, this.target, this.pos);
 			((TileEntityMachineBase) coreTE).dummyBlocks.add(this.pos);
 			this.isRegistered = true;
+			this.world.notifyNeighborsOfStateChange(this.pos, this.getBlockType(), false);
 		}
 	}
 
@@ -107,9 +110,23 @@ public class TileEntityDummy extends TileEntity implements ITickable {
 		return this.writeToNBT(new NBTTagCompound());
 	}
 
+	@Override
+	public void onDataPacket(NetworkManager net, SPacketUpdateTileEntity pkt) {
+		this.readFromNBT(pkt.getNbtCompound());
+		if (this.world != null && this.world.isRemote) {
+			this.world.notifyNeighborsOfStateChange(this.pos, this.getBlockType(), false);
+		}
+	}
+
+	@Override
+	public void handleUpdateTag(NBTTagCompound tag) {
+		this.readFromNBT(tag);
+	}
+
 	public final void setTarget(BlockPos corePos) {
 		this.target = corePos;
 		this.isRegistered = false;
+		this.markDirty();
 		tryRegisterDummy();
 	}
 

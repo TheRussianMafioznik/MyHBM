@@ -75,33 +75,41 @@ public class TileEntityMachineRefinery extends TileEntityMachineBase implements 
 		return "container.machineRefinery";
 	}
 
-	@Override
+		@Override
 	public void readFromNBT(NBTTagCompound nbt) {
+		super.readFromNBT(nbt);
 		if(nbt.hasKey("f")) {
-			this.tankTypes[0] = FluidRegistry.getFluid(nbt.getString("f"));
+			String fluidName = nbt.getString("f");
+			this.tankTypes[0] = fluidName.isEmpty() ? null : FluidRegistry.getFluid(fluidName);
 		}
 		power = nbt.getLong("power");
 		heat = nbt.getInteger("heat");
 		itemOutputTimer = nbt.getInteger("itemOutputTimer");
-		if(nbt.hasKey("tanks"))
+		if(nbt.hasKey("tanks")) {
 			FFUtils.deserializeTankArray(nbt.getTagList("tanks", 10), tanks);
-		super.readFromNBT(nbt);
+		}
+		for(int i = 0; i < tanks.length; i++) {
+			if(tanks[i].getFluid() != null) {
+				tankTypes[i] = tanks[i].getFluid().getFluid();
+			}
+		}
 	}
 
 	@Override
 	public NBTTagCompound writeToNBT(NBTTagCompound nbt) {
-		if(tankTypes[0] != null){
+		super.writeToNBT(nbt);
+		if(tankTypes[0] != null) {
 			nbt.setString("f", tankTypes[0].getName());
+		} else if(tanks[0].getFluid() != null) {
+			nbt.setString("f", tanks[0].getFluid().getFluid().getName());
 		} else {
-			if(tanks[0].getFluid() != null){
-				nbt.setString("f", tanks[0].getFluid().getFluid().getName());
-			}
+			nbt.setString("f", "");
 		}
 		nbt.setLong("power", power);
 		nbt.setInteger("heat", heat);
 		nbt.setInteger("itemOutputTimer", itemOutputTimer);
 		nbt.setTag("tanks", FFUtils.serializeTankArray(tanks));
-		return super.writeToNBT(nbt);
+		return nbt;
 	}
 
 	@Override
@@ -394,17 +402,20 @@ public class TileEntityMachineRefinery extends TileEntityMachineBase implements 
 		return new IFluidTankProperties[]{tanks[0].getTankProperties()[0], tanks[1].getTankProperties()[0], tanks[2].getTankProperties()[0], tanks[3].getTankProperties()[0], tanks[4].getTankProperties()[0]};
 	}
 
-	@Override
+		@Override
 	public int fill(FluidStack resource, boolean doFill) {
 		if(resource == null)
 			return 0;
 		if(tankTypes[0] != null && resource.getFluid() == tankTypes[0]) {
-			return tanks[0].fill(resource, doFill);
+			int filled = tanks[0].fill(resource, doFill);
+			if(filled > 0 && doFill) this.markDirty();
+			return filled;
 		}
-		if(tanks[0].getFluidAmount() == 0 && RefineryRecipes.getRecipe(resource.getFluid()) != null){
+		if(tanks[0].getFluidAmount() == 0 && RefineryRecipes.getRecipe(resource.getFluid()) != null) {
 			tankTypes[0] = resource.getFluid();
-			this.markDirty();
-			return tanks[0].fill(resource, doFill);
+			int filled = tanks[0].fill(resource, doFill);
+			if(doFill) this.markDirty();
+			return filled;
 		}
 		return 0;
 	}
@@ -413,31 +424,24 @@ public class TileEntityMachineRefinery extends TileEntityMachineBase implements 
 	public FluidStack drain(FluidStack resource, boolean doDrain) {
 		if(resource == null)
 			return null;
-		if (resource.isFluidEqual(tanks[1].getFluid())) {
-			return tanks[1].drain(resource.amount, doDrain);
-		}
-		if (resource.isFluidEqual(tanks[2].getFluid())) {
-			return tanks[2].drain(resource.amount, doDrain);
-		}
-		if (resource.isFluidEqual(tanks[3].getFluid())) {
-			return tanks[3].drain(resource.amount, doDrain);
-		}
-		if (resource.isFluidEqual(tanks[4].getFluid())) {
-			return tanks[4].drain(resource.amount, doDrain);
+		for(int i = 1; i <= 4; i++) {
+			if(resource.isFluidEqual(tanks[i].getFluid())) {
+				FluidStack drained = tanks[i].drain(resource.amount, doDrain);
+				if(drained != null && drained.amount > 0 && doDrain) this.markDirty();
+				return drained;
+			}
 		}
 		return null;
 	}
 
 	@Override
 	public FluidStack drain(int maxDrain, boolean doDrain) {
-		if (tanks[1].getFluid() != null) {
-			return tanks[1].drain(maxDrain, doDrain);
-		} else if(tanks[2].getFluid() != null){
-			return tanks[2].drain(maxDrain, doDrain);
-		} else if(tanks[3].getFluid() != null){
-			return tanks[3].drain(maxDrain, doDrain);
-		} else if(tanks[4].getFluid() != null){
-			return tanks[4].drain(maxDrain, doDrain);
+		for(int i = 1; i <= 4; i++) {
+			if(tanks[i].getFluid() != null) {
+				FluidStack drained = tanks[i].drain(maxDrain, doDrain);
+				if(drained != null && drained.amount > 0 && doDrain) this.markDirty();
+				return drained;
+			}
 		}
 		return null;
 	}

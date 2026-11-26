@@ -3,8 +3,6 @@ package com.hbm.entity.missile;
 import java.util.ArrayList;
 import java.util.List;
 
-import api.hbm.entity.IRadarDetectable;
-
 import com.hbm.config.BombConfig;
 import com.hbm.entity.effect.EntityNukeTorex;
 import com.hbm.entity.logic.EntityNukeExplosionMK5;
@@ -14,7 +12,7 @@ import com.hbm.explosion.ExplosionLarge;
 import com.hbm.interfaces.IConstantRenderer;
 import com.hbm.main.MainRegistry;
 
-import net.minecraft.entity.Entity;
+import api.hbm.entity.IRadarDetectable;
 import net.minecraft.entity.projectile.EntityThrowable;
 import net.minecraft.init.Blocks;
 import net.minecraft.network.datasync.DataParameter;

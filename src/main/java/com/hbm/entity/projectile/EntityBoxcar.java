@@ -2,9 +2,8 @@ package com.hbm.entity.projectile;
 
 import java.util.List;
 
-import com.hbm.config.CompatibilityConfig;
 import com.hbm.blocks.ModBlocks;
-import com.hbm.explosion.ExplosionLarge;
+import com.hbm.config.CompatibilityConfig;
 import com.hbm.interfaces.IConstantRenderer;
 import com.hbm.lib.HBMSoundHandler;
 import com.hbm.lib.ModDamageSource;

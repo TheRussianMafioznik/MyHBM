@@ -5,7 +5,6 @@ import java.util.List;
 
 import com.hbm.blocks.ModBlocks;
 import com.hbm.blocks.bomb.BlockTaint;
-import com.hbm.interfaces.IConstantRenderer;
 import com.hbm.config.BombConfig;
 import com.hbm.entity.effect.EntityNukeTorex;
 import com.hbm.entity.logic.EntityBalefire;
@@ -14,19 +13,20 @@ import com.hbm.entity.logic.IChunkLoader;
 import com.hbm.explosion.ExplosionChaos;
 import com.hbm.explosion.ExplosionLarge;
 import com.hbm.handler.MissileStruct;
+import com.hbm.interfaces.IConstantRenderer;
 import com.hbm.items.weapon.ItemMissile;
 import com.hbm.items.weapon.ItemMissile.FuelType;
 import com.hbm.items.weapon.ItemMissile.PartSize;
 import com.hbm.items.weapon.ItemMissile.WarheadType;
 import com.hbm.main.MainRegistry;
-import com.hbm.packet.PacketDispatcher;
 import com.hbm.packet.LoopedEntitySoundPacket;
+import com.hbm.packet.PacketDispatcher;
 import com.hbm.render.amlfrom1710.Vec3;
 
 import api.hbm.entity.IRadarDetectable;
+import net.minecraft.block.Block;
 import net.minecraft.entity.Entity;
 import net.minecraft.init.Blocks;
-import net.minecraft.block.Block;
 import net.minecraft.item.Item;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.network.datasync.DataParameter;
@@ -417,7 +417,6 @@ public class EntityMissileCustom extends Entity implements IChunkLoader, IRadarD
 		
 		WarheadType type = (WarheadType)template.warhead.attributes[0];
 		float strength = (Float)template.warhead.attributes[1];
-		int maxLifetime = (int)Math.max(100, 5 * 48 * (Math.pow(strength, 3)/Math.pow(48, 3)));
 		switch(type) {
 		case HE:
 			ExplosionLarge.explode(world, posX, posY, posZ, strength, true, false, true);

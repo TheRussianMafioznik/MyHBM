@@ -1,10 +1,8 @@
 package com.hbm.explosion;
 
-import com.hbm.blocks.generic.DecoBlockAlt;
 import com.hbm.blocks.ModBlocks;
+import com.hbm.blocks.generic.DecoBlockAlt;
 
-import net.minecraft.block.Block;
-import net.minecraft.init.Blocks;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.BlockPos.MutableBlockPos;

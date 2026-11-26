@@ -9,6 +9,7 @@ import java.util.List;
 import java.util.Set;
 
 import com.hbm.blocks.ModBlocks;
+import com.hbm.blocks.generic.BlockHazardMeta;
 import com.hbm.blocks.generic.WasteLog;
 import com.hbm.config.BombConfig;
 import com.hbm.config.CompatibilityConfig;
@@ -296,7 +297,7 @@ public class EntityFalloutRain extends Entity implements IConstantRenderer, IChu
 			Block b = state.getBlock();
 			if(!b.isReplaceable(world, pos)){
 
-				float hardness = b.getExplosionResistance(null);
+				float hardness = b.getExplosionResistance(world, pos, null, null);
 				if(hardness >= 0 && hardness < 50 && !b.hasTileEntity(state)){
 					if(i != bottomHeight){
 						gapPos.setY(bottomHeight);
@@ -407,22 +408,23 @@ public class EntityFalloutRain extends Entity implements IConstantRenderer, IChu
 				continue;
 			}
 
-			else if(bblock instanceof BlockStone || bblock == Blocks.COBBLESTONE) {
-				double ranDist = dist * (1D + world.rand.nextDouble()*0.1D);
-				if(ranDist > s1 || stoneDepth==maxStoneDepth)
-					world.setBlockState(pos, ModBlocks.sellafield_slaked.getStateFromMeta(world.rand.nextInt(4)));
-				else if(ranDist > s2 || stoneDepth==maxStoneDepth-1)
-					world.setBlockState(pos, ModBlocks.sellafield_0.getStateFromMeta(world.rand.nextInt(4)));
-				else if(ranDist > s3 || stoneDepth==maxStoneDepth-2)
-					world.setBlockState(pos, ModBlocks.sellafield_1.getStateFromMeta(world.rand.nextInt(4)));
-				else if(ranDist > s4 || stoneDepth==maxStoneDepth-3)
-					world.setBlockState(pos, ModBlocks.sellafield_2.getStateFromMeta(world.rand.nextInt(4)));
-				else if(ranDist > s5 || stoneDepth==maxStoneDepth-4)
-					world.setBlockState(pos, ModBlocks.sellafield_3.getStateFromMeta(world.rand.nextInt(4)));
-				else if(ranDist > s6 || stoneDepth==maxStoneDepth-5)
-					world.setBlockState(pos, ModBlocks.sellafield_4.getStateFromMeta(world.rand.nextInt(4)));
-				else if(ranDist <= s6 || stoneDepth==maxStoneDepth-6)
-					world.setBlockState(pos, ModBlocks.sellafield_core.getStateFromMeta(world.rand.nextInt(4)));
+						else if(bblock instanceof BlockStone || bblock == Blocks.COBBLESTONE) {
+				double ranDist = dist * (1D + world.rand.nextDouble() * 0.1D);
+				int variant = world.rand.nextInt(4);
+				if(ranDist > s1 || stoneDepth == maxStoneDepth)
+					world.setBlockState(pos, ModBlocks.sellafield_slaked.getDefaultState().withProperty(BlockHazardMeta.META, variant));
+				else if(ranDist > s2 || stoneDepth == maxStoneDepth - 1)
+					world.setBlockState(pos, ModBlocks.sellafield_0.getDefaultState().withProperty(BlockHazardMeta.META, variant));
+				else if(ranDist > s3 || stoneDepth == maxStoneDepth - 2)
+					world.setBlockState(pos, ModBlocks.sellafield_1.getDefaultState().withProperty(BlockHazardMeta.META, variant));
+				else if(ranDist > s4 || stoneDepth == maxStoneDepth - 3)
+					world.setBlockState(pos, ModBlocks.sellafield_2.getDefaultState().withProperty(BlockHazardMeta.META, variant));
+				else if(ranDist > s5 || stoneDepth == maxStoneDepth - 4)
+					world.setBlockState(pos, ModBlocks.sellafield_3.getDefaultState().withProperty(BlockHazardMeta.META, variant));
+				else if(ranDist > s6 || stoneDepth == maxStoneDepth - 5)
+					world.setBlockState(pos, ModBlocks.sellafield_4.getDefaultState().withProperty(BlockHazardMeta.META, variant));
+				else if(ranDist <= s6 || stoneDepth == maxStoneDepth - 6)
+					world.setBlockState(pos, ModBlocks.sellafield_core.getDefaultState().withProperty(BlockHazardMeta.META, variant));
 				else
 					break;
 				continue;
@@ -540,28 +542,28 @@ public class EntityFalloutRain extends Entity implements IConstantRenderer, IChu
 					world.setBlockState(pos, ModBlocks.waste_planks.getDefaultState());
 				continue;
 			}
-			else if(b.getBlock() == ModBlocks.sellafield_4) {
-				world.setBlockState(pos, ModBlocks.sellafield_core.getStateFromMeta(world.rand.nextInt(4)));
+						else if(b.getBlock() == ModBlocks.sellafield_4) {
+				world.setBlockState(pos, ModBlocks.sellafield_core.getDefaultState().withProperty(BlockHazardMeta.META, world.rand.nextInt(4)));
 				continue;
 			}
 			else if(b.getBlock() == ModBlocks.sellafield_3) {
-				world.setBlockState(pos, ModBlocks.sellafield_4.getStateFromMeta(world.rand.nextInt(4)));
+				world.setBlockState(pos, ModBlocks.sellafield_4.getDefaultState().withProperty(BlockHazardMeta.META, world.rand.nextInt(4)));
 				continue;
 			}
 			else if(b.getBlock() == ModBlocks.sellafield_2) {
-				world.setBlockState(pos, ModBlocks.sellafield_3.getStateFromMeta(world.rand.nextInt(4)));
+				world.setBlockState(pos, ModBlocks.sellafield_3.getDefaultState().withProperty(BlockHazardMeta.META, world.rand.nextInt(4)));
 				continue;
 			}
 			else if(b.getBlock() == ModBlocks.sellafield_1) {
-				world.setBlockState(pos, ModBlocks.sellafield_2.getStateFromMeta(world.rand.nextInt(4)));
+				world.setBlockState(pos, ModBlocks.sellafield_2.getDefaultState().withProperty(BlockHazardMeta.META, world.rand.nextInt(4)));
 				continue;
 			}
 			else if(b.getBlock() == ModBlocks.sellafield_0) {
-				world.setBlockState(pos, ModBlocks.sellafield_1.getStateFromMeta(world.rand.nextInt(4)));
+				world.setBlockState(pos, ModBlocks.sellafield_1.getDefaultState().withProperty(BlockHazardMeta.META, world.rand.nextInt(4)));
 				continue;
 			}
 			else if(b.getBlock() == ModBlocks.sellafield_slaked) {
-				world.setBlockState(pos, ModBlocks.sellafield_0.getStateFromMeta(world.rand.nextInt(4)));
+				world.setBlockState(pos, ModBlocks.sellafield_0.getDefaultState().withProperty(BlockHazardMeta.META, world.rand.nextInt(4)));
 				continue;
 			}
 			else if(b.getBlock() == Blocks.VINE) {
@@ -605,9 +607,9 @@ public class EntityFalloutRain extends Entity implements IConstantRenderer, IChu
 				break;
 				// this piece stops the "stomp" from reaching below ground
 			} 
-			else if(bblock.getExplosionResistance(null) > 300){
+				else if(bblock.getExplosionResistance(world, pos, null, null) > 300){
 				break;
-			}
+			    }
 		}
 		return new int[]{gapFound ? 1 : 0, lastGapHeight, contactHeight};
 	}
@@ -616,7 +618,6 @@ public class EntityFalloutRain extends Entity implements IConstantRenderer, IChu
 		int stoneDepth = 0;
 		int maxStoneDepth = 6;
 
-		boolean lastReachedStone = false;
 		boolean reachedStone = false;
 		int contactHeight = 420;
 		int lastGapHeight = 420;
@@ -626,7 +627,6 @@ public class EntityFalloutRain extends Entity implements IConstantRenderer, IChu
 			IBlockState b = world.getBlockState(pos);
 			Block bblock = b.getBlock();
 			Material bmaterial = b.getMaterial();
-			lastReachedStone = reachedStone;
 
 			if(bblock.isCollidable() && contactHeight == 420)
 				contactHeight = Math.min(y+1, 255);
@@ -651,6 +651,7 @@ public class EntityFalloutRain extends Entity implements IConstantRenderer, IChu
 		return new int[]{gapFound ? 1 : 0, lastGapHeight, contactHeight};
 	}
 
+	@SuppressWarnings("deprecation")
 	public void placeBlockFromDist(double dist, Block b, BlockPos pos){
 		double ranDist = dist * (1D + world.rand.nextDouble()*0.2);
 		if(ranDist > s1)

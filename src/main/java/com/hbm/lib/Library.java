@@ -762,6 +762,10 @@ public class Library {
 
 		Block b = world.getBlockState(pos).getBlock();
 
+		if(b instanceof com.hbm.blocks.machine.HeaterFirebox || b instanceof com.hbm.blocks.machine.HeaterOven) {
+			return false;
+		}
+
 		if(b instanceof IEnergyConnectorBlock) {
 			IEnergyConnectorBlock con = (IEnergyConnectorBlock) b;
 

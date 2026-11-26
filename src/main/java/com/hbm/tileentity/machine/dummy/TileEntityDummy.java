@@ -39,17 +39,12 @@ public class TileEntityDummy extends TileEntity implements ITickable {
 		unregisterDummy();
 	}
 
-	private void tryRegisterDummy() {
+		private void tryRegisterDummy() {
 		if (this.world == null || this.world.isRemote || this.target == null || this.isRegistered) {
 			return;
 		}
 
 		if (!this.world.isBlockLoaded(this.target)) {
-			return;
-		}
-
-		if (this.world.isAirBlock(this.target)) {
-			this.world.setBlockState(this.pos, net.minecraft.init.Blocks.AIR.getDefaultState(), 2);
 			return;
 		}
 

@@ -1,7 +1,10 @@
 package com.hbm.handler.crt;
 
+import javax.annotation.Nullable;
+
 import com.hbm.inventory.PressRecipes;
 import com.hbm.inventory.RecipesCommon;
+
 import crafttweaker.CraftTweakerAPI;
 import crafttweaker.IAction;
 import crafttweaker.annotations.ZenRegister;
@@ -11,9 +14,6 @@ import crafttweaker.api.minecraft.CraftTweakerMC;
 import net.minecraft.item.ItemStack;
 import stanhebben.zenscript.annotations.ZenClass;
 import stanhebben.zenscript.annotations.ZenMethod;
-
-import javax.annotation.Nullable;
-import java.util.Arrays;
 
 @ZenRegister
 @ZenClass("mods.ntm.Press")

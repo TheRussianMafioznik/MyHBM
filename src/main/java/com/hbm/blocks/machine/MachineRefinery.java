@@ -104,36 +104,36 @@ public class MachineRefinery extends BlockContainer implements IMultiBlock {
 		super.breakBlock(world, pos, state);
 	}
 	
-	@Override
+		@Override
 	public void onBlockPlacedBy(World world, BlockPos pos, IBlockState state, EntityLivingBase placer, ItemStack stack) {
+		super.onBlockPlacedBy(world, pos, state, placer, stack);
+		if(world.isRemote) return;
+
 		if(MultiblockHandler.checkSpace(world, pos, MultiblockHandler.refineryDimensions)) {
 			MultiblockHandler.fillUp(world, pos, MultiblockHandler.refineryDimensions, ModBlocks.dummy_block_refinery);
-			 DummyBlockBase.safeBreak = true;
-			world.setBlockState(pos.add(1, 0, 1), ModBlocks.dummy_port_refinery.getDefaultState());
-			TileEntity te = world.getTileEntity(pos.add(1, 0, 1));
-			if(te instanceof TileEntityDummy) {
-				TileEntityDummy dummy = (TileEntityDummy)te;
-				dummy.setTarget(pos);
+			DummyBlockBase.safeBreak = true;
+
+			BlockPos[] portOffsets = new BlockPos[] {
+				pos.add(1, 0, 1),
+				pos.add(1, 0, -1),
+				pos.add(-1, 0, -1),
+				pos.add(-1, 0, 1)
+			};
+
+			for (BlockPos portPos : portOffsets) {
+				world.setBlockState(portPos, ModBlocks.dummy_port_refinery.getDefaultState(), 3);
+				TileEntity te = world.getTileEntity(portPos);
+				if (te instanceof TileEntityDummy) {
+					((TileEntityDummy) te).setTarget(pos);
+				}
 			}
-			world.setBlockState(pos.add(1, 0, -1), ModBlocks.dummy_port_refinery.getDefaultState());
-			TileEntity te2 = world.getTileEntity(pos.add(1, 0, -1));
-			if(te2 instanceof TileEntityDummy) {
-				TileEntityDummy dummy = (TileEntityDummy)te2;
-				dummy.setTarget(pos);
-			}
-			world.setBlockState(pos.add(-1, 0, -1), ModBlocks.dummy_port_refinery.getDefaultState());
-			TileEntity te3 = world.getTileEntity(pos.add(-1, 0, -1));
-			if(te3 instanceof TileEntityDummy) {
-				TileEntityDummy dummy = (TileEntityDummy)te3;
-				dummy.setTarget(pos);
-			}
-			world.setBlockState(pos.add(-1, 0, 1), ModBlocks.dummy_port_refinery.getDefaultState());
-			TileEntity te4 = world.getTileEntity(pos.add(-1, 0, 1));
-			if(te4 instanceof TileEntityDummy) {
-				TileEntityDummy dummy = (TileEntityDummy)te4;
-				dummy.setTarget(pos);
-			}
+
 			DummyBlockBase.safeBreak = false;
+
+			TileEntity coreTe = world.getTileEntity(pos);
+			if (coreTe != null) {
+				coreTe.markDirty();
+			}
 		} else {
 			world.destroyBlock(pos, true);
 		}

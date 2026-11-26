@@ -10,15 +10,12 @@ import com.hbm.entity.projectile.EntityOilSpill;
 import com.hbm.entity.projectile.EntityRubble;
 import com.hbm.entity.projectile.EntityShrapnel;
 import com.hbm.handler.threading.PacketThreading;
-import com.hbm.util.ContaminationUtil;
 import com.hbm.packet.AuxParticlePacketNT;
-import com.hbm.packet.PacketDispatcher;
 import com.hbm.render.amlfrom1710.Vec3;
-
+import com.hbm.util.ContaminationUtil;
+import net.minecraft.util.math.MathHelper;
 import net.minecraft.block.Block;
-import net.minecraft.block.BlockOldLeaf;
 import net.minecraft.block.state.IBlockState;
-import net.minecraft.entity.Entity;
 import net.minecraft.entity.item.EntityItem;
 import net.minecraft.init.Blocks;
 import net.minecraft.item.ItemStack;
@@ -106,59 +103,52 @@ public class ExplosionLarge {
 		}
 	}
 	
-	@SuppressWarnings("deprecation")
-	public static void jolt(World world, double posX, double posY, double posZ, double strength, int count, double vel) {
-		if(!CompatibilityConfig.isWarDim(world)){
+		public static void jolt(World world, double posX, double posY, double posZ, double strength, int count, double vel) {
+		if (world.isRemote || !CompatibilityConfig.isWarDim(world)) {
 			return;
 		}
-		for(int j = 0; j < count; j++) {
-			
-			double phi = rand.nextDouble() * (Math.PI * 2);
-			double costheta = rand.nextDouble() * 2 - 1;
-			double theta = Math.acos(costheta);
-			double x = Math.sin( theta) * Math.cos( phi );
-			double y = Math.sin( theta) * Math.sin( phi );
-			double z = Math.cos( theta );
-				
-			Vec3d vec = new Vec3d(x, y, z);
-			MutableBlockPos pos = new BlockPos.MutableBlockPos();
-			
-			for(int i = 0; i < strength; i ++) {
-				double x0 = posX + (vec.x * i);
-				double y0 = posY + (vec.y * i);
-				double z0 = posZ + (vec.z * i);
-				pos.setPos((int)x0, (int)y0, (int)z0);
-				
-				if(!world.isRemote) {
-					IBlockState blockstate = world.getBlockState(pos);
-					Block block = blockstate.getBlock();
-					if(blockstate.getMaterial().isLiquid()) {
-						world.setBlockToAir(pos);
-					}
-					
-					if(block != Blocks.AIR) {
-						
-						if(block.getExplosionResistance(null) > 70)
-							continue;
-			            
-			            EntityRubble rubble = new EntityRubble(world);
-						rubble.posX = x0 + 0.5F;
-						rubble.posY = y0 + 0.5F;
-						rubble.posZ = z0 + 0.5F;
-						rubble.setMetaBasedOnBlock(block, block.getMetaFromState(blockstate));
-						
-						Vec3d vec4 = new Vec3d(posX - rubble.posX, posY - rubble.posY, posZ - rubble.posZ);
-						vec4.normalize();
+		MutableBlockPos pos = new BlockPos.MutableBlockPos();
 
-						rubble.motionX = vec4.x * vel;
-						rubble.motionY = vec4.y * vel;
-						rubble.motionZ = vec4.z * vel;
-						
-						world.spawnEntity(rubble);
-					
-						world.setBlockToAir(pos);
-						break;
+		for (int j = 0; j < count; j++) {
+			double phi = rand.nextDouble() * (Math.PI * 2.0D);
+			double costheta = rand.nextDouble() * 2.0D - 1.0D;
+			double theta = Math.acos(costheta);
+			double sinTheta = Math.sin(theta);
+			double dx = sinTheta * Math.cos(phi);
+			double dy = sinTheta * Math.sin(phi);
+			double dz = Math.cos(theta);
+
+			for (int i = 0; strength > i; i++) {
+				double x0 = posX + (dx * i);
+				double y0 = posY + (dy * i);
+				double z0 = posZ + (dz * i);
+				pos.setPos(MathHelper.floor(x0), MathHelper.floor(y0), MathHelper.floor(z0));
+
+				IBlockState blockstate = world.getBlockState(pos);
+				Block block = blockstate.getBlock();
+				if (blockstate.getMaterial().isLiquid()) {
+					world.setBlockToAir(pos);
+				}
+
+				if (block != Blocks.AIR) {
+					if (block.getExplosionResistance(world, pos, null, null) > 70.0F) {
+						continue;
 					}
+
+					EntityRubble rubble = new EntityRubble(world);
+					rubble.posX = x0 + 0.5D;
+					rubble.posY = y0 + 0.5D;
+					rubble.posZ = z0 + 0.5D;
+					rubble.setMetaBasedOnBlock(block, block.getMetaFromState(blockstate));
+
+					Vec3d vec4 = new Vec3d(posX - rubble.posX, posY - rubble.posY, posZ - rubble.posZ).normalize();
+					rubble.motionX = vec4.x * vel;
+					rubble.motionY = vec4.y * vel;
+					rubble.motionZ = vec4.z * vel;
+
+					world.spawnEntity(rubble);
+					world.setBlockToAir(pos);
+					break;
 				}
 			}
 		}
@@ -194,21 +184,21 @@ public class ExplosionLarge {
 		}
 	}
 	
-	public static void spawnMissileDebris(World world, double x, double y, double z, double motionX, double motionY, double motionZ, double deviation, List<ItemStack> debris, ItemStack rareDrop) {
-		
-		if(debris != null) {
-			for(int i = 0; i < debris.size(); i++) {
-				if(debris.get(i) != null) {
-					int k = rand.nextInt(debris.get(i).getCount() + 1);
-					for(int j = 0; j < k; j++) {
-						EntityItem item = new EntityItem(world, x, y, z, new ItemStack(debris.get(i).getItem()));
+		public static void spawnMissileDebris(World world, double x, double y, double z, double motionX, double motionY, double motionZ, double deviation, List<ItemStack> debris, ItemStack rareDrop) {
+		if (debris != null) {
+			for (ItemStack stack : debris) {
+				if (stack != null && !stack.isEmpty()) {
+					int k = rand.nextInt(stack.getCount() + 1);
+					for (int j = 0; j < k; j++) {
+						ItemStack drop = stack.copy();
+						drop.setCount(1);
+						EntityItem item = new EntityItem(world, x, y, z, drop);
 						item.motionX = (motionX + rand.nextGaussian() * deviation) * 0.85;
 						item.motionY = (motionY + rand.nextGaussian() * deviation) * 0.85;
 						item.motionZ = (motionZ + rand.nextGaussian() * deviation) * 0.85;
-						item.posX = item.posX + item.motionX * 2;
-						item.posY = item.posY + item.motionY * 2;
-						item.posZ = item.posZ + item.motionZ * 2;
-						
+						item.posX += item.motionX * 2;
+						item.posY += item.motionY * 2;
+						item.posZ += item.motionZ * 2;
 						world.spawnEntity(item);
 					}
 				}

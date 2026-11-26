@@ -1,20 +1,15 @@
 package com.hbm.handler.crt;
 
-import crafttweaker.IAction;
+import com.hbm.inventory.CentrifugeRecipes;
+
 import crafttweaker.CraftTweakerAPI;
-import crafttweaker.api.minecraft.CraftTweakerMC;
-import crafttweaker.api.item.IIngredient;
-import crafttweaker.api.item.IItemStack;
+import crafttweaker.IAction;
 import crafttweaker.annotations.ZenRegister;
+import crafttweaker.api.item.IItemStack;
+import crafttweaker.api.minecraft.CraftTweakerMC;
+import net.minecraft.item.ItemStack;
 import stanhebben.zenscript.annotations.ZenClass;
 import stanhebben.zenscript.annotations.ZenMethod;
-
-import com.hbm.inventory.CentrifugeRecipes;
-import com.hbm.inventory.RecipesCommon.ComparableStack;
-
-import net.minecraft.init.Blocks;
-import net.minecraft.item.Item;
-import net.minecraft.item.ItemStack;
 
 @ZenRegister
 @ZenClass("mods.ntm.Centrifuge")
@@ -88,18 +83,4 @@ public class Centrifuge {
 	public static void removeRecipe(IItemStack output){
 		NTMCraftTweaker.postInitActions.add(new ActionRemoveRecipe(output));
 	}
-
-	//TEMPLATE
-	// public static class ActionAddFuel implements IAction{
-	// 	@Override
-	// 	public void apply(){
-		// if(){
-		// 		CraftTweakerAPI.logError();
-		// 		return;
-		// 	}
-	// 	}
-	// 	@Override
-	// 	public String describe(){
-		// return "";
-	// }
 }

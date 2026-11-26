@@ -2,14 +2,14 @@ package com.hbm.main;
 
 import java.nio.FloatBuffer;
 import java.nio.IntBuffer;
-import java.util.*;
+import java.util.ArrayDeque;
+import java.util.HashSet;
+import java.util.Iterator;
+import java.util.List;
 import java.util.Map.Entry;
+import java.util.Random;
+import java.util.Set;
 
-import com.hbm.blocks.generic.ItemBlockStorageCrate;
-import com.hbm.handler.*;
-import com.hbm.items.tool.ItemToolAbility;
-import net.minecraftforge.fml.common.gameevent.TickEvent;
-import net.minecraftforge.fml.relauncher.SideOnly;
 import org.lwjgl.input.Keyboard;
 import org.lwjgl.input.Mouse;
 import org.lwjgl.opengl.Display;
@@ -17,22 +17,25 @@ import org.lwjgl.opengl.GL11;
 import org.lwjgl.opengl.GL20;
 import org.lwjgl.util.glu.Project;
 
-import baubles.api.BaublesApi;
-
 import com.google.common.collect.Queues;
 import com.hbm.blocks.ILookOverlay;
 import com.hbm.blocks.ModBlocks;
 import com.hbm.blocks.generic.TrappedBrick.Trap;
 import com.hbm.capability.HbmCapability;
 import com.hbm.capability.HbmLivingProps;
-import com.hbm.capability.HbmLivingCapability.EntityHbmPropsProvider;
 import com.hbm.config.GeneralConfig;
 import com.hbm.entity.mob.EntityHunterChopper;
 import com.hbm.entity.projectile.EntityChopperMine;
 import com.hbm.entity.siege.SiegeTier;
-import com.hbm.flashlight.Flashlight;
 import com.hbm.forgefluid.HbmFluid;
 import com.hbm.forgefluid.HbmFluidContainer;
+import com.hbm.handler.ArmorModHandler;
+import com.hbm.handler.HTTPHandler;
+import com.hbm.handler.HazmatRegistry;
+import com.hbm.handler.HbmKeybinds;
+import com.hbm.handler.HbmShaderManager;
+import com.hbm.handler.HbmShaderManager2;
+import com.hbm.handler.JetpackHandler;
 import com.hbm.interfaces.IConstantRenderer;
 import com.hbm.interfaces.ICustomSelectionBox;
 import com.hbm.interfaces.IHasCustomModel;
@@ -41,7 +44,7 @@ import com.hbm.interfaces.IItemHUD;
 import com.hbm.interfaces.IPostRender;
 import com.hbm.interfaces.Spaghetti;
 import com.hbm.inventory.AssemblerRecipes;
-import com.hbm.inventory.BedrockOreRegistry;
+import com.hbm.inventory.ChemplantRecipes;
 import com.hbm.inventory.RecipesCommon.ComparableStack;
 import com.hbm.inventory.RecipesCommon.NbtComparableStack;
 import com.hbm.inventory.gui.GUIArmorTable;
@@ -62,20 +65,20 @@ import com.hbm.items.machine.ItemZirnoxRodDepleted;
 import com.hbm.items.special.ItemHot;
 import com.hbm.items.special.ItemWasteLong;
 import com.hbm.items.special.ItemWasteShort;
-import com.hbm.items.special.ItemBedrockOre;
 import com.hbm.items.special.weapon.GunB92;
 import com.hbm.items.tool.ItemFluidCanister;
 import com.hbm.items.tool.ItemGuideBook;
+import com.hbm.items.tool.ItemToolAbility;
 import com.hbm.items.weapon.ItemCrucible;
 import com.hbm.items.weapon.ItemGunBase;
 import com.hbm.items.weapon.ItemGunEgon;
 import com.hbm.items.weapon.ItemGunShotty;
 import com.hbm.items.weapon.ItemSwordCutter;
-import com.hbm.modules.ItemHazardModule;
 import com.hbm.lib.HBMSoundHandler;
 import com.hbm.lib.Library;
 import com.hbm.lib.RecoilHandler;
 import com.hbm.lib.RefStrings;
+import com.hbm.modules.ItemHazardModule;
 import com.hbm.packet.AuxButtonPacket;
 import com.hbm.packet.GunButtonPacket;
 import com.hbm.packet.MeathookJumpPacket;
@@ -130,19 +133,19 @@ import com.hbm.sound.MovingSoundChopperMine;
 import com.hbm.sound.MovingSoundCrashing;
 import com.hbm.sound.MovingSoundPlayerLoop;
 import com.hbm.sound.MovingSoundPlayerLoop.EnumHbmSound;
-import com.hbm.sound.MovingSoundXVL1456;
 import com.hbm.sound.MovingSoundRadarLoop;
+import com.hbm.sound.MovingSoundXVL1456;
 import com.hbm.tileentity.bomb.TileEntityNukeCustom;
 import com.hbm.tileentity.bomb.TileEntityNukeCustom.CustomNukeEntry;
 import com.hbm.tileentity.bomb.TileEntityNukeCustom.EnumEntryType;
 import com.hbm.tileentity.machine.rbmk.TileEntityRBMKBase;
-import com.hbm.inventory.ChemplantRecipes;
 import com.hbm.util.ArmorRegistry;
 import com.hbm.util.ArmorRegistry.HazardClass;
-import com.hbm.util.ContaminationUtil;
 import com.hbm.util.BobMathUtil;
+import com.hbm.util.ContaminationUtil;
 import com.hbm.util.I18nUtil;
 
+import baubles.api.BaublesApi;
 import glmath.glm.vec._2.Vec2;
 import net.minecraft.block.Block;
 import net.minecraft.block.state.IBlockState;
@@ -217,11 +220,13 @@ import net.minecraftforge.event.entity.player.ItemTooltipEvent;
 import net.minecraftforge.fml.common.FMLCommonHandler;
 import net.minecraftforge.fml.common.eventhandler.EventPriority;
 import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
+import net.minecraftforge.fml.common.gameevent.TickEvent;
 import net.minecraftforge.fml.common.gameevent.TickEvent.ClientTickEvent;
 import net.minecraftforge.fml.common.gameevent.TickEvent.Phase;
 import net.minecraftforge.fml.common.gameevent.TickEvent.RenderTickEvent;
 import net.minecraftforge.fml.common.network.FMLNetworkEvent.ClientDisconnectionFromServerEvent;
 import net.minecraftforge.fml.relauncher.Side;
+import net.minecraftforge.fml.relauncher.SideOnly;
 
 public class ModEventHandlerClient {
 
@@ -673,18 +678,13 @@ public class ModEventHandlerClient {
 	
 	@SubscribeEvent
 	public void itemColorsEvent(ColorHandlerEvent.Item evt) {
-		evt.getItemColors().registerItemColorHandler((ItemStack stack, int tintIndex) -> {
-			if(tintIndex == 1) {
-				int j = TrackType.getEnum(stack.getItemDamage()).getColor();
-
-				if(j < 0) {
-					j = 0xFFFFFF;
-				}
-
-				return j;
+				evt.getItemColors().registerItemColorHandler((ItemStack stack, int tintIndex) -> {
+			if(tintIndex == 0) {
+				return 0xC4845C;
 			}
 			return 0xFFFFFF;
-		}, ModItems.siren_track);
+		}, ModItems.waste_natural_uranium_hot, ModItems.waste_uranium_hot, ModItems.waste_u233_hot, ModItems.waste_u235_hot,
+		   ModItems.waste_plutonium_hot, ModItems.waste_thorium_hot, ModItems.waste_mox_hot, ModItems.waste_schrabidium_hot, ModItems.waste_zfb_mox_hot);
 	}
 
 	@SubscribeEvent
@@ -838,7 +838,6 @@ public class ModEventHandlerClient {
 			GL20.glUniform4f(GL20.glGetUniformLocation(HbmShaderManager.flashlightWorld, "colorMult"), 1.0F, 1.0F, 1.0F, 0.0F);
 
 			if(!sentUniforms) {
-				Flashlight.setUniforms();
 				sentUniforms = true;
 			}
 		}

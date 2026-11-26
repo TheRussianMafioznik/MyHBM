@@ -5,12 +5,14 @@ import com.hbm.tileentity.network.TileEntityCraneBase;
 import api.hbm.block.IConveyorBelt;
 import api.hbm.block.IEnterableBlock;
 import net.minecraft.block.Block;
+import net.minecraft.block.state.IBlockState;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.MoverType;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.tileentity.TileEntity;
 import net.minecraft.util.EnumFacing;
 import net.minecraft.util.math.BlockPos;
+import net.minecraft.util.math.MathHelper;
 import net.minecraft.util.math.Vec3d;
 import net.minecraft.world.World;
 import net.minecraftforge.fml.relauncher.Side;
@@ -25,8 +27,8 @@ public abstract class EntityMovingConveyorObject extends Entity {
     @SideOnly(Side.CLIENT) protected double velocityY;
     @SideOnly(Side.CLIENT) protected double velocityZ;
 
-    public EntityMovingConveyorObject(World p_i1582_1_) {
-        super(p_i1582_1_);
+    public EntityMovingConveyorObject(World worldIn) {
+        super(worldIn);
         this.noClip = true;
     }
 
@@ -35,18 +37,16 @@ public abstract class EntityMovingConveyorObject extends Entity {
         return true;
     }
 
-
-    public boolean canAttackWithItem() {
-        return true;
-    }
+    @Override
+public boolean canBeAttackedWithItem() {
+    return true;
+}
 
     @Override
     public boolean hitByEntity(Entity attacker) {
-
-        if(attacker instanceof EntityPlayer) {
+        if (attacker instanceof EntityPlayer) {
             this.setDead();
         }
-
         return false;
     }
 
@@ -57,8 +57,8 @@ public abstract class EntityMovingConveyorObject extends Entity {
 
     @Override
     public void onUpdate() {
-        if(world.isRemote) {
-            if(this.turnProgress > 0) {
+        if (world.isRemote) {
+            if (this.turnProgress > 0) {
                 double interpX = this.posX + (this.syncPosX - this.posX) / (double) this.turnProgress;
                 double interpY = this.posY + (this.syncPosY - this.posY) / (double) this.turnProgress;
                 double interpZ = this.posZ + (this.syncPosZ - this.posZ) / (double) this.turnProgress;
@@ -67,87 +67,86 @@ public abstract class EntityMovingConveyorObject extends Entity {
             } else {
                 this.setPosition(this.posX, this.posY, this.posZ);
             }
+            return;
         }
 
-        if(!world.isRemote) {
-            ticksExisted++;
+        ticksExisted++;
 
-            if(this.ticksExisted <= 5) {
+        if (this.ticksExisted <= 5) {
+            return;
+        }
+
+        int blockX = MathHelper.floor(posX);
+        int blockY = MathHelper.floor(posY);
+        int blockZ = MathHelper.floor(posZ);
+        BlockPos lastPos = new BlockPos(blockX, blockY, blockZ);
+        Block b = world.getBlockState(lastPos).getBlock();
+        Vec3d currentPos = new Vec3d(posX, posY, posZ);
+
+        boolean isOnConveyor = b instanceof IConveyorBelt && ((IConveyorBelt) b).canItemStay(world, blockX, blockY, blockZ, currentPos);
+
+        if (!isOnConveyor) {
+            if (onLeaveConveyor()) {
                 return;
             }
+        } else {
+            Vec3d target = ((IConveyorBelt) b).getTravelLocation(world, blockX, blockY, blockZ, currentPos, getMoveSpeed());
+            this.motionX = target.x - posX;
+            this.motionY = target.y - posY;
+            this.motionZ = target.z - posZ;
+        }
 
-            int blockX = (int) Math.floor(posX);
-            int blockY = (int) Math.floor(posY);
-            int blockZ = (int) Math.floor(posZ);
-            BlockPos blockPos = new BlockPos(blockX, blockY, blockZ);
-            Block b = world.getBlockState(blockPos).getBlock();
-            boolean isOnConveyor = b instanceof IConveyorBelt && ((IConveyorBelt) b).canItemStay(world, blockX, blockY, blockZ, new Vec3d(posX, posY, posZ));
+        this.move(MoverType.SELF, motionX, motionY, motionZ);
+        BlockPos newPos = new BlockPos(posX, posY, posZ);
 
-            if(!isOnConveyor) {
-                if(onLeaveConveyor()) {
-                    return;
-                }
-            } else {
-                Vec3d target = ((IConveyorBelt) b).getTravelLocation(world, blockX, blockY, blockZ, new Vec3d(posX, posY, posZ), getMoveSpeed());
-                this.motionX = target.x - posX;
-                this.motionY = target.y - posY;
-                this.motionZ = target.z - posZ;
-            }
+        if (!lastPos.equals(newPos)) {
+            IBlockState newState = world.getBlockState(newPos);
+            Block newBlock = newState.getBlock();
 
-            BlockPos lastPos = new BlockPos(posX, posY, posZ);
-            this.move(MoverType.SELF, motionX, motionY, motionZ);
-            BlockPos newPos = new BlockPos(posX, posY, posZ);
+            if (newBlock instanceof IEnterableBlock) {
+                IEnterableBlock enterable = (IEnterableBlock) newBlock;
+                EnumFacing dir = getEntryDirection(lastPos, newPos);
 
-            if(!lastPos.equals(newPos)) {
-                Block newBlock = world.getBlockState(newPos).getBlock();
-
-                if(newBlock instanceof IEnterableBlock) {
-                    IEnterableBlock enterable = (IEnterableBlock) newBlock;
-
-                    EnumFacing dir = null;
-
-                    if (lastPos.getX() > newPos.getX() && lastPos.getY() == newPos.getY() && lastPos.getZ() == newPos.getZ())
-                        dir = EnumFacing.EAST;
-                    else if (lastPos.getX() < newPos.getX() && lastPos.getY() == newPos.getY() && lastPos.getZ() == newPos.getZ())
-                        dir = EnumFacing.WEST;
-                    else if (lastPos.getX() == newPos.getX() && lastPos.getY() > newPos.getY() && lastPos.getZ() == newPos.getZ())
-                        dir = EnumFacing.UP;
-                    else if (lastPos.getX() == newPos.getX() && lastPos.getY() < newPos.getY() && lastPos.getZ() == newPos.getZ())
-                        dir = EnumFacing.DOWN;
-                    else if (lastPos.getX() == newPos.getX() && lastPos.getY() == newPos.getY() && lastPos.getZ() > newPos.getZ())
-                        dir = EnumFacing.SOUTH;
-                    else if (lastPos.getX() == newPos.getX() && lastPos.getY() == newPos.getY() && lastPos.getZ() < newPos.getZ())
-                        dir = EnumFacing.NORTH;
-
-                    TileEntity tileEntity = world.getTileEntity(newPos);
-                    if(tileEntity instanceof TileEntityCraneBase) {
-                        TileEntityCraneBase craneBase = (TileEntityCraneBase) tileEntity;
-                        EnumFacing inputSide = craneBase.getInputSide();
-                        if (dir == inputSide) {
-                            enterBlock(enterable, newPos, dir);
-                        }
-                    } else {
+                TileEntity tileEntity = world.getTileEntity(newPos);
+                if (tileEntity instanceof TileEntityCraneBase) {
+                    TileEntityCraneBase craneBase = (TileEntityCraneBase) tileEntity;
+                    if (dir == craneBase.getInputSide()) {
                         enterBlock(enterable, newPos, dir);
                     }
-
                 } else {
-                    if(!newBlock.getMaterial(world.getBlockState(newPos)).isSolid()) {
-                        newBlock = world.getBlockState(newPos.down()).getBlock();
-
-                        if(newBlock instanceof IEnterableBlock) {
-                            IEnterableBlock enterable = (IEnterableBlock) newBlock;
-                            enterBlockFalling(enterable, newPos);
-                        }
-                    }
+                    enterBlock(enterable, newPos, dir);
+                }
+            } else if (!newState.getMaterial().isSolid()) {
+                Block belowBlock = world.getBlockState(newPos.down()).getBlock();
+                if (belowBlock instanceof IEnterableBlock) {
+                    enterBlockFalling((IEnterableBlock) belowBlock, newPos);
                 }
             }
         }
     }
 
+    private EnumFacing getEntryDirection(BlockPos lastPos, BlockPos newPos) {
+        int dx = lastPos.getX() - newPos.getX();
+        int dy = lastPos.getY() - newPos.getY();
+        int dz = lastPos.getZ() - newPos.getZ();
+
+        if (dy == 0 && dz == 0) {
+            if (dx > 0) return EnumFacing.EAST;
+            if (dx < 0) return EnumFacing.WEST;
+        } else if (dx == 0 && dz == 0) {
+            if (dy > 0) return EnumFacing.UP;
+            if (dy < 0) return EnumFacing.DOWN;
+        } else if (dx == 0 && dy == 0) {
+            if (dz > 0) return EnumFacing.SOUTH;
+            if (dz < 0) return EnumFacing.NORTH;
+        }
+        return null;
+    }
+
     public abstract void enterBlock(IEnterableBlock enterable, BlockPos pos, EnumFacing dir);
 
     public void enterBlockFalling(IEnterableBlock enterable, BlockPos pos) {
-        this.enterBlock(enterable, pos.add(0, -1, 0), EnumFacing.UP);
+        this.enterBlock(enterable, pos.down(), EnumFacing.UP);
     }
 
     public abstract boolean onLeaveConveyor();
@@ -156,6 +155,7 @@ public abstract class EntityMovingConveyorObject extends Entity {
         return 0.0625D;
     }
 
+    @Override
     @SideOnly(Side.CLIENT)
     public void setVelocity(double motionX, double motionY, double motionZ) {
         this.velocityX = this.motionX = motionX;
@@ -163,15 +163,15 @@ public abstract class EntityMovingConveyorObject extends Entity {
         this.velocityZ = this.motionZ = motionZ;
     }
 
-    @SideOnly(Side.CLIENT)
-    public void setPositionAndRotation2(double x, double y, double z, float yaw, float pitch, int theNumberThree) {
-        this.syncPosX = x;
-        this.syncPosY = y;
-        this.syncPosZ = z;
-        this.turnProgress = theNumberThree + 2; //use 4-ply for extra smoothness
-        this.motionX = this.velocityX;
-        this.motionY = this.velocityY;
-        this.motionZ = this.velocityZ;
-    }
-
+    @Override
+@SideOnly(Side.CLIENT)
+public void setPositionAndRotationDirect(double x, double y, double z, float yaw, float pitch, int posRotationIncrements, boolean teleport) {
+    this.syncPosX = x;
+    this.syncPosY = y;
+    this.syncPosZ = z;
+    this.turnProgress = posRotationIncrements + 2;
+    this.motionX = this.velocityX;
+    this.motionY = this.velocityY;
+    this.motionZ = this.velocityZ;
+}
 }

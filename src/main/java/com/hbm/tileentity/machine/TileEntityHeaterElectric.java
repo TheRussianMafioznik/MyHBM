@@ -1,23 +1,22 @@
 package com.hbm.tileentity.machine;
 
+import javax.annotation.Nonnull;
+
 import com.hbm.blocks.BlockDummyable;
 import com.hbm.lib.ForgeDirection;
-import com.hbm.tileentity.IBufPacketReceiver;
 import com.hbm.tileentity.TileEntityLoadedBase;
 
 import api.hbm.energy.IEnergyUser;
 import api.hbm.tile.IHeatSource;
 import io.netty.buffer.ByteBuf;
-import net.minecraft.util.ITickable;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.tileentity.TileEntity;
+import net.minecraft.util.ITickable;
 import net.minecraft.util.math.AxisAlignedBB;
 import net.minecraftforge.fml.relauncher.Side;
 import net.minecraftforge.fml.relauncher.SideOnly;
 
-import javax.annotation.Nonnull;
-
-public class TileEntityHeaterElectric extends TileEntityLoadedBase implements IHeatSource, IEnergyUser, ITickable, IBufPacketReceiver {
+public class TileEntityHeaterElectric extends TileEntityLoadedBase implements IHeatSource, IEnergyUser, ITickable {
 	
 	public long power;
 	public int heatEnergy;
@@ -34,17 +33,17 @@ public class TileEntityHeaterElectric extends TileEntityLoadedBase implements IH
 				this.trySubscribe(world, pos.add(dir.offsetX * 3, 0, dir.offsetZ * 3), dir);
 			}
 			
-			this.heatEnergy *= 0.999;
-			
-			this.tryPullHeat();
+			final int maxSilentHeat = 2_000_000_000;
+
+			this.tryPullHeat(maxSilentHeat);
 
 			this.isOn = false;
-			if(setting > 0 && this.power >= this.getConsumption()) {
+			if(setting > 0 && this.heatEnergy < maxSilentHeat && this.power >= this.getConsumption()) {
 				this.power -= this.getConsumption();
-				this.heatEnergy += getHeatGen();
+				this.heatEnergy = (int) Math.min((long) this.heatEnergy + getHeatGen(), maxSilentHeat);
 				this.isOn = true;
 			}
-			
+
 			networkPackNT(25);
 		}
 	}
@@ -82,12 +81,14 @@ public class TileEntityHeaterElectric extends TileEntityLoadedBase implements IH
 		return nbt;
 	}
 	
-	protected void tryPullHeat() {
+		protected void tryPullHeat(int maxSilentHeat) {
+		if(this.heatEnergy >= maxSilentHeat) return;
 		TileEntity con = world.getTileEntity(pos.add(0, -1, 0));
 		
 		if(con instanceof IHeatSource) {
 			IHeatSource source = (IHeatSource) con;
-			this.heatEnergy += source.getHeatStored() * 0.85;
+			int pulled = (int) (source.getHeatStored() * 0.85);
+			this.heatEnergy = (int) Math.min((long) this.heatEnergy + pulled, maxSilentHeat);
 			source.useUpHeat(source.getHeatStored());
 		}
 	}

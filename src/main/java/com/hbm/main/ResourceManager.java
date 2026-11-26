@@ -67,7 +67,7 @@ public class ResourceManager {
 	
 			//zirnox
 	public static final ResourceLocation zirnox_tex = new ResourceLocation(RefStrings.MODID, "textures/models/machines/zirnox.png");
-	public static final IModelCustom zirnox = AdvancedModelLoader.loadModel(new ResourceLocation(RefStrings.MODID, "models/zirnox.obj"));
+	public static final IModelCustom zirnox = new HFRWavefrontObject(new ResourceLocation(RefStrings.MODID, "models/zirnox.obj")).asVBO();
 	public static final ResourceLocation zirnox_destroyed_tex = new ResourceLocation(RefStrings.MODID, "textures/models/machines/zirnox_destroyed.png");
 	public static final IModelCustom zirnox_destroyed = AdvancedModelLoader.loadModel(new ResourceLocation(RefStrings.MODID, "models/zirnox_destroyed.obj"));
 	public static final IModelCustom deb_zirnox_blank = AdvancedModelLoader.loadModel(new ResourceLocation(RefStrings.MODID, "models/zirnox/deb_blank.obj"));
@@ -77,7 +77,7 @@ public class ResourceManager {
 	public static final IModelCustom deb_zirnox_exchanger = AdvancedModelLoader.loadModel(new ResourceLocation(RefStrings.MODID, "models/zirnox/deb_exchanger.obj"));
 
 	//purex
-	public static final IModelCustom purex = AdvancedModelLoader.loadModel(new ResourceLocation(RefStrings.MODID, "models/machines/purex.obj"));
+	public static final IModelCustom purex = new HFRWavefrontObject(new ResourceLocation(RefStrings.MODID, "models/machines/purex.obj")).asVBO();
     public static final ResourceLocation purex_tex = new ResourceLocation(RefStrings.MODID, "textures/models/machines/purex.png");
 
 	//Small Reactor

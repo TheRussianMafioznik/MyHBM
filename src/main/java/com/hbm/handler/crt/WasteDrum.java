@@ -1,19 +1,15 @@
 package com.hbm.handler.crt;
 
-import crafttweaker.IAction;
-import crafttweaker.CraftTweakerAPI;
-import crafttweaker.api.minecraft.CraftTweakerMC;
-import crafttweaker.api.item.IIngredient;
-import crafttweaker.api.item.IItemStack;
-import crafttweaker.annotations.ZenRegister;
-import stanhebben.zenscript.annotations.ZenClass;
-import stanhebben.zenscript.annotations.ZenMethod;
-
 import com.hbm.inventory.WasteDrumRecipes;
 
-import net.minecraft.init.Blocks;
-import net.minecraft.item.Item;
+import crafttweaker.CraftTweakerAPI;
+import crafttweaker.IAction;
+import crafttweaker.annotations.ZenRegister;
+import crafttweaker.api.item.IItemStack;
+import crafttweaker.api.minecraft.CraftTweakerMC;
 import net.minecraft.item.ItemStack;
+import stanhebben.zenscript.annotations.ZenClass;
+import stanhebben.zenscript.annotations.ZenMethod;
 
 @ZenRegister
 @ZenClass("mods.ntm.WasteDrum")
@@ -48,18 +44,4 @@ public class WasteDrum {
 	public static void addRecipe(IItemStack input, IItemStack output){
 		NTMCraftTweaker.postInitActions.add(new ActionAddRecipe(input, output));
 	}
-
-	//TEMPLATE
-	// public static class ActionAddFuel implements IAction{
-	// 	@Override
-	// 	public void apply(){
-		// if(){
-		// 		CraftTweakerAPI.logError();
-		// 		return;
-		// 	}
-	// 	}
-	// 	@Override
-	// 	public String describe(){
-		// return "";
-	// }
 }

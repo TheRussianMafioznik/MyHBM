@@ -271,7 +271,7 @@ public class EntityNukeExplosionMK3 extends Entity implements IChunkLoader {
         }
 	}
 
-	public static HashMap<ATEntry, Long> at = new HashMap();
+	public static HashMap<ATEntry, Long> at = new HashMap<>();
 
 	private static void createParticle(World world, int dim, double x, double y, double z, float r, float g, float b) {
 		world.playSound(null, x+0.5D, y+0.5D, z+0.5D, HBMSoundHandler.ufoBlast, SoundCategory.HOSTILE, 15.0F, 1.0F);

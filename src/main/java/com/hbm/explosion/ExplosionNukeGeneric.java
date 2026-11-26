@@ -10,40 +10,34 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Random;
-import java.lang.NoClassDefFoundError;
 
 import org.apache.logging.log4j.Level;
 
-import com.hbm.config.CompatibilityConfig;
 import com.hbm.blocks.ModBlocks;
 import com.hbm.blocks.generic.WasteLog;
+import com.hbm.config.CompatibilityConfig;
 import com.hbm.config.VersatileConfig;
-import com.hbm.handler.ArmorUtil;
 import com.hbm.entity.effect.EntityBlackHole;
+import com.hbm.handler.ArmorUtil;
 import com.hbm.items.ModItems;
-import com.hbm.lib.Library;
-import com.hbm.lib.ModDamageSource;
 import com.hbm.main.MainRegistry;
-import com.hbm.tileentity.turret.TileEntityTurretBase;
-import api.hbm.energy.IEnergyUser;
 
+import api.hbm.energy.IEnergyUser;
 import cofh.redstoneflux.api.IEnergyProvider;
 import net.minecraft.block.Block;
-import net.minecraft.block.BlockLog;
-import net.minecraft.block.BlockHugeMushroom;
-import net.minecraft.block.BlockLiquid;
-import net.minecraft.block.BlockSand;
 import net.minecraft.block.BlockBush;
+import net.minecraft.block.BlockHugeMushroom;
 import net.minecraft.block.BlockIce;
+import net.minecraft.block.BlockLiquid;
+import net.minecraft.block.BlockLog;
+import net.minecraft.block.BlockSand;
 import net.minecraft.block.BlockSnow;
 import net.minecraft.block.BlockSnowBlock;
+import net.minecraft.block.BlockStone;
 import net.minecraft.block.material.Material;
 import net.minecraft.block.state.IBlockState;
 import net.minecraft.entity.Entity;
-import net.minecraft.entity.EntityLivingBase;
-import net.minecraft.entity.item.EntityItem;
 import net.minecraft.entity.player.EntityPlayer;
-import net.minecraft.entity.player.EntityPlayerMP;
 import net.minecraft.init.Blocks;
 import net.minecraft.tileentity.TileEntity;
 import net.minecraft.util.EnumFacing;
@@ -52,8 +46,6 @@ import net.minecraft.util.math.AxisAlignedBB;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.BlockPos.MutableBlockPos;
 import net.minecraft.util.math.MathHelper;
-import net.minecraft.util.math.Vec3d;
-import net.minecraft.world.GameType;
 import net.minecraft.world.World;
 import net.minecraftforge.energy.CapabilityEnergy;
 import net.minecraftforge.energy.IEnergyStorage;
@@ -229,6 +221,7 @@ public class ExplosionNukeGeneric {
 		}
 	}
 
+	@SuppressWarnings("deprecation")
 	public static void wasteDest(World world, BlockPos pos) {
 		if (!world.isRemote) {
 			int rand;
@@ -389,7 +382,7 @@ public class ExplosionNukeGeneric {
 			}
 		}
 	}
-
+    @SuppressWarnings("deprecation")
 	public static void wasteDestNoSchrab(World world, BlockPos pos) {
 		if (!world.isRemote) {
 			int rand;
@@ -560,7 +553,7 @@ public class ExplosionNukeGeneric {
 					lineCount ++;
 					if(currentLine.startsWith("#") || currentLine.length() == 0)
 						continue;
-					String[] blocks = currentLine.trim().split("|");
+					String[] blocks = currentLine.trim().split("\\|");
 					if(blocks.length != 2)
 						continue;
 					String[] modidBlock1 = blocks[0].split(":");
@@ -590,118 +583,54 @@ public class ExplosionNukeGeneric {
 	
 	public static Map<Block, Block> soliniumConfig = new HashMap<>();
 	
-	public static void solinium(World world, BlockPos pos) {
+		public static void solinium(World world, BlockPos pos) {
 		if (!world.isRemote) {
-			
-			IBlockState b = world.getBlockState(pos);
-			Material m = b.getMaterial();
-			
-			if(soliniumConfig.containsKey(b.getBlock())){
-				world.setBlockState(pos, soliniumConfig.get(b.getBlock()).getDefaultState());
-				return;
-			}
-			
-			if(b.getBlock() == ModBlocks.waste_earth) {
-				world.setBlockState(pos, Blocks.DIRT.getDefaultState());
+			Block block = world.getBlockState(pos).getBlock();
+
+			if (soliniumConfig.containsKey(block)) {
+				world.setBlockState(pos, soliniumConfig.get(block).getDefaultState());
 				return;
 			}
 
-			if(b.getBlock() == ModBlocks.waste_earth) {
+			if (block == ModBlocks.waste_earth) {
 				world.setBlockState(pos, Blocks.GRASS.getDefaultState());
-				return;
-			}
-
-			if(b.getBlock() == ModBlocks.waste_mycelium) {
+			} else if (block == ModBlocks.waste_mycelium) {
 				world.setBlockState(pos, Blocks.MYCELIUM.getDefaultState());
-				return;
-			}
-
-			if(b.getBlock() == ModBlocks.sellafield_slaked || b.getBlock() == ModBlocks.baleonitite_slaked) {
+			} else if (block == ModBlocks.sellafield_slaked || block == ModBlocks.baleonitite_slaked) {
 				world.setBlockState(pos, Blocks.STONE.getDefaultState());
-				return;
-			}
-
-			if(b.getBlock() == ModBlocks.sellafield_0 || b.getBlock() == ModBlocks.sellafield_1 || b.getBlock() == ModBlocks.baleonitite_0 || b.getBlock() == ModBlocks.baleonitite_1) {
-				world.setBlockState(pos, Blocks.STONE.getStateFromMeta(5));
-				return;
-			}
-
-			if(b.getBlock() == ModBlocks.sellafield_2 || b.getBlock() == ModBlocks.sellafield_3 || b.getBlock() == ModBlocks.baleonitite_2 || b.getBlock() == ModBlocks.baleonitite_3) {
-				world.setBlockState(pos, Blocks.STONE.getStateFromMeta(3));
-				return;
-			}
-
-			if(b.getBlock() == ModBlocks.sellafield_4 || b.getBlock() == ModBlocks.sellafield_core || b.getBlock() == ModBlocks.baleonitite_4 || b.getBlock() == ModBlocks.baleonitite_core) {
-				world.setBlockState(pos, Blocks.STONE.getStateFromMeta(1));
-				return;
-			}
-
-			if(b.getBlock() == ModBlocks.toxic_block) {
+			} else if (block == ModBlocks.sellafield_0 || block == ModBlocks.sellafield_1 || block == ModBlocks.baleonitite_0 || block == ModBlocks.baleonitite_1) {
+				world.setBlockState(pos, Blocks.STONE.getDefaultState().withProperty(BlockStone.VARIANT, BlockStone.EnumType.ANDESITE));
+			} else if (block == ModBlocks.sellafield_2 || block == ModBlocks.sellafield_3 || block == ModBlocks.baleonitite_2 || block == ModBlocks.baleonitite_3) {
+				world.setBlockState(pos, Blocks.STONE.getDefaultState().withProperty(BlockStone.VARIANT, BlockStone.EnumType.DIORITE));
+			} else if (block == ModBlocks.sellafield_4 || block == ModBlocks.sellafield_core || block == ModBlocks.baleonitite_4 || block == ModBlocks.baleonitite_core) {
+				world.setBlockState(pos, Blocks.STONE.getDefaultState().withProperty(BlockStone.VARIANT, BlockStone.EnumType.GRANITE));
+			} else if (block == ModBlocks.toxic_block) {
 				world.setBlockToAir(pos);
-				return;
-			}
-
-			if(b.getBlock() == ModBlocks.waste_trinitite || b.getBlock() == ModBlocks.waste_sand) {
+			} else if (block == ModBlocks.waste_trinitite || block == ModBlocks.waste_sand) {
 				world.setBlockState(pos, Blocks.SAND.getDefaultState());
-				return;
-			}
-
-			if(b.getBlock() == ModBlocks.waste_terracotta) {
+			} else if (block == ModBlocks.waste_terracotta) {
 				world.setBlockState(pos, Blocks.STAINED_HARDENED_CLAY.getDefaultState());
-				return;
-			}
-
-			if(b.getBlock() == ModBlocks.waste_trinitite_red || b.getBlock() == ModBlocks.waste_sand_red) {
-				world.setBlockState(pos, Blocks.SAND.getStateFromMeta(1));
-				return;
-			}
-
-			if(b.getBlock() == ModBlocks.block_corium || b.getBlock() == ModBlocks.block_corium_cobble) {
+			} else if (block == ModBlocks.waste_trinitite_red || block == ModBlocks.waste_sand_red) {
+				world.setBlockState(pos, Blocks.SAND.getDefaultState().withProperty(BlockSand.VARIANT, BlockSand.EnumType.RED_SAND));
+			} else if (block == ModBlocks.block_corium || block == ModBlocks.block_corium_cobble) {
 				world.setBlockState(pos, Blocks.OBSIDIAN.getDefaultState());
-				return;
-			}
-
-			if(b.getBlock() == ModBlocks.waste_sandstone) {
+			} else if (block == ModBlocks.waste_sandstone) {
 				world.setBlockState(pos, Blocks.SANDSTONE.getDefaultState());
-				return;
-			}
-
-			if(b.getBlock() == ModBlocks.waste_sandstone_red) {
+			} else if (block == ModBlocks.waste_sandstone_red) {
 				world.setBlockState(pos, Blocks.RED_SANDSTONE.getDefaultState());
-				return;
-			}
-			
-			if(b.getBlock() == ModBlocks.waste_gravel) {
+			} else if (block == ModBlocks.waste_gravel) {
 				world.setBlockState(pos, Blocks.GRAVEL.getDefaultState());
-				return;
-			}
-
-			if(b.getBlock() == ModBlocks.waste_ice) {
+			} else if (block == ModBlocks.waste_ice) {
 				world.setBlockState(pos, Blocks.ICE.getDefaultState());
-				return;
-			}
-
-			if(b.getBlock() == ModBlocks.waste_snow_block) {
+			} else if (block == ModBlocks.waste_snow_block) {
 				world.setBlockState(pos, Blocks.SNOW.getDefaultState());
-				return;
-			}
-
-			if(b.getBlock() == ModBlocks.waste_snow) {
+			} else if (block == ModBlocks.waste_snow) {
 				world.setBlockState(pos, Blocks.SNOW_LAYER.getDefaultState());
-				return;
-			}
-
-			if(b.getBlock() == ModBlocks.radwater_block) {
+			} else if (block == ModBlocks.radwater_block) {
 				world.setBlockState(pos, Blocks.WATER.getDefaultState());
-				return;
-			}
-
-			if(b.getBlock() == ModBlocks.waste_leaves || b.getBlock() == ModBlocks.block_fallout || b.getBlock() == ModBlocks.fallout || b.getBlock() == ModBlocks.corium_block || b.getBlock() == ModBlocks.mush || b.getBlock() == ModBlocks.mush_block || b.getBlock() == ModBlocks.mush_block_stem || b.getBlock() == ModBlocks.waste_grass_tall) {
+			} else if (block == ModBlocks.waste_leaves || block == ModBlocks.block_fallout || block == ModBlocks.fallout || block == ModBlocks.corium_block || block == ModBlocks.mush || block == ModBlocks.mush_block || block == ModBlocks.mush_block_stem || block == ModBlocks.waste_grass_tall) {
 				world.setBlockToAir(pos);
-				return;
-			}
-
-			if(b.getBlock() == ModBlocks.taint) {
+			} else if (block == ModBlocks.taint) {
 				world.setBlockState(pos, ModBlocks.stone_gneiss.getDefaultState());
 			}
 		}

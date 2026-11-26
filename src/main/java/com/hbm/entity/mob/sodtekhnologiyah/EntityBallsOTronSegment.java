@@ -10,6 +10,8 @@ import net.minecraft.network.datasync.DataSerializers;
 import net.minecraft.network.datasync.EntityDataManager;
 import net.minecraft.util.math.MathHelper;
 import net.minecraft.world.World;
+import net.minecraft.init.SoundEvents;
+import net.minecraft.util.DamageSource;
 
 public class EntityBallsOTronSegment extends EntityBallsOTronBase {
 
@@ -45,10 +47,10 @@ public class EntityBallsOTronSegment extends EntityBallsOTronBase {
 	protected void updateAITasks() {
 		this.movement.updateMovement();
 
-		if((this.followed != null) && (getPartID() == 0)) {
-			//this.dataWatcher.updateObject(17, Byte.valueOf((byte) (((EntityBallsOTronHead) this.followed).isArmored() ? 1 : 0)));
-		} else if(this.targetedEntity != null) {
-			//this.dataWatcher.updateObject(17, Byte.valueOf(this.targetedEntity.getDataWatcher().getWatchableObjectByte(17)));
+				if (this.followed instanceof EntityBallsOTronHead) {
+			this.getDataManager().set(SHIELD, ((EntityBallsOTronHead) this.followed).isArmored());
+		} else if (this.followed instanceof EntityBallsOTronSegment) {
+			this.getDataManager().set(SHIELD, ((EntityBallsOTronSegment) this.followed).isShielded());
 		}
 		if(this.didCheck) {
 			if(this.targetedEntity == null || !this.targetedEntity.isEntityAlive()) {
@@ -62,8 +64,7 @@ public class EntityBallsOTronSegment extends EntityBallsOTronBase {
 			if(canEntityBeSeen(getAttackTarget())) {
 				this.attackCounter += 1;
 				if(this.attackCounter == 10) {
-					//useLaser(o(), false);
-
+				 useLaser(getAttackTarget(), false);
 					this.attackCounter = -20;
 				}
 			} else if(this.attackCounter > 0) {
@@ -89,4 +90,18 @@ public class EntityBallsOTronSegment extends EntityBallsOTronBase {
 		setPartID(compound.getInteger("partID"));
 	}
 
+	public boolean isShielded() {
+		return this.getDataManager().get(SHIELD);
+	}
+
+	@Override
+	public boolean attackEntityFrom(DamageSource source, float amount) {
+		if (this.isShielded() && !source.canHarmInCreative()) {
+			if (!this.world.isRemote) {
+				this.world.playSound(null, this.posX, this.posY, this.posZ, SoundEvents.ITEM_SHIELD_BLOCK, this.getSoundCategory(), 1.0F, 1.2F);
+			}
+			return false;
+		}
+		return super.attackEntityFrom(source, amount);
+	}
 }

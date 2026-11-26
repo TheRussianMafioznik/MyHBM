@@ -1,6 +1,8 @@
 package com.hbm.tileentity.machine;
 
-import api.hbm.tile.IHeatSource;
+import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
+
 import com.hbm.blocks.BlockDummyable;
 import com.hbm.forgefluid.FFUtils;
 import com.hbm.forgefluid.ModForgeFluids;
@@ -11,10 +13,10 @@ import com.hbm.inventory.gui.GUIHeaterHeatex;
 import com.hbm.items.ModItems;
 import com.hbm.items.machine.ItemForgeFluidIdentifier;
 import com.hbm.lib.ForgeDirection;
-import com.hbm.tileentity.IBufPacketReceiver;
 import com.hbm.tileentity.IGUIProvider;
 import com.hbm.tileentity.TileEntityMachineBase;
 
+import api.hbm.tile.IHeatSource;
 import io.netty.buffer.ByteBuf;
 import net.minecraft.client.gui.GuiScreen;
 import net.minecraft.entity.player.EntityPlayer;
@@ -27,9 +29,9 @@ import net.minecraft.util.math.AxisAlignedBB;
 import net.minecraft.world.World;
 import net.minecraftforge.common.capabilities.Capability;
 import net.minecraftforge.fluids.Fluid;
+import net.minecraftforge.fluids.FluidRegistry;
 import net.minecraftforge.fluids.FluidStack;
 import net.minecraftforge.fluids.FluidTank;
-import net.minecraftforge.fluids.FluidRegistry;
 import net.minecraftforge.fluids.capability.CapabilityFluidHandler;
 import net.minecraftforge.fluids.capability.IFluidHandler;
 import net.minecraftforge.fluids.capability.IFluidTankProperties;
@@ -37,10 +39,7 @@ import net.minecraftforge.fml.common.network.ByteBufUtils;
 import net.minecraftforge.fml.relauncher.Side;
 import net.minecraftforge.fml.relauncher.SideOnly;
 
-import javax.annotation.Nonnull;
-import javax.annotation.Nullable;
-
-public class TileEntityHeaterHeatex extends TileEntityMachineBase implements IHeatSource, IControlReceiver, IGUIProvider, ITickable, IBufPacketReceiver, IFluidHandler {
+public class TileEntityHeaterHeatex extends TileEntityMachineBase implements IHeatSource, IControlReceiver, IGUIProvider, ITickable, IFluidHandler {
 
     public FluidTank[] tanks;
 
@@ -74,8 +73,6 @@ public class TileEntityHeaterHeatex extends TileEntityMachineBase implements IHe
         if (!world.isRemote) {
 
             setFluidType();
-
-            this.heatEnergy *= 0.999;
 
             this.tryConvert();
 
@@ -162,12 +159,18 @@ public class TileEntityHeaterHeatex extends TileEntityMachineBase implements IHe
         int outputOps = (tanks[1].getCapacity() - tanks[1].getFluidAmount()) / amountProduced;
         int opCap = this.amountToCool;
 
+        final int maxSilentHeat = 2_000_000_000;
+        if(this.heatEnergy >= maxSilentHeat) {
+            this.heatGen = 0;
+            return;
+        }
+
         int ops = Math.min(inputOps, Math.min(outputOps, opCap));
         tanks[0].drain(ops * amountReq, true);
         tanks[1].fill(new FluidStack(tankTypes[1], ops * amountProduced), true);
 
-        this.heatGen = (heat * ops)>>1;
-        this.heatEnergy += heatGen;
+        this.heatGen = (heat * ops) >> 1;
+        this.heatEnergy = (int) Math.min((long) this.heatEnergy + heatGen, maxSilentHeat);
     }
 
     @Override

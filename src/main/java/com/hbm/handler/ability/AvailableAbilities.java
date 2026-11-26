@@ -1,14 +1,18 @@
 package com.hbm.handler.ability;
 
+import java.util.Collections;
+import java.util.Comparator;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.stream.Collectors;
+
 import com.hbm.handler.ToolPreset;
-import com.hbm.main.MainRegistry;
 import com.hbm.util.I18nUtil;
+
 import net.minecraft.util.text.TextFormatting;
 import net.minecraftforge.fml.relauncher.Side;
 import net.minecraftforge.fml.relauncher.SideOnly;
-
-import java.util.*;
-import java.util.stream.Collectors;
 
 public class AvailableAbilities {
     // Insertion order matters

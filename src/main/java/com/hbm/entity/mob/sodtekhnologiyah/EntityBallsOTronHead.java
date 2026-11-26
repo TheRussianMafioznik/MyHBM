@@ -12,6 +12,7 @@ import net.minecraft.entity.player.EntityPlayerMP;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.util.DamageSource;
 import net.minecraft.util.math.BlockPos;
+import net.minecraft.util.math.MathHelper;
 import net.minecraft.world.BossInfo;
 import net.minecraft.world.BossInfoServer;
 import net.minecraft.world.DifficultyInstance;
@@ -52,7 +53,14 @@ public class EntityBallsOTronHead extends EntityBallsOTronBase {
 	public boolean getIsHead() {
 		return true;
 	}
-	
+
+    	public boolean isArmored() {
+		if (this.aggroCooldown > 0 || this.dmgCooldown > 0) {
+			return true;
+		}
+		return this.getHealth() < this.getMaxHealth() * 0.75F && (this.ticksExisted % 200) < 80;
+	}
+
 	@Override
 	public boolean attackEntityFrom(DamageSource source, float amount) {
 		if(super.attackEntityFrom(source, amount)) {
@@ -65,31 +73,25 @@ public class EntityBallsOTronHead extends EntityBallsOTronBase {
 	
 	@Override
 	public IEntityLivingData onInitialSpawn(DifficultyInstance difficulty, IEntityLivingData livingdata) {
-		/*setUniqueWormID(this.rand.nextInt(4096));
+		setUniqueWormID(this.rand.nextInt(4096));
 
-    	int x = MathHelper.floor(this.posX);
-        int y = MathHelper.floor(this.posY);
-        int z = MathHelper.floor(this.posZ);
+		int x = MathHelper.floor(this.posX);
+		int y = MathHelper.floor(this.posY);
+		int z = MathHelper.floor(this.posZ);
 
-        for (int o = 0; o < 119; o++) {
+		for (int o = 0; o < 119; o++) {
+			EntityBallsOTronSegment bodyPart = new EntityBallsOTronSegment(this.world);
+			bodyPart.setPartID(o);
+			bodyPart.setPosition(x, y, z);
+			bodyPart.setUniqueWormID(getUniqueWormID());
+			this.world.spawnEntity(bodyPart);
+		}
 
-          EntityBallsOTronSegment bodyPart = new EntityBallsOTronSegment(this.world);
-          bodyPart.setPartID(o);
-          bodyPart.setPosition(x, y, z);
-          bodyPart.setUniqueWormID(getUniqueWormID());
-          this.world.spawnEntity(bodyPart);
-        }
+		setPosition(x, y, z);
+		this.spawnPoint = new BlockPos(x, y, z);
 
-        setPosition(x, y, z);
-        this.spawnPoint = new BlockPos(x, y, z);
-
-        this.aggroCooldown = 60;
-        return super.onInitialSpawn(difficulty, livingdata);*/
-		//TODO: unlock this
-
-    	this.setDead();
-
-    	return livingdata;
+		this.aggroCooldown = 60;
+		return super.onInitialSpawn(difficulty, livingdata);
 	}
 	
 	@Override
@@ -112,8 +114,7 @@ public class EntityBallsOTronHead extends EntityBallsOTronBase {
 	        this.attackCounter += 1;
 	        if (this.attackCounter == 10)
 	        {
-	          //useLaser(this.targetedEntity, true);
-
+	          useLaser(this.targetedEntity, true);
 	          this.attackCounter = -20;
 	        }
 	      }
@@ -154,20 +155,23 @@ public class EntityBallsOTronHead extends EntityBallsOTronBase {
 		return 100;
 	}
 	
-	@Override
+		@Override
 	public void writeEntityToNBT(NBTTagCompound compound) {
 		super.writeEntityToNBT(compound);
 		compound.setInteger("AggroCD", this.aggroCooldown);
-		compound.setInteger("CenterX", this.spawnPoint.getX());
-		compound.setInteger("CenterY", this.spawnPoint.getY());
-		compound.setInteger("CenterZ", this.spawnPoint.getZ());
+		if (this.spawnPoint != null) {
+			compound.setInteger("CenterX", this.spawnPoint.getX());
+			compound.setInteger("CenterY", this.spawnPoint.getY());
+			compound.setInteger("CenterZ", this.spawnPoint.getZ());
+		}
 	}
-	
+
 	@Override
 	public void readEntityFromNBT(NBTTagCompound compound) {
 		super.readEntityFromNBT(compound);
-	    this.aggroCooldown = compound.getInteger("AggroCD");
-	    this.spawnPoint = new BlockPos(compound.getInteger("CenterX"), compound.getInteger("CenterY"), compound.getInteger("CenterZ"));
+		this.aggroCooldown = compound.getInteger("AggroCD");
+		if (compound.hasKey("CenterX")) {
+			this.spawnPoint = new BlockPos(compound.getInteger("CenterX"), compound.getInteger("CenterY"), compound.getInteger("CenterZ"));
+		}
 	}
-
 }

@@ -1,6 +1,6 @@
 ﻿{
   "parent": "item/generated",
   "textures": {
-    "layer0": "hbm:items/waste_zfb_mox_hot"
+    "layer0": "hbm:items/waste_zfb_mox"
   }
 }

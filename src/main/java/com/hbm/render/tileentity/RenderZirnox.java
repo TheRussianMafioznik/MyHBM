@@ -11,24 +11,26 @@ import net.minecraft.client.renderer.tileentity.TileEntitySpecialRenderer;
 
 public class RenderZirnox extends TileEntitySpecialRenderer<TileEntityReactorZirnox> {
 
-    @Override
-    public void render(TileEntityReactorZirnox te, double x, double y, double z, float partialTicks, int destroyStage, float alpha) {
-        GL11.glPushMatrix();
-        GL11.glTranslated(x + 0.5D, y, z + 0.5D);
-        GlStateManager.enableLighting();
-        GlStateManager.disableCull();
+	@Override
+	public void render(TileEntityReactorZirnox te, double x, double y, double z, float partialTicks, int destroyStage, float alpha) {
+		GL11.glPushMatrix();
+		GL11.glTranslated(x + 0.5D, y, z + 0.5D);
+		GlStateManager.enableLighting();
+		GlStateManager.disableCull();
 
-        switch (te.getBlockMetadata() - BlockDummyable.offset) {
-            case 2: GL11.glRotatef(90, 0F, 1F, 0F); break;
-            case 4: GL11.glRotatef(180, 0F, 1F, 0F); break;
-            case 3: GL11.glRotatef(270, 0F, 1F, 0F); break;
-            case 5: GL11.glRotatef(0, 0F, 1F, 0F); break;
-        }
+		switch (te.getBlockMetadata() - BlockDummyable.offset) {
+			case 2: GL11.glRotatef(90, 0F, 1F, 0F); break;
+			case 4: GL11.glRotatef(180, 0F, 1F, 0F); break;
+			case 3: GL11.glRotatef(270, 0F, 1F, 0F); break;
+			case 5: GL11.glRotatef(0, 0F, 1F, 0F); break;
+		}
 
-        bindTexture(ResourceManager.zirnox_tex);
-        ResourceManager.zirnox.renderAll();
+		GL11.glShadeModel(GL11.GL_SMOOTH);
+		bindTexture(ResourceManager.zirnox_tex);
+		ResourceManager.zirnox.renderAll();
+		GL11.glShadeModel(GL11.GL_FLAT);
 
-        GlStateManager.enableCull();
-        GL11.glPopMatrix();
-    }
+		GlStateManager.enableCull();
+		GL11.glPopMatrix();
+	}
 }

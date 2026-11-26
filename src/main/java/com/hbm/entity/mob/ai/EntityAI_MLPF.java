@@ -1,135 +1,112 @@
 package com.hbm.entity.mob.ai;
 
-import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
-
-import com.hbm.render.amlfrom1710.Vec3;
 
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.EntityLiving;
 import net.minecraft.entity.EntityLivingBase;
 import net.minecraft.entity.ai.EntityAIBase;
 import net.minecraft.util.math.AxisAlignedBB;
+import net.minecraft.util.math.MathHelper;
 
 public class EntityAI_MLPF extends EntityAIBase {
 
-	private Class targetClass;
-    private EntityLivingBase target;
-	private EntityLiving mover;
-    private final Sorter theNearestAttackableTargetSorter;
-	private int range;
-	private int distance;
-	private static final int vertical = 10;
-    private double speed;
+	private final Class<? extends EntityLivingBase> targetClass;
+	private EntityLivingBase target;
+	private final EntityLiving mover;
+	private final int range;
+	private final int distance;
+	private static final int VERTICAL = 10;
+	private final double speed;
 
-	public EntityAI_MLPF(EntityLiving entity, Class targetClass, int range, double speed, int distance)
-	{
+	public EntityAI_MLPF(EntityLiving entity, Class<? extends EntityLivingBase> targetClass, int range, double speed, int distance) {
 		this.mover = entity;
 		this.targetClass = targetClass;
 		this.range = range;
 		this.speed = speed;
 		this.distance = distance;
-        this.theNearestAttackableTargetSorter = new Sorter(entity);
 	}
 
 	@Override
 	public boolean shouldExecute() {
-
-		//roll the dice for targetiing if there's nothing to track
-		if(mover.getRNG().nextInt(100) < 5 && mover.getAttackTarget() == null) {
-			//System.out.println("Randomizer fired!");
-			//load potential targets
+		if (mover.getRNG().nextInt(100) < 5 && mover.getAttackTarget() == null) {
 			calculateTarget();
-
-			//start if there is a valid target
 			return target != null;
 		}
-
 		return false;
 	}
 
-    public void startExecuting() {
+	@Override
+	public void startExecuting() {
+		if (target == null) return;
 
-    	//create a path line from mover to target
-    	Vec3 vec = Vec3.createVectorHelper(
-    			target.posX - mover.posX,
-    			target.posY - mover.posY,
-    			target.posZ - mover.posZ);
+		double dx = target.posX - mover.posX;
+		double dy = target.posY - mover.posY;
+		double dz = target.posZ - mover.posZ;
+		double length = MathHelper.sqrt(dx * dx + dy * dy + dz * dz);
 
+		if (length < 16.0D) {
+			mover.setAttackTarget(target);
+		}
 
-    	//line length is capped so the pathfinder can manage it
-    	int range = distance;
-    	
-    	if(vec.length() < 16)
-    		mover.setAttackTarget(target);
+		if (length > 0.0D) {
+			double scale = distance / length;
+			dx *= scale;
+			dy *= scale;
+			dz *= scale;
+		}
 
-    	vec = vec.normalize();
-    	vec.xCoord *= range;
-    	vec.yCoord *= range;
-    	vec.zCoord *= range;
+		double x = mover.posX + dx;
+		double y = mover.posY + dy - 5.0D + mover.getRNG().nextInt(11);
+		double z = mover.posZ + dz;
 
-    	//target positions are set (with randomized Y-offset)
-    	double x = mover.posX + vec.xCoord;
-    	double y = mover.posY + vec.yCoord - 5 + mover.getRNG().nextInt(11);
-    	double z = mover.posZ + vec.zCoord;
-
-    	//System.out.println("Routing to " + x + "/" + y + "/" + z);
-
-		//this is where the magic happens
-    	this.mover.getNavigator().tryMoveToXYZ(x, y, z, this.speed);
-
-        //System.out.println("Start successful? " + success);
-    }
+		this.mover.getNavigator().tryMoveToXYZ(x, y, z, this.speed);
+	}
 
 	@Override
 	public boolean shouldContinueExecuting() {
-
-		//only continue if the path is valid
-        return !this.mover.getNavigator().noPath();
+		return !this.mover.getNavigator().noPath();
 	}
 
 	@Override
-	public void resetTask()
-	{
-		//once the task is complete, remove target
+	public void resetTask() {
 		target = null;
 	}
 
-	//scans the area and determines a new target entity
 	private void calculateTarget() {
-
-		List list = mover.world.getEntitiesWithinAABB(targetClass, new AxisAlignedBB(
+		List<? extends EntityLivingBase> list = mover.world.getEntitiesWithinAABB(targetClass, new AxisAlignedBB(
 				mover.posX - range,
-				mover.posY - vertical,
+				mover.posY - VERTICAL,
 				mover.posZ - range,
 				mover.posX + range,
-				mover.posY + vertical,
+				mover.posY + VERTICAL,
 				mover.posZ + range));
 
-		Collections.sort(list, theNearestAttackableTargetSorter);
+		EntityLivingBase closest = null;
+		double minDistSq = Double.MAX_VALUE;
 
-		if (!list.isEmpty())
-        {
-			target = (EntityLivingBase)list.get(0);
-        }
+		for (EntityLivingBase candidate : list) {
+			double distSq = mover.getDistanceSq(candidate);
+			if (distSq < minDistSq) {
+				minDistSq = distSq;
+				closest = candidate;
+			}
+		}
+
+		target = closest;
 	}
 
-	public static class Sorter implements Comparator {
+	public static class Sorter implements Comparator<Entity> {
 		private final Entity theEntity;
 
-		public Sorter(Entity p_i1662_1_) {
-			this.theEntity = p_i1662_1_;
+		public Sorter(Entity entity) {
+			this.theEntity = entity;
 		}
 
-		public int compare(Entity p_compare_1_, Entity p_compare_2_) {
-			double d0 = this.theEntity.getDistanceSq(p_compare_1_);
-			double d1 = this.theEntity.getDistanceSq(p_compare_2_);
-			return d0 < d1 ? -1 : (d0 > d1 ? 1 : 0);
-		}
-
-		public int compare(Object p_compare_1_, Object p_compare_2_) {
-			return this.compare((Entity) p_compare_1_, (Entity) p_compare_2_);
+		@Override
+		public int compare(Entity first, Entity second) {
+			return Double.compare(this.theEntity.getDistanceSq(first), this.theEntity.getDistanceSq(second));
 		}
 	}
 }

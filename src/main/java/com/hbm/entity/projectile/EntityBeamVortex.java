@@ -21,10 +21,6 @@ public class EntityBeamVortex extends EntityBeamBase {
 	@Override
 	public void onUpdate() {
 		if(world.isRemote){
-			if(this.ticksExisted == 1){
-				EntityPlayer player = this.world.getPlayerEntityByName(this.getDataManager().get(PLAYER_NAME));
-				
-			}
 			return;
 		}
 		if(this.ticksExisted > 10)

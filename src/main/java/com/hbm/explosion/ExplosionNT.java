@@ -3,18 +3,16 @@ package com.hbm.explosion;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.HashSet;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Random;
 import java.util.Set;
 
 import com.google.common.collect.Lists;
-import com.hbm.config.CompatibilityConfig;
 import com.hbm.blocks.ModBlocks;
+import com.hbm.config.CompatibilityConfig;
 import com.hbm.render.amlfrom1710.Vec3;
 
-import net.minecraft.block.Block;
 import net.minecraft.block.material.Material;
 import net.minecraft.block.state.IBlockState;
 import net.minecraft.enchantment.EnchantmentProtection;
@@ -41,7 +39,7 @@ public class ExplosionNT extends Explosion {
 	private Random explosionRNG = new Random();
 	private World worldObj;
 	protected int field_77289_h = 16;
-	protected Map affectedEntities = new HashMap();
+    protected Map<EntityPlayer, Vec3> affectedEntities = new HashMap<>();
 	public float explosionSize;
 	public double explosionX;
 	public double explosionY;
@@ -81,23 +79,17 @@ public class ExplosionNT extends Explosion {
 	public void explode() {
 		if(CompatibilityConfig.isWarDim(worldObj)){
 			doNTExplosionA();
-    		doNTExplosionB(false);
+    		doNTExplosionB();
 		}
     }
 	
-	private void doNTExplosionA() {
+		private void doNTExplosionA() {
 		float f = this.explosionSize;
-		HashSet hashset = new HashSet();
-		int i;
-		int j;
-		int k;
-		double d5;
-		double d6;
-		double d7;
+		Set<BlockPos> hashset = new HashSet<>();
 
-		for(i = 0; i < this.field_77289_h; ++i) {
-			for(j = 0; j < this.field_77289_h; ++j) {
-				for(k = 0; k < this.field_77289_h; ++k) {
+		for(int i = 0; i < this.field_77289_h; ++i) {
+			for(int j = 0; j < this.field_77289_h; ++j) {
+				for(int k = 0; k < this.field_77289_h; ++k) {
 					if(i == 0 || i == this.field_77289_h - 1 || j == 0 || j == this.field_77289_h - 1 || k == 0 || k == this.field_77289_h - 1) {
 						double d0 = (double) ((float) i / ((float) this.field_77289_h - 1.0F) * 2.0F - 1.0F);
 						double d1 = (double) ((float) j / ((float) this.field_77289_h - 1.0F) * 2.0F - 1.0F);
@@ -107,24 +99,23 @@ public class ExplosionNT extends Explosion {
 						d1 /= d3;
 						d2 /= d3;
 						float f1 = this.explosionSize * (0.7F + this.worldObj.rand.nextFloat() * 0.6F);
-						d5 = this.explosionX;
-						d6 = this.explosionY;
-						d7 = this.explosionZ;
+						double d5 = this.explosionX;
+						double d6 = this.explosionY;
+						double d7 = this.explosionZ;
 
 						for(float f2 = 0.3F; f1 > 0.0F; f1 -= f2 * 0.75F) {
-							int j1 = MathHelper.floor(d5);
-							int k1 = MathHelper.floor(d6);
-							int l1 = MathHelper.floor(d7);
-							BlockPos pos = new BlockPos(j1, k1, l1);
+							BlockPos pos = new BlockPos(MathHelper.floor(d5), MathHelper.floor(d6), MathHelper.floor(d7));
 							IBlockState block = this.worldObj.getBlockState(pos);
 
 							if(block.getMaterial() != Material.AIR) {
-								float f3 = this.exploder != null ? this.exploder.getExplosionResistance(this, this.worldObj, new BlockPos(j1, k1, l1), block) : block.getBlock().getExplosionResistance(worldObj, new BlockPos(j1, k1, l1), (Entity) null, this);
+								float f3 = this.exploder != null
+										? this.exploder.getExplosionResistance(this, this.worldObj, pos, block)
+										: block.getBlock().getExplosionResistance(worldObj, pos, null, this);
 								f1 -= (f3 + 0.3F) * f2;
 							}
 
-							if(f1 > 0.0F && (this.exploder == null || this.exploder.canExplosionDestroyBlock(this, this.worldObj, new BlockPos(j1, k1, l1), block, f1))) {
-								hashset.add(new BlockPos(j1, k1, l1));
+							if(f1 > 0.0F && (this.exploder == null || this.exploder.canExplosionDestroyBlock(this, this.worldObj, pos, block, f1))) {
+								hashset.add(pos);
 							}
 
 							d5 += d0 * (double) f2;
@@ -139,38 +130,37 @@ public class ExplosionNT extends Explosion {
 		this.affectedBlockPositions.addAll(hashset);
 
 		if(!has(ExAttrib.NOHURT)) {
-
 			this.explosionSize *= 2.0F;
-			i = MathHelper.floor(this.explosionX - (double) this.explosionSize - 1.0D);
-			j = MathHelper.floor(this.explosionX + (double) this.explosionSize + 1.0D);
-			k = MathHelper.floor(this.explosionY - (double) this.explosionSize - 1.0D);
-			int i2 = MathHelper.floor(this.explosionY + (double) this.explosionSize + 1.0D);
-			int l = MathHelper.floor(this.explosionZ - (double) this.explosionSize - 1.0D);
-			int j2 = MathHelper.floor(this.explosionZ + (double) this.explosionSize + 1.0D);
-			List list = this.worldObj.getEntitiesWithinAABBExcludingEntity(this.exploder, new AxisAlignedBB((double) i, (double) k, (double) l, (double) j, (double) i2, (double) j2));
+			int minX = MathHelper.floor(this.explosionX - (double) this.explosionSize - 1.0D);
+			int maxX = MathHelper.floor(this.explosionX + (double) this.explosionSize + 1.0D);
+			int minY = MathHelper.floor(this.explosionY - (double) this.explosionSize - 1.0D);
+			int maxY = MathHelper.floor(this.explosionY + (double) this.explosionSize + 1.0D);
+			int minZ = MathHelper.floor(this.explosionZ - (double) this.explosionSize - 1.0D);
+			int maxZ = MathHelper.floor(this.explosionZ + (double) this.explosionSize + 1.0D);
+			List<Entity> list = this.worldObj.getEntitiesWithinAABBExcludingEntity(this.exploder, new AxisAlignedBB(minX, minY, minZ, maxX, maxY, maxZ));
 			net.minecraftforge.event.ForgeEventFactory.onExplosionDetonate(this.worldObj, this, list, this.explosionSize);
-			Vec3 vec3 = Vec3.createVectorHelper(this.explosionX, this.explosionY, this.explosionZ);
+			Vec3d origin = new Vec3d(this.explosionX, this.explosionY, this.explosionZ);
 
-			for(int i1 = 0; i1 < list.size(); ++i1) {
-				Entity entity = (Entity) list.get(i1);
+			for(Entity entity : list) {
 				double d4 = entity.getDistance(this.explosionX, this.explosionY, this.explosionZ) / (double) this.explosionSize;
 
-				if(d4 <= 1.0D) {
-					d5 = entity.posX - this.explosionX;
-					d6 = entity.posY + (double) entity.getEyeHeight() - this.explosionY;
-					d7 = entity.posZ - this.explosionZ;
+				if(1.0D >= d4) {
+					double d5 = entity.posX - this.explosionX;
+					double d6 = entity.posY + (double) entity.getEyeHeight() - this.explosionY;
+					double d7 = entity.posZ - this.explosionZ;
 					double d9 = (double) MathHelper.sqrt(d5 * d5 + d6 * d6 + d7 * d7);
 
 					if(d9 != 0.0D) {
 						d5 /= d9;
 						d6 /= d9;
 						d7 /= d9;
-						double d10 = (double) this.worldObj.getBlockDensity(new Vec3d(vec3.xCoord, vec3.yCoord, vec3.zCoord), entity.getEntityBoundingBox());
+						double d10 = (double) this.worldObj.getBlockDensity(origin, entity.getEntityBoundingBox());
 						double d11 = (1.0D - d4) * d10;
 						entity.attackEntityFrom(DamageSource.causeExplosionDamage(this), (float) ((int) ((d11 * d11 + d11) / 2.0D * 8.0D * (double) this.explosionSize + 1.0D)));
 						double d8 = d11;
-						if(entity instanceof EntityLivingBase)
+						if(entity instanceof EntityLivingBase) {
 							d8 = EnchantmentProtection.getBlastDamageReduction((EntityLivingBase) entity, d11);
+						}
 						entity.motionX += d5 * d8;
 						entity.motionY += d6 * d8;
 						entity.motionZ += d7 * d8;
@@ -186,7 +176,7 @@ public class ExplosionNT extends Explosion {
 		}
 	}
 
-	private void doNTExplosionB(boolean p_77279_1_) {
+		private void doNTExplosionB() {
 		if(!has(ExAttrib.NOSOUND))
 			this.worldObj.playSound(null, this.explosionX, this.explosionY, this.explosionZ, SoundEvents.ENTITY_GENERIC_EXPLODE, SoundCategory.BLOCKS, 4.0F, (1.0F + (this.worldObj.rand.nextFloat() - this.worldObj.rand.nextFloat()) * 0.2F) * 0.7F);
 
@@ -198,21 +188,13 @@ public class ExplosionNT extends Explosion {
 			}
 		}
 
-		Iterator<BlockPos> iterator;
-		BlockPos chunkposition;
-		int i;
-		int j;
-		int k;
-		IBlockState block;
+		BlockPos.MutableBlockPos neighborPos = new BlockPos.MutableBlockPos();
 
-		iterator = this.affectedBlockPositions.iterator();
-		
-		while(iterator.hasNext()) {
-			chunkposition = iterator.next();
-			i = chunkposition.getX();
-            j = chunkposition.getY();
-            k = chunkposition.getZ();
-			block = this.worldObj.getBlockState(chunkposition);
+		for(BlockPos chunkposition : this.affectedBlockPositions) {
+			int i = chunkposition.getX();
+			int j = chunkposition.getY();
+			int k = chunkposition.getZ();
+			IBlockState block = this.worldObj.getBlockState(chunkposition);
 
 			if(!has(ExAttrib.NOPARTICLE)) {
 				double d0 = (double) ((float) i + this.worldObj.rand.nextFloat());
@@ -230,7 +212,7 @@ public class ExplosionNT extends Explosion {
 				d3 *= d7;
 				d4 *= d7;
 				d5 *= d7;
-				this.worldObj.spawnParticle(EnumParticleTypes.EXPLOSION_NORMAL, (d0 + this.explosionX * 1.0D) / 2.0D, (d1 + this.explosionY * 1.0D) / 2.0D, (d2 + this.explosionZ * 1.0D) / 2.0D, d3, d4, d5);
+				this.worldObj.spawnParticle(EnumParticleTypes.EXPLOSION_NORMAL, (d0 + this.explosionX) / 2.0D, (d1 + this.explosionY) / 2.0D, (d2 + this.explosionZ) / 2.0D, d3, d4, d5);
 				this.worldObj.spawnParticle(EnumParticleTypes.SMOKE_NORMAL, d0, d1, d2, d3, d4, d5);
 			}
 
@@ -243,54 +225,43 @@ public class ExplosionNT extends Explosion {
 					if(has(ExAttrib.ALLDROP) && (block.getBlock() == Blocks.STONE || block.getBlock() == Blocks.DIRT || block.getBlock() == Blocks.GRASS || block.getBlock() == ModBlocks.tektite || block.getBlock() == Blocks.COBBLESTONE || block.getBlock() == Blocks.GRAVEL || block.getBlock() == Blocks.SAND || block.getBlock() == Blocks.SANDSTONE || block.getBlock() == ModBlocks.basalt_smooth))
 						chance = 0F;
 
-
-					block.getBlock().dropBlockAsItemWithChance(this.worldObj, chunkposition, this.worldObj.getBlockState(chunkposition), chance, 0);
+					block.getBlock().dropBlockAsItemWithChance(this.worldObj, chunkposition, block, chance, 0);
 				}
 
-				block.getBlock().onBlockExploded(this.worldObj, new BlockPos(i, j, k), this);
-				
+				block.getBlock().onBlockExploded(this.worldObj, chunkposition, this);
+
 				if(block.isNormalCube()) {
-					
 					if(has(ExAttrib.DIGAMMA)) {
-						this.worldObj.setBlockState(new BlockPos(i, j, k), ModBlocks.ash_digamma.getDefaultState());
-						
-						if(this.explosionRNG.nextInt(5) == 0 && this.worldObj.getBlockState(new BlockPos(i, j + 1, k)).getBlock() == Blocks.AIR)
-							this.worldObj.setBlockState(new BlockPos(i, j + 1, k), ModBlocks.fire_digamma.getDefaultState());
-						
+						this.worldObj.setBlockState(chunkposition, ModBlocks.ash_digamma.getDefaultState());
+						neighborPos.setPos(i, j + 1, k);
+						if(this.explosionRNG.nextInt(5) == 0 && this.worldObj.isAirBlock(neighborPos))
+							this.worldObj.setBlockState(neighborPos.toImmutable(), ModBlocks.fire_digamma.getDefaultState());
+
 					} else if(has(ExAttrib.DIGAMMA_CIRCUIT)) {
-						
 						if(i % 3 == 0 && k % 3 == 0) {
-							this.worldObj.setBlockState(new BlockPos(i, j, k), ModBlocks.pribris_digamma.getDefaultState());
+							this.worldObj.setBlockState(chunkposition, ModBlocks.pribris_digamma.getDefaultState());
 						} else if((i % 3 == 0 || k % 3 == 0) && this.explosionRNG.nextBoolean()) {
-							this.worldObj.setBlockState(new BlockPos(i, j, k), ModBlocks.pribris_digamma.getDefaultState());
+							this.worldObj.setBlockState(chunkposition, ModBlocks.pribris_digamma.getDefaultState());
 						} else {
-							this.worldObj.setBlockState(new BlockPos(i, j, k), ModBlocks.ash_digamma.getDefaultState());
-							
-							if(this.explosionRNG.nextInt(5) == 0 && this.worldObj.getBlockState(new BlockPos(i, j + 1, k)).getBlock() == Blocks.AIR)
-								this.worldObj.setBlockState(new BlockPos(i, j + 1, k), ModBlocks.fire_digamma.getDefaultState());
+							this.worldObj.setBlockState(chunkposition, ModBlocks.ash_digamma.getDefaultState());
+							neighborPos.setPos(i, j + 1, k);
+							if(this.explosionRNG.nextInt(5) == 0 && this.worldObj.isAirBlock(neighborPos))
+								this.worldObj.setBlockState(neighborPos.toImmutable(), ModBlocks.fire_digamma.getDefaultState());
 						}
 					} else if(has(ExAttrib.LAVA_V)) {
-						this.worldObj.setBlockState(new BlockPos(i, j, k), ModBlocks.volcanic_lava_block.getDefaultState());
+						this.worldObj.setBlockState(chunkposition, ModBlocks.volcanic_lava_block.getDefaultState());
 					}
 				}
 			}
 		}
 
 		if(has(ExAttrib.FIRE) || has(ExAttrib.BALEFIRE) || has(ExAttrib.LAVA)) {
-			iterator = this.affectedBlockPositions.iterator();
+			for(BlockPos chunkposition : this.affectedBlockPositions) {
+				IBlockState block = this.worldObj.getBlockState(chunkposition);
+				neighborPos.setPos(chunkposition.getX(), chunkposition.getY() - 1, chunkposition.getZ());
+				IBlockState block1 = this.worldObj.getBlockState(neighborPos);
 
-			while(iterator.hasNext()) {
-				chunkposition = (BlockPos) iterator.next();
-				i = chunkposition.getX();
-				j = chunkposition.getY();
-				k = chunkposition.getZ();
-				block = this.worldObj.getBlockState(chunkposition);
-				IBlockState block1 = this.worldObj.getBlockState(new BlockPos(i, j - 1, k));
-
-				boolean shouldReplace = true;
-
-				if(!has(ExAttrib.ALLMOD))
-					shouldReplace = this.explosionRNG.nextInt(3) == 0;
+				boolean shouldReplace = has(ExAttrib.ALLMOD) || this.explosionRNG.nextInt(3) == 0;
 
 				if(block.getMaterial() == Material.AIR && block1.isFullBlock() && shouldReplace) {
 					if(has(ExAttrib.FIRE))
@@ -304,9 +275,9 @@ public class ExplosionNT extends Explosion {
 		}
 	}
 
-	public Map func_77277_b() {
-		return this.affectedEntities;
-	}
+public Map<EntityPlayer, Vec3> func_77277_b() {
+	return this.affectedEntities;
+}
 
 	public EntityLivingBase getExplosivePlacedBy() {
 		return this.exploder == null ? null : (this.exploder instanceof EntityTNTPrimed ? ((EntityTNTPrimed) this.exploder).getTntPlacedBy() : (this.exploder instanceof EntityLivingBase ? (EntityLivingBase) this.exploder : null));

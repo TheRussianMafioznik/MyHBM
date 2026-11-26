@@ -40,7 +40,6 @@ import net.minecraft.util.DamageSource;
 import net.minecraft.util.EntityDamageSourceIndirect;
 import net.minecraft.util.math.AxisAlignedBB;
 import net.minecraft.util.math.RayTraceResult;
-import net.minecraft.util.math.RayTraceResult.Type;
 import net.minecraft.world.DifficultyInstance;
 import net.minecraft.world.World;
 
@@ -210,11 +209,10 @@ public class EntityFBI extends EntityMob implements IRangedAttackMob {
             Vec3 vec31 = Vec3.createVectorHelper(vec3.xCoord + vec.xCoord, vec3.yCoord + vec.yCoord, vec3.zCoord + vec.zCoord);
             RayTraceResult mop = this.world.rayTraceBlocks(vec3.toVec3d(), vec31.toVec3d(), false, true, false);
 
-            if(mop != null && mop.typeOfHit == Type.BLOCK) {
-
-            	if(canDestroy.contains(world.getBlockState(mop.getBlockPos())))
-            		world.destroyBlock(mop.getBlockPos(), false);
-            }
+            			if(mop != null && mop.typeOfHit == RayTraceResult.Type.BLOCK) {
+				if(canDestroy.contains(world.getBlockState(mop.getBlockPos()).getBlock()))
+					world.destroyBlock(mop.getBlockPos(), false);
+			}
             double range = 1.5;
 
         	List<EntityItem> items = world.getEntitiesWithinAABB(EntityItem.class, new AxisAlignedBB(posX, posY, posZ, posX, posY, posZ).grow(range, range, range));

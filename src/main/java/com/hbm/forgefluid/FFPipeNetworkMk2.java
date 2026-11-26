@@ -10,7 +10,7 @@ import java.util.Map;
 import java.util.Random;
 
 import com.hbm.interfaces.IFluidPipeMk2;
-import com.hbm.tileentity.conductor.TileEntityFFDuctBaseMk2;
+
 import net.minecraft.tileentity.TileEntity;
 import net.minecraft.util.EnumFacing;
 import net.minecraft.util.math.BlockPos;

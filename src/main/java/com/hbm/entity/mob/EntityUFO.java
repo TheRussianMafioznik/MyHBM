@@ -3,6 +3,8 @@ package com.hbm.entity.mob;
 import java.util.ArrayList;
 import java.util.List;
 
+import com.hbm.entity.effect.EntityNukeTorex;
+import com.hbm.entity.logic.EntityNukeExplosionMK5;
 import com.hbm.entity.projectile.EntityBulletBase;
 import com.hbm.handler.BulletConfigSyncingUtil;
 import com.hbm.handler.threading.PacketThreading;
@@ -12,13 +14,10 @@ import com.hbm.lib.HBMSoundHandler;
 import com.hbm.lib.ModDamageSource;
 import com.hbm.main.AdvancementManager;
 import com.hbm.packet.AuxParticlePacketNT;
-import com.hbm.packet.PacketDispatcher;
 import com.hbm.render.amlfrom1710.Vec3;
 import com.hbm.util.ContaminationUtil;
 import com.hbm.util.ContaminationUtil.ContaminationType;
 import com.hbm.util.ContaminationUtil.HazardType;
-import com.hbm.entity.effect.EntityNukeTorex;
-import com.hbm.entity.logic.EntityNukeExplosionMK5;
 
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.EntityFlying;
@@ -57,9 +56,6 @@ public class EntityUFO extends EntityFlying implements IMob, IRadiationImmune {
 	
 	public int courseChangeCooldown;
 	public int scanCooldown;
-	/*public double waypointX;
-	public double waypointY;
-	public double waypointZ;*/
 	public int hurtCooldown;
 	public int beamTimer;
 	private Entity target;
@@ -131,8 +127,8 @@ public class EntityUFO extends EntityFlying implements IMob, IRadiationImmune {
 			
 			for(Entity entity : entities) {
 				
-				if(!entity.isEntityAlive() || !canAttackClass(entity.getClass()))
-					continue;
+			if(!entity.isEntityAlive() || !canAttackEntity(entity))
+				continue;
 				
 				if(entity instanceof EntityPlayer) {
 					
@@ -216,7 +212,7 @@ public class EntityUFO extends EntityFlying implements IMob, IRadiationImmune {
 					List<Entity> entities = world.getEntitiesWithinAABBExcludingEntity(this, new AxisAlignedBB(this.posX, iy, this.posZ, this.posX, this.posY, this.posZ).grow(5, 0, 5));
 					
 					for(Entity e : entities) {
-						if(this.canAttackClass(e.getClass())) {
+					if(this.canAttackEntity(e)) {
 							e.attackEntityFrom(ModDamageSource.causeCombineDamage(this, e), 1000F);
 							e.setFire(5);
 							
@@ -362,9 +358,13 @@ public class EntityUFO extends EntityFlying implements IMob, IRadiationImmune {
 		this.playSound(HBMSoundHandler.richard_fire, 5.0F, 1.0F);
 	}
 	
-	@Override
-	public boolean canAttackClass(Class clazz) {
-		return clazz != this.getClass() && clazz != EntityBulletBase.class;
+		@Override
+	public boolean canAttackClass(Class<? extends EntityLivingBase> clazz) {
+		return clazz != this.getClass();
+	}
+
+	private boolean canAttackEntity(Entity entity) {
+		return !(entity instanceof EntityUFO) && !(entity instanceof EntityBulletBase);
 	}
 
 	@Override

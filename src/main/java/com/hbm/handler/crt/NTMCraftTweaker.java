@@ -1,22 +1,21 @@
 package com.hbm.handler.crt;
 
-import java.util.List;
 import java.util.ArrayList;
+import java.util.List;
+
+import javax.annotation.Nullable;
 
 import com.hbm.inventory.RecipesCommon;
 import com.hbm.inventory.RecipesCommon.AStack;
 import com.hbm.main.MainRegistry;
-import com.hbm.inventory.RBMKOutgasserRecipes;
 
-import crafttweaker.IAction;
 import crafttweaker.CraftTweakerAPI;
+import crafttweaker.IAction;
 import crafttweaker.api.item.IIngredient;
 import crafttweaker.api.item.IItemStack;
 import crafttweaker.api.item.IngredientStack;
 import crafttweaker.api.minecraft.CraftTweakerMC;
 import crafttweaker.api.oredict.IOreDictEntry;
-
-import javax.annotation.Nullable;
 
 public class NTMCraftTweaker {
 	public static final List<IAction> postInitActions = new ArrayList<>();

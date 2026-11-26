@@ -1,24 +1,20 @@
 package com.hbm.handler.crt;
 
-import com.hbm.inventory.RecipesCommon;
-import crafttweaker.IAction;
-import crafttweaker.CraftTweakerAPI;
-import crafttweaker.api.item.IngredientStack;
-import crafttweaker.api.minecraft.CraftTweakerMC;
-import crafttweaker.api.item.IIngredient;
-import crafttweaker.api.item.IItemStack;
-import crafttweaker.annotations.ZenRegister;
-import crafttweaker.api.oredict.IOreDictEntry;
-import crafttweaker.api.oredict.IngredientOreDict;
-import stanhebben.zenscript.annotations.ZenClass;
-import stanhebben.zenscript.annotations.ZenMethod;
+import java.util.Arrays;
 
 import com.hbm.inventory.AssemblerRecipes;
+import com.hbm.inventory.RecipesCommon;
 import com.hbm.inventory.RecipesCommon.ComparableStack;
 
+import crafttweaker.CraftTweakerAPI;
+import crafttweaker.IAction;
+import crafttweaker.annotations.ZenRegister;
+import crafttweaker.api.item.IIngredient;
+import crafttweaker.api.item.IItemStack;
+import crafttweaker.api.minecraft.CraftTweakerMC;
 import net.minecraft.item.ItemStack;
-
-import java.util.Arrays;
+import stanhebben.zenscript.annotations.ZenClass;
+import stanhebben.zenscript.annotations.ZenMethod;
 
 @ZenRegister
 @ZenClass("mods.ntm.Assembler")
@@ -103,18 +99,4 @@ public class Assembler {
 	public static void removeRecipe(IItemStack output){
 		NTMCraftTweaker.postInitActions.add(new ActionRemoveRecipe(output));
 	}
-
-	//TEMPLATE
-	// public static class ActionAddFuel implements IAction{
-	// 	@Override
-	// 	public void apply(){
-		// if(){
-		// 		CraftTweakerAPI.logError();
-		// 		return;
-		// 	}
-	// 	}
-	// 	@Override
-	// 	public String describe(){
-		// return "";
-	// }
 }

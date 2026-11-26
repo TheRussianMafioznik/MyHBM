@@ -3,7 +3,6 @@ package com.hbm.tileentity.machine;
 import com.hbm.blocks.BlockDummyable;
 import com.hbm.lib.ForgeDirection;
 import com.hbm.modules.ModuleBurnTime;
-import com.hbm.tileentity.IBufPacketReceiver;
 import com.hbm.tileentity.IGUIProvider;
 import com.hbm.tileentity.TileEntityMachineBase;
 
@@ -21,7 +20,7 @@ import net.minecraft.util.math.MathHelper;
 import net.minecraftforge.fml.relauncher.Side;
 import net.minecraftforge.fml.relauncher.SideOnly;
 
-public abstract class TileEntityFireboxBase extends TileEntityMachineBase implements ITickable, IGUIProvider, IHeatSource, IBufPacketReceiver {
+public abstract class TileEntityFireboxBase extends TileEntityMachineBase implements ITickable, IGUIProvider, IHeatSource {
 
 	public int maxBurnTime;
 	public int burnTime;
@@ -84,10 +83,9 @@ public abstract class TileEntityFireboxBase extends TileEntityMachineBase implem
 			if(wasOn) {
 				this.heatEnergy = Math.min(this.heatEnergy + this.burnHeat, getMaxHeat());
 			} else {
-				this.heatEnergy = Math.max(this.heatEnergy - Math.max(this.heatEnergy / 1000, 1), 0);
 				this.burnHeat = 0;
 			}
-			
+
 			networkPackNT(50);
 		} else {
 			this.prevDoorAngle = this.doorAngle;

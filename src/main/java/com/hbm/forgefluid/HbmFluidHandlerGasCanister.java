@@ -2,8 +2,6 @@ package com.hbm.forgefluid;
 
 import javax.annotation.Nonnull;
 
-import com.hbm.forgefluid.HbmFluidContainer;
-
 import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.util.EnumFacing;
@@ -134,6 +132,5 @@ public class HbmFluidHandlerGasCanister implements ICapabilityProvider, IFluidHa
 			return HbmFluidContainer.GAS_CANISTER.contains(stack.getFluid());
 		}
 		return false;
-	}
-	
+	}	
 }

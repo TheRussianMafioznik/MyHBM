@@ -1,8 +1,9 @@
 package com.hbm.tileentity.machine;
 
+import javax.annotation.Nonnull;
+
 import com.hbm.inventory.container.ContainerRadioThermal;
 import com.hbm.inventory.gui.GUIRadioThermal;
-import com.hbm.tileentity.IBufPacketReceiver;
 import com.hbm.tileentity.IGUIProvider;
 import com.hbm.tileentity.TileEntityMachineBase;
 import com.hbm.util.RTGUtil;
@@ -12,17 +13,15 @@ import io.netty.buffer.ByteBuf;
 import net.minecraft.client.gui.GuiScreen;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.inventory.Container;
-import net.minecraft.util.ITickable;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.tileentity.TileEntity;
+import net.minecraft.util.ITickable;
 import net.minecraft.util.math.AxisAlignedBB;
 import net.minecraft.world.World;
 import net.minecraftforge.fml.relauncher.Side;
 import net.minecraftforge.fml.relauncher.SideOnly;
 
-import javax.annotation.Nonnull;
-
-public class TileEntityHeaterRadioThermal extends TileEntityMachineBase implements IHeatSource, ITickable, IGUIProvider, IBufPacketReceiver {
+public class TileEntityHeaterRadioThermal extends TileEntityMachineBase implements IHeatSource, ITickable, IGUIProvider {
     
     public int heatGen;
     public int heatEnergy;
@@ -36,8 +35,6 @@ public class TileEntityHeaterRadioThermal extends TileEntityMachineBase implemen
     public void update() {
         
         if(!world.isRemote) {
-            
-            this.heatEnergy *= 0.999;
             
             this.tryPullHeat();
 
@@ -80,11 +77,13 @@ public class TileEntityHeaterRadioThermal extends TileEntityMachineBase implemen
     }
     
     protected void tryPullHeat() {
+        if(this.heatEnergy >= maxHeatEnergy) return;
         TileEntity con = world.getTileEntity(pos.add(0, -1, 0));
         
         if(con instanceof IHeatSource) {
             IHeatSource source = (IHeatSource) con;
-            this.heatEnergy += source.getHeatStored() * 0.85;
+            int pulled = (int) (source.getHeatStored() * 0.85);
+            this.heatEnergy = Math.min(this.heatEnergy + pulled, maxHeatEnergy);
             source.useUpHeat(source.getHeatStored());
         }
     }

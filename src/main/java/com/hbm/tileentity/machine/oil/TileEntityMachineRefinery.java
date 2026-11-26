@@ -4,19 +4,14 @@ import com.hbm.forgefluid.FFUtils;
 import com.hbm.forgefluid.ModForgeFluids;
 import com.hbm.interfaces.ITankPacketAcceptor;
 import com.hbm.inventory.RefineryRecipes;
-import com.hbm.items.ModItems;
 import com.hbm.lib.HBMSoundHandler;
 import com.hbm.lib.Library;
 import com.hbm.tileentity.TileEntityMachineBase;
-import com.hbm.packet.AuxElectricityPacket;
-import com.hbm.packet.FluidTankPacket;
-import com.hbm.packet.PacketDispatcher;
 import com.hbm.util.Tuple.Pair;
 
 import api.hbm.energy.IEnergyUser;
 import api.hbm.tile.IHeatSource;
 import io.netty.buffer.ByteBuf;
-import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.tileentity.TileEntity;
@@ -24,16 +19,16 @@ import net.minecraft.util.EnumFacing;
 import net.minecraft.util.ITickable;
 import net.minecraft.util.SoundCategory;
 import net.minecraft.util.math.AxisAlignedBB;
+import net.minecraft.util.math.BlockPos;
 import net.minecraftforge.common.capabilities.Capability;
 import net.minecraftforge.fluids.Fluid;
+import net.minecraftforge.fluids.FluidRegistry;
 import net.minecraftforge.fluids.FluidStack;
 import net.minecraftforge.fluids.FluidTank;
-import net.minecraftforge.fluids.FluidRegistry;
 import net.minecraftforge.fluids.FluidUtil;
 import net.minecraftforge.fluids.capability.CapabilityFluidHandler;
 import net.minecraftforge.fluids.capability.IFluidHandler;
 import net.minecraftforge.fluids.capability.IFluidTankProperties;
-import net.minecraftforge.fml.common.network.NetworkRegistry.TargetPoint;
 import net.minecraftforge.fml.relauncher.Side;
 import net.minecraftforge.fml.relauncher.SideOnly;
 
@@ -56,9 +51,6 @@ public class TileEntityMachineRefinery extends TileEntityMachineBase implements 
 
 	private int soundTimer = 0;
 	private boolean isProcessing = false;
-	private int syncTick = 0;
-
-	private String customName;
 
 	public TileEntityMachineRefinery() {
 		super(12);
@@ -112,6 +104,28 @@ public class TileEntityMachineRefinery extends TileEntityMachineBase implements 
 		return nbt;
 	}
 
+		@Override
+	public void onLoad() {
+		super.onLoad();
+		if (!world.isRemote) {
+			for (BlockPos dummyPos : dummyBlocks) {
+				if (world.isBlockLoaded(dummyPos)) {
+					world.notifyNeighborsOfStateChange(dummyPos, world.getBlockState(dummyPos).getBlock(), false);
+				}
+			}
+		}
+	}
+
+	@Override
+	public NBTTagCompound getUpdateTag() {
+		return this.writeToNBT(new NBTTagCompound());
+	}
+
+	@Override
+	public void handleUpdateTag(NBTTagCompound tag) {
+		this.readFromNBT(tag);
+	}
+
 	@Override
 	public void update() {
 		if (!world.isRemote) {
@@ -121,7 +135,6 @@ public class TileEntityMachineRefinery extends TileEntityMachineBase implements 
 			this.updateConnections();
 			power = Library.chargeTEFromItems(inventory, 0, power, maxPower);
 
-			this.heat *= 0.999;
 			this.tryPullHeat();
 
 			age++;
@@ -171,16 +184,34 @@ public class TileEntityMachineRefinery extends TileEntityMachineBase implements 
 		}
 	}
 
-	@Override
+		@Override
 	public void serialize(ByteBuf buf) {
 		super.serialize(buf);
+		buf.writeLong(power);
 		buf.writeInt(heat);
+		buf.writeInt(itemOutputTimer);
+		for (int i = 0; i < tanks.length; i++) {
+			NBTTagCompound tag = new NBTTagCompound();
+			tanks[i].writeToNBT(tag);
+			net.minecraftforge.fml.common.network.ByteBufUtils.writeTag(buf, tag);
+		}
 	}
 
 	@Override
 	public void deserialize(ByteBuf buf) {
 		super.deserialize(buf);
+		this.power = buf.readLong();
 		this.heat = buf.readInt();
+		this.itemOutputTimer = buf.readInt();
+		for (int i = 0; i < tanks.length; i++) {
+			NBTTagCompound tag = net.minecraftforge.fml.common.network.ByteBufUtils.readTag(buf);
+			if (tag != null) {
+				tanks[i].readFromNBT(tag);
+				if (tanks[i].getFluid() != null) {
+					tankTypes[i] = tanks[i].getFluid().getFluid();
+				}
+			}
+		}
 	}
 
 	private boolean canRefine() {
@@ -283,47 +314,22 @@ public class TileEntityMachineRefinery extends TileEntityMachineBase implements 
 	private long detectPower;
 	private FluidTank[] detectTanks = new FluidTank[]{null, null, null, null, null};
 
-	private void detectAndSendChanges() {
+		private void detectAndSendChanges() {
 		boolean mark = false;
 		if(detectPower != power){
 			mark = true;
 			detectPower = power;
 		}
-		if(!FFUtils.areTanksEqual(tanks[0], detectTanks[0])){
-			mark = true;
-			needsUpdate = true;
-			detectTanks[0] = FFUtils.copyTank(tanks[0]);
-		}
-		if(!FFUtils.areTanksEqual(tanks[1], detectTanks[1])){
-			mark = true;
-			needsUpdate = true;
-			detectTanks[1] = FFUtils.copyTank(tanks[1]);
-		}
-		if(!FFUtils.areTanksEqual(tanks[2], detectTanks[2])){
-			mark = true;
-			needsUpdate = true;
-			detectTanks[2] = FFUtils.copyTank(tanks[2]);
-		}
-		if(!FFUtils.areTanksEqual(tanks[3], detectTanks[3])){
-			mark = true;
-			needsUpdate = true;
-			detectTanks[3] = FFUtils.copyTank(tanks[3]);
-		}
-		if(!FFUtils.areTanksEqual(tanks[4], detectTanks[4])){
-			mark = true;
-			needsUpdate = true;
-			detectTanks[4] = FFUtils.copyTank(tanks[4]);
-		}
-		syncTick++;
-		if(syncTick >= 5) {
-			syncTick = 0;
-			PacketDispatcher.wrapper.sendToAllAround(new FluidTankPacket(pos.getX(), pos.getY(), pos.getZ(), new FluidTank[] {tanks[0], tanks[1], tanks[2], tanks[3], tanks[4]}), new TargetPoint(world.provider.getDimension(), pos.getX(), pos.getY(), pos.getZ(), 20));
+		for (int i = 0; i < tanks.length; i++) {
+			if(!FFUtils.areTanksEqual(tanks[i], detectTanks[i])){
+				mark = true;
+				needsUpdate = true;
+				detectTanks[i] = FFUtils.copyTank(tanks[i]);
+			}
 		}
 		if(mark) {
-			PacketDispatcher.wrapper.sendToAllAround(new AuxElectricityPacket(pos.getX(), pos.getY(), pos.getZ(), power), new TargetPoint(world.provider.getDimension(), pos.getX(), pos.getY(), pos.getZ(), 20));
-		}
-		if(mark)
 			markDirty();
+		}
 	}
 
 	protected boolean inputValidForTank(int tank, int slot){

@@ -1,11 +1,14 @@
 package com.hbm.handler.ability;
 
+import java.util.List;
+
 import com.hbm.config.ToolConfig;
 import com.hbm.inventory.CentrifugeRecipes;
 import com.hbm.inventory.ShredderRecipes;
 import com.hbm.items.ModItems;
 import com.hbm.items.tool.ItemToolAbility;
 import com.hbm.util.EnchantmentUtil;
+
 import net.minecraft.block.Block;
 import net.minecraft.entity.item.EntityItem;
 import net.minecraft.entity.player.EntityPlayer;
@@ -15,11 +18,10 @@ import net.minecraft.init.Enchantments;
 import net.minecraft.item.ItemStack;
 import net.minecraft.item.crafting.FurnaceRecipes;
 import net.minecraft.util.EnumHand;
+import net.minecraft.util.NonNullList;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.World;
 import net.minecraftforge.oredict.OreDictionary;
-
-import java.util.List;
 
 public interface IToolHarvestAbility extends IBaseAbility {
 
@@ -147,13 +149,15 @@ public interface IToolHarvestAbility extends IBaseAbility {
         }
 
         @Override
-        public void onHarvestBlock(int level, World world, int x, int y, int z, EntityPlayer player, Block block, int meta, EnumHand hand) {
-            List<ItemStack> drops = block.getDrops(world, new BlockPos(x, y, z), world.getBlockState(new BlockPos(x, y, z)), 0);
+		public void onHarvestBlock(int level, World world, int x, int y, int z, EntityPlayer player, Block block, int meta, EnumHand hand) {
+			BlockPos pos = new BlockPos(x, y, z);
+			NonNullList<ItemStack> drops = NonNullList.create();
+			block.getDrops(drops, world, pos, world.getBlockState(pos), 0);
 
             boolean doesSmelt = false;
 
             for (int i = 0; i < drops.size(); i++) {
-                ItemStack stack = drops.get(i).copy();
+                ItemStack stack = drops.get(i);
                 ItemStack result = FurnaceRecipes.instance().getSmeltingResult(stack);
 
                 if (!result.isEmpty()) {

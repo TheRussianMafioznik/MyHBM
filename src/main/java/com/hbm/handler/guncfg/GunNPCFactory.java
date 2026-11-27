@@ -9,14 +9,14 @@ import com.hbm.handler.BulletConfiguration;
 import com.hbm.handler.threading.PacketThreading;
 import com.hbm.interfaces.IBulletImpactBehavior;
 import com.hbm.interfaces.IBulletUpdateBehavior;
-import com.hbm.util.ContaminationUtil;
 import com.hbm.items.ModItems;
 import com.hbm.lib.HBMSoundHandler;
 import com.hbm.main.MainRegistry;
 import com.hbm.packet.AuxParticlePacketNT;
-import com.hbm.packet.PacketDispatcher;
 import com.hbm.render.amlfrom1710.Vec3;
 import com.hbm.util.BobMathUtil;
+import com.hbm.util.ContaminationUtil;
+import net.minecraft.util.math.Vec3d;
 
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.EntityLivingBase;
@@ -55,30 +55,28 @@ public class GunNPCFactory {
 		bullet.trail = 1;
 		bullet.explosive = 1.5F;
 
-		bullet.bUpdate = new IBulletUpdateBehavior() {
+				bullet.bUpdate = b -> {
+			if (b.world.isRemote || b.ticksExisted % 10 != 5)
+				return;
 
-			@Override
-			public void behaveUpdate(EntityBulletBase bullet) {
+			List<EntityPlayer> players = b.world.getEntitiesWithinAABB(EntityPlayer.class, b.getEntityBoundingBox().grow(50, 50, 50));
 
-				if(bullet.world.isRemote)
-					return;
-
-				if(bullet.ticksExisted % 10 != 5)
-					return;
-
-				List<EntityPlayer> players = bullet.world.getEntitiesWithinAABB(EntityPlayer.class, bullet.getEntityBoundingBox().grow(50, 50, 50));
-
-				for(EntityPlayer player : players) {
-
-					Vec3 motion = Vec3.createVectorHelper(player.posX - bullet.posX, (player.posY + player.getEyeHeight()) - bullet.posY, player.posZ - bullet.posZ);
-					motion = motion.normalize();
-
-					EntityBulletBase bolt = new EntityBulletBase(bullet.world, BulletConfigSyncingUtil.MASKMAN_BOLT);
-					bolt.shooter = bullet.shooter;
-					bolt.setPosition(bullet.posX, bullet.posY, bullet.posZ);
-					bolt.shoot(motion.xCoord, motion.yCoord, motion.zCoord, 0.5F, 0.05F);
-					bullet.world.spawnEntity(bolt);
+			for (EntityPlayer player : players) {
+				double dx = player.posX - b.posX;
+				double dy = (player.posY + player.getEyeHeight()) - b.posY;
+				double dz = player.posZ - b.posZ;
+				double len = Math.sqrt(dx * dx + dy * dy + dz * dz);
+				if (len > 0.0D) {
+					dx /= len;
+					dy /= len;
+					dz /= len;
 				}
+
+				EntityBulletBase bolt = new EntityBulletBase(b.world, BulletConfigSyncingUtil.MASKMAN_BOLT);
+				bolt.shooter = b.shooter;
+				bolt.setPosition(b.posX, b.posY, b.posZ);
+				bolt.shoot(dx, dy, dz, 0.5F, 0.05F);
+				b.world.spawnEntity(bolt);
 			}
 		};
 
@@ -236,112 +234,109 @@ public class GunNPCFactory {
 		return bullet;
 	}
 	
-	public static BulletConfiguration getRocketUFOConfig() {
-		
+		public static BulletConfiguration getRocketUFOConfig() {
+
 		BulletConfiguration bullet = GunRocketFactory.getRocketConfig();
-		
+
 		bullet.vPFX = "reddust";
 		bullet.destroysBlocks = false;
 		bullet.explosive = 0F;
-		
+
 		bullet.bUpdate = new IBulletUpdateBehavior() {
-			
-			double angle = 90;
-			double range = 100;
+
+			final double angle = 90;
+			final double range = 100;
+			final double rangeSq = range * range;
 
 			@Override
-			public void behaveUpdate(EntityBulletBase bullet) {
-				
-				if(bullet.world.isRemote)
+			public void behaveUpdate(EntityBulletBase b) {
+				if (b.world.isRemote)
 					return;
-				
-				if(bullet.world.getEntityByID(bullet.getEntityData().getInteger("homingTarget")) == null) {
-					chooseTarget(bullet);
+
+				int targetId = b.getEntityData().getInteger("homingTarget");
+				Entity target = targetId != 0 ? b.world.getEntityByID(targetId) : null;
+
+				if (target == null || !target.isEntityAlive()) {
+					target = chooseTarget(b);
 				}
-				
-				Entity target = bullet.world.getEntityByID(bullet.getEntityData().getInteger("homingTarget"));
-				
-				if(target != null) {
-					
-					if(bullet.getDistance(target) < 5) {
-						bullet.getConfig().bImpact.behaveBlockHit(bullet, -1, -1, -1);
-						bullet.setDead();
+
+				if (target != null) {
+					if (5.0D > b.getDistance(target)) {
+						b.getConfig().bImpact.behaveBlockHit(b, -1, -1, -1);
+						b.setDead();
 						return;
 					}
-					
-					Vec3 delta = Vec3.createVectorHelper(target.posX - bullet.posX, target.posY + target.height / 2 - bullet.posY, target.posZ - bullet.posZ);
-					delta = delta.normalize();
-					
-					double vel = Vec3.createVectorHelper(bullet.motionX, bullet.motionY, bullet.motionZ).length();
 
-					bullet.motionX = delta.xCoord * vel;
-					bullet.motionY = delta.yCoord * vel;
-					bullet.motionZ = delta.zCoord * vel;
-				}
-			}
-			
-			private void chooseTarget(EntityBulletBase bullet) {
-				
-				List<EntityLivingBase> entities = bullet.world.getEntitiesWithinAABB(EntityLivingBase.class, bullet.getEntityBoundingBox().grow(range, range, range));
-				
-				Vec3 mot = Vec3.createVectorHelper(bullet.motionX, bullet.motionY, bullet.motionZ);
-				
-				EntityLivingBase target = null;
-				double targetAngle = angle;
-				
-				for(EntityLivingBase e : entities) {
-					
-					if(!e.isEntityAlive() || e == bullet.shooter)
-						continue;
-					
-					Vec3 delta = Vec3.createVectorHelper(e.posX - bullet.posX, e.posY + e.height / 2 - bullet.posY, e.posZ - bullet.posZ);
-					RayTraceResult r = bullet.world.rayTraceBlocks(Vec3.createVectorHelper(bullet.posX, bullet.posY, bullet.posZ).toVec3d(), Vec3.createVectorHelper(e.posX, e.posY + e.height / 2, e.posZ).toVec3d(), false, true, false);
-					if(r != null && r.typeOfHit != Type.MISS)
-						continue;
-					
-					double dist = e.getDistanceSq(bullet);
-					
-					if(dist < range * range) {
-						
-						double deltaAngle = BobMathUtil.getCrossAngle(mot, delta);
-					
-						if(deltaAngle < targetAngle) {
-							target = e;
-							targetAngle = deltaAngle;
-						}
+					double dx = target.posX - b.posX;
+					double dy = target.posY + target.height * 0.5D - b.posY;
+					double dz = target.posZ - b.posZ;
+					double dist = Math.sqrt(dx * dx + dy * dy + dz * dz);
+
+					if (dist > 0.0D) {
+						double vel = Math.sqrt(b.motionX * b.motionX + b.motionY * b.motionY + b.motionZ * b.motionZ);
+						double scale = vel / dist;
+						b.motionX = dx * scale;
+						b.motionY = dy * scale;
+						b.motionZ = dz * scale;
 					}
 				}
-				
-				if(target != null) {
-					bullet.getEntityData().setInteger("homingTarget", target.getEntityId());
+			}
+
+			private EntityLivingBase chooseTarget(EntityBulletBase b) {
+				List<EntityLivingBase> entities = b.world.getEntitiesWithinAABB(EntityLivingBase.class, b.getEntityBoundingBox().grow(range, range, range));
+				Vec3 mot = Vec3.createVectorHelper(b.motionX, b.motionY, b.motionZ);
+				Vec3d bulletPos = new Vec3d(b.posX, b.posY, b.posZ);
+
+				EntityLivingBase bestTarget = null;
+				double bestAngle = angle;
+
+				for (EntityLivingBase e : entities) {
+					if (!e.isEntityAlive() || e == b.shooter)
+						continue;
+
+					double distSq = e.getDistanceSq(b);
+					if (distSq >= rangeSq)
+						continue;
+
+					Vec3 delta = Vec3.createVectorHelper(e.posX - b.posX, e.posY + e.height * 0.5D - b.posY, e.posZ - b.posZ);
+					double deltaAngle = BobMathUtil.getCrossAngle(mot, delta);
+					if (deltaAngle >= bestAngle)
+						continue;
+
+					RayTraceResult r = b.world.rayTraceBlocks(bulletPos, new Vec3d(e.posX, e.posY + e.height * 0.5D, e.posZ), false, true, false);
+					if (r != null && r.typeOfHit != Type.MISS)
+						continue;
+
+					bestTarget = e;
+					bestAngle = deltaAngle;
 				}
+
+				if (bestTarget != null) {
+					b.getEntityData().setInteger("homingTarget", bestTarget.getEntityId());
+				}
+				return bestTarget;
 			}
 		};
-		
-		bullet.bImpact = new IBulletImpactBehavior() {
 
-			@Override
-			public void behaveBlockHit(EntityBulletBase bullet, int x, int y, int z) {
+		bullet.bImpact = (b, x, y, z) -> {
+			b.world.playSound(null, b.posX, b.posY, b.posZ, HBMSoundHandler.ufoBlast, SoundCategory.HOSTILE, 5.0F, 0.9F + b.world.rand.nextFloat() * 0.2F);
+			b.world.playSound(null, b.posX, b.posY, b.posZ, SoundEvents.ENTITY_FIREWORK_BLAST, SoundCategory.HOSTILE, 5.0F, 0.5F);
+			ContaminationUtil.radiate(b.world, b.posX, b.posY, b.posZ, 50, 0, 0, 500);
 
-				bullet.world.playSound(null, bullet.posX, bullet.posY, bullet.posZ, HBMSoundHandler.ufoBlast, SoundCategory.HOSTILE, 5.0F, 0.9F + bullet.world.rand.nextFloat() * 0.2F);
-				bullet.world.playSound(null, bullet.posX, bullet.posY, bullet.posZ, SoundEvents.ENTITY_FIREWORK_BLAST, SoundCategory.HOSTILE, 5.0F, 0.5F);
-				ContaminationUtil.radiate(bullet.world, bullet.posX, bullet.posY, bullet.posZ, 50, 0, 0, 500);
-				
-				for(int i = 0; i < 3; i++) {
-					NBTTagCompound data = new NBTTagCompound();
-					data.setString("type", "plasmablast");
-					data.setFloat("r", 0.0F);
-					data.setFloat("g", 0.75F);
-					data.setFloat("b", 1.0F);
-					data.setFloat("pitch", -30F + 30F * i);
-					data.setFloat("yaw", bullet.world.rand.nextFloat() * 180F);
-					data.setFloat("scale", 5F);
-					PacketThreading.createAllAroundThreadedPacket(new AuxParticlePacketNT(data, bullet.posX, bullet.posY, bullet.posZ),
-							new TargetPoint(bullet.world.provider.getDimension(), bullet.posX, bullet.posY, bullet.posZ, 100));
-				}
+			for (int i = 0; 3 > i; i++) {
+				NBTTagCompound data = new NBTTagCompound();
+				data.setString("type", "plasmablast");
+				data.setFloat("r", 0.0F);
+				data.setFloat("g", 0.75F);
+				data.setFloat("b", 1.0F);
+				data.setFloat("pitch", -30F + 30F * i);
+				data.setFloat("yaw", b.world.rand.nextFloat() * 180F);
+				data.setFloat("scale", 5F);
+				PacketThreading.createAllAroundThreadedPacket(new AuxParticlePacketNT(data, b.posX, b.posY, b.posZ),
+						new TargetPoint(b.world.provider.getDimension(), b.posX, b.posY, b.posZ, 100));
 			}
 		};
-		
+
 		return bullet;
 	}
 }

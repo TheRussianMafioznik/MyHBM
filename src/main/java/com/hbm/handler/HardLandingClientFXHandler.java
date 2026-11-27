@@ -1,27 +1,27 @@
 package com.hbm.handler;
 
+import java.util.ArrayList;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Random;
+import java.util.Set;
+
 import com.hbm.items.gear.ArmorFSB;
+import java.util.Iterator;
+
 import net.minecraft.block.Block;
 import net.minecraft.block.state.IBlockState;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.entity.EntityPlayerSP;
-import net.minecraft.init.SoundEvents;
 import net.minecraft.inventory.EntityEquipmentSlot;
 import net.minecraft.item.ItemStack;
 import net.minecraft.util.EnumParticleTypes;
-import net.minecraft.util.SoundCategory;
 import net.minecraft.util.math.BlockPos;
 import net.minecraftforge.client.event.EntityViewRenderEvent;
 import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
 import net.minecraftforge.fml.common.gameevent.TickEvent;
 import net.minecraftforge.fml.relauncher.Side;
 import net.minecraftforge.fml.relauncher.SideOnly;
-
-import java.util.ArrayList;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Random;
-import java.util.Set;
 
 @SideOnly(Side.CLIENT)
 public class HardLandingClientFXHandler {
@@ -88,7 +88,8 @@ public class HardLandingClientFXHandler {
         event.setRoll(event.getRoll() + (float) Math.sin(t * 2.9F) * amp * 0.7F);
     }
 
-    private void triggerLandingFx(Minecraft mc, EntityPlayerSP player, float dist) {
+        private void triggerLandingFx(Minecraft mc, EntityPlayerSP player, float dist) {
+
         BlockPos center = getImpactPos(mc, player);
         IBlockState centerState = mc.world.getBlockState(center);
 
@@ -96,7 +97,7 @@ public class HardLandingClientFXHandler {
             return;
         }
 
-        spawnLandingParticles(mc, player, center, dist);
+        spawnLandingParticles(mc, center, dist);
 
         if (dist >= 15F) {
             float radius;
@@ -143,7 +144,7 @@ public class HardLandingClientFXHandler {
         }
     }
 
-    private void spawnLandingParticles(Minecraft mc, EntityPlayerSP player, BlockPos pos, float dist) {
+        private void spawnLandingParticles(Minecraft mc, BlockPos pos, float dist) {
         int dustCount;
         int crackCount;
         double radius;
@@ -171,58 +172,60 @@ public class HardLandingClientFXHandler {
             speed = 0.1D;
         }
 
-        int particleRadius;
-        if (dist >= 40F) {
-            particleRadius = 3;
-        } else if (dist >= 25F) {
-            particleRadius = 2;
-        } else {
-            particleRadius = 1;
-        }
+        int particleRadius = dist >= 40F ? 3 : (dist >= 25F ? 2 : 1);
 
         List<BlockPos> surfacePositions = new ArrayList<>();
-        for (int dx = -particleRadius; dx <= particleRadius; dx++) {
-            for (int dz = -particleRadius; dz <= particleRadius; dz++) {
+        List<Integer> surfaceStateIds = new ArrayList<>();
+        for (int dx = -particleRadius; particleRadius >= dx; dx++) {
+            for (int dz = -particleRadius; particleRadius >= dz; dz++) {
                 BlockPos check = pos.add(dx, 0, dz);
                 IBlockState st = mc.world.getBlockState(check);
                 if (!st.getBlock().isAir(st, mc.world, check) && !st.getMaterial().isLiquid()) {
                     surfacePositions.add(check);
+                    surfaceStateIds.add(Block.getStateId(st));
                 }
             }
         }
 
         if (surfacePositions.isEmpty()) {
             surfacePositions.add(pos);
+            surfaceStateIds.add(Block.getStateId(mc.world.getBlockState(pos)));
         }
 
-        for (int i = 0; i < dustCount; i++) {
-            BlockPos bp = surfacePositions.get(mc.world.rand.nextInt(surfacePositions.size()));
-            int stateId = Block.getStateId(mc.world.getBlockState(bp));
+        Random rand = mc.world.rand;
+        int surfaceCount = surfacePositions.size();
 
-            double px = bp.getX() + 0.5D + (mc.world.rand.nextDouble() - 0.5D) * radius * 2D;
+        for (int i = 0; dustCount > i; i++) {
+            int idx = rand.nextInt(surfaceCount);
+            BlockPos bp = surfacePositions.get(idx);
+            int stateId = surfaceStateIds.get(idx);
+
+            double px = bp.getX() + 0.5D + (rand.nextDouble() - 0.5D) * radius * 2D;
             double py = bp.getY() + 1.02D;
-            double pz = bp.getZ() + 0.5D + (mc.world.rand.nextDouble() - 0.5D) * radius * 2D;
-            double mx = (mc.world.rand.nextDouble() - 0.5D) * speed * 2D;
-            double my = mc.world.rand.nextDouble() * speed * 1.5D;
-            double mz = (mc.world.rand.nextDouble() - 0.5D) * speed * 2D;
+            double pz = bp.getZ() + 0.5D + (rand.nextDouble() - 0.5D) * radius * 2D;
+            double mx = (rand.nextDouble() - 0.5D) * speed * 2D;
+            double my = rand.nextDouble() * speed * 1.5D;
+            double mz = (rand.nextDouble() - 0.5D) * speed * 2D;
 
             mc.world.spawnParticle(EnumParticleTypes.BLOCK_DUST, px, py, pz, mx, my, mz, stateId);
         }
 
-        for (int i = 0; i < crackCount; i++) {
-            BlockPos bp = surfacePositions.get(mc.world.rand.nextInt(surfacePositions.size()));
-            int stateId = Block.getStateId(mc.world.getBlockState(bp));
+        for (int i = 0; crackCount > i; i++) {
+            int idx = rand.nextInt(surfaceCount);
+            BlockPos bp = surfacePositions.get(idx);
+            int stateId = surfaceStateIds.get(idx);
 
-            double px = bp.getX() + 0.5D + (mc.world.rand.nextDouble() - 0.5D) * radius * 1.6D;
+            double px = bp.getX() + 0.5D + (rand.nextDouble() - 0.5D) * radius * 1.6D;
             double py = bp.getY() + 1.01D;
-            double pz = bp.getZ() + 0.5D + (mc.world.rand.nextDouble() - 0.5D) * radius * 1.6D;
-            double mx = (mc.world.rand.nextDouble() - 0.5D) * speed * 1.8D;
-            double my = mc.world.rand.nextDouble() * speed * 1.2D;
-            double mz = (mc.world.rand.nextDouble() - 0.5D) * speed * 1.8D;
+            double pz = bp.getZ() + 0.5D + (rand.nextDouble() - 0.5D) * radius * 1.6D;
+            double mx = (rand.nextDouble() - 0.5D) * speed * 1.8D;
+            double my = rand.nextDouble() * speed * 1.2D;
+            double mz = (rand.nextDouble() - 0.5D) * speed * 1.8D;
 
             mc.world.spawnParticle(EnumParticleTypes.BLOCK_CRACK, px, py, pz, mx, my, mz, stateId);
         }
     }
+
 
     private void applyCracks(Minecraft mc, BlockPos center, float baseRadius, int tendrilCount, int tendrilMaxLen, int stage, int duration) {
         clearCracks(mc);
@@ -325,18 +328,18 @@ public class HardLandingClientFXHandler {
         }
     }
 
-    private void tickCracks(Minecraft mc) {
+        private void tickCracks(Minecraft mc) {
         if (activeCracks.isEmpty()) return;
 
-        List<CrackEntry> toRemove = new ArrayList<>();
-        for (CrackEntry entry : activeCracks) {
+        Iterator<CrackEntry> it = activeCracks.iterator();
+        while (it.hasNext()) {
+            CrackEntry entry = it.next();
             entry.ticksLeft--;
-            if (entry.ticksLeft <= 0) {
+            if (0 >= entry.ticksLeft) {
                 mc.renderGlobal.sendBlockBreakProgress(entry.breakerId, entry.pos, -1);
-                toRemove.add(entry);
+                it.remove();
             }
         }
-        activeCracks.removeAll(toRemove);
     }
 
     private void clearCracks(Minecraft mc) {
@@ -378,11 +381,11 @@ public class HardLandingClientFXHandler {
         }
     }
 
-    private boolean hasHardLanding(EntityPlayerSP player) {
+        private boolean hasHardLanding(EntityPlayerSP player) {
         return hasHardLanding(player.getItemStackFromSlot(EntityEquipmentSlot.HEAD))
-                & hasHardLanding(player.getItemStackFromSlot(EntityEquipmentSlot.CHEST))
-                & hasHardLanding(player.getItemStackFromSlot(EntityEquipmentSlot.LEGS))
-                & hasHardLanding(player.getItemStackFromSlot(EntityEquipmentSlot.FEET));
+                && hasHardLanding(player.getItemStackFromSlot(EntityEquipmentSlot.CHEST))
+                && hasHardLanding(player.getItemStackFromSlot(EntityEquipmentSlot.LEGS))
+                && hasHardLanding(player.getItemStackFromSlot(EntityEquipmentSlot.FEET));
     }
 
     private boolean hasHardLanding(ItemStack stack) {

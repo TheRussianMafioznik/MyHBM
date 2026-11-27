@@ -723,23 +723,6 @@ public class FFUtils {
 		return returnValue;
 	}
 
-	private static boolean fillItemAndMove(IItemHandlerModifiable slots, int slot1, int slot2, FluidTank tank, IItemFluidHandler fHandler, FluidStack fStack, ItemStack stack, boolean move){
-		if(fStack != null && fHandler.fill(stack, tank.getFluid(), false) <= 0) {
-			if(move) moveItems(slots, slot1, slot2, false);
-			return false;
-		}
-		boolean returnValue = false;
-		if(fStack == null || fStack.getFluid() == tank.getFluid().getFluid()) {
-			tank.drain(fHandler.fill(stack, new FluidStack(tank.getFluid(), Math.min(16000, tank.getFluidAmount())), true), true);
-			returnValue = true;
-		}
-		fStack = fHandler.drain(stack, Integer.MAX_VALUE, false);
-		if(fStack != null && fHandler.fill(stack, new FluidStack(fStack.getFluid(), Integer.MAX_VALUE), false) <= 0) {
-			if(move) moveItems(slots, slot1, slot2, false);
-		}
-		return returnValue;
-	}
-
 	private static boolean trySpecialFillFluidContainer(IItemHandlerModifiable slots, FluidTank tank, int slot1, int slot2){
 		if(tank == null || tank.getFluid() == null) return false;
 		ItemStack in = slots.getStackInSlot(slot1);

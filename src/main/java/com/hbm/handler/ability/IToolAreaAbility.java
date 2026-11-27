@@ -1,21 +1,25 @@
 package com.hbm.handler.ability;
 
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
+
 import com.hbm.config.ToolConfig;
 import com.hbm.explosion.ExplosionNT;
 import com.hbm.handler.ThreeInts;
 import com.hbm.items.tool.ItemToolAbility;
+
 import net.minecraft.block.Block;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.entity.player.EntityPlayerMP;
 import net.minecraft.init.Blocks;
-import net.minecraft.util.EnumFacing;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.MathHelper;
 import net.minecraft.util.math.RayTraceResult;
 import net.minecraft.util.math.Vec3d;
 import net.minecraft.world.World;
-
-import java.util.*;
 
 public interface IToolAreaAbility extends IBaseAbility {
     boolean onDig(int level, World world, BlockPos pos, EntityPlayer player, ItemToolAbility tool);
@@ -266,10 +270,10 @@ public interface IToolAreaAbility extends IBaseAbility {
             float lookX = sinYaw * cosPitch;
             float lookZ = cosYaw * cosPitch;
 
-            double reach = range;
-            if (player instanceof EntityPlayerMP) {
-                reach = ((EntityPlayerMP) player).interactionManager.getBlockReachDistance();
-            }
+			double reach = range;
+			if (player instanceof EntityPlayerMP) {
+				reach = player.getEntityAttribute(EntityPlayer.REACH_DISTANCE).getAttributeValue();
+			}
 
             Vec3d end = start.add((double) lookX * reach, (double) sinPitch * reach, (double) lookZ * reach);
             return world.rayTraceBlocks(start, end, stopOnLiquid, !stopOnLiquid, stopOnLiquid);

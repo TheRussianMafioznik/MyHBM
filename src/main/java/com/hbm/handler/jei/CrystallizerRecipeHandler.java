@@ -1,11 +1,9 @@
 package com.hbm.handler.jei;
 
-import com.hbm.forgefluid.ModForgeFluids;
 import com.hbm.inventory.CrystallizerRecipes.CrystallizerRecipe;
-import com.hbm.items.machine.ItemFluidIcon;
 import com.hbm.lib.RefStrings;
-
 import com.hbm.util.I18nUtil;
+
 import mezz.jei.api.IGuiHelper;
 import mezz.jei.api.gui.IDrawable;
 import mezz.jei.api.gui.IDrawableAnimated;

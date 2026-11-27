@@ -120,7 +120,6 @@ public class MultiblockHandler {
 
 	public static boolean fillUp(World world, BlockPos pos, int[] i, Block block) {
 		boolean placable = true;
-		MutableBlockPos replace = new BlockPos.MutableBlockPos();
 		int x = pos.getX();
 		int y = pos.getY();
 		int z = pos.getZ();

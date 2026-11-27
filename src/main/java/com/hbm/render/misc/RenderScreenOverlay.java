@@ -94,36 +94,35 @@ public class RenderScreenOverlay {
 	}
 
 
-	public static void renderDigCounter(ScaledResolution resolution, float in, Gui gui) {
+		public static void renderDigCounter(ScaledResolution resolution, float in, Gui gui) {
+		renderDigCounter(resolution, in, gui, true);
+	}
+
+	public static void renderDigCounter(ScaledResolution resolution, float in, Gui gui, boolean hasGeiger) {
 		GL11.glPushMatrix();
 
 		GlStateManager.enableBlend();
-        GlStateManager.disableDepth();
-        GlStateManager.depthMask(false);
-        GlStateManager.tryBlendFuncSeparate(SourceFactor.SRC_ALPHA, DestFactor.ONE_MINUS_SRC_ALPHA, SourceFactor.ONE, DestFactor.ZERO);
-        GlStateManager.color(1.0F, 1.0F, 1.0F, 1.0F);
-        GlStateManager.disableAlpha();
-        
-        float digamma = 0;
-        
-        digamma = lastDigResult - prevDigResult;
-        
-        if(System.currentTimeMillis() >= lastDigSurvey + 1000) {
-        	lastDigSurvey = System.currentTimeMillis();
-        	prevDigResult = lastDigResult;
-        	lastDigResult = in;
-        }
-		
+     GlStateManager.disableDepth();
+     GlStateManager.depthMask(false);
+     GlStateManager.tryBlendFuncSeparate(SourceFactor.SRC_ALPHA, DestFactor.ONE_MINUS_SRC_ALPHA, SourceFactor.ONE, DestFactor.ZERO);
+     GlStateManager.color(1.0F, 1.0F, 1.0F, 1.0F);
+     GlStateManager.disableAlpha();
+
+     float digamma = lastDigResult - prevDigResult;
+
+     if(System.currentTimeMillis() >= lastDigSurvey + 1000) {
+     	lastDigSurvey = System.currentTimeMillis();
+     	prevDigResult = lastDigResult;
+     	lastDigResult = in;
+     }
+
 		int length = 74;
 		int maxDig = 10;
-		
+
 		int bar = getScaled(in, maxDig, 74);
-		
-		//if(radiation >= 1 && radiation <= 999)
-		//	bar -= (1 + Minecraft.getMinecraft().theWorld.rand.nextInt(3));
-		
-		int posX = RadiationConfig.digammaX;
-		int posY = resolution.getScaledHeight() - 18 - RadiationConfig.digammaY;
+
+		int posX = hasGeiger ? RadiationConfig.digammaX : RadiationConfig.geigerX;
+		int posY = resolution.getScaledHeight() - 18 - (hasGeiger ? RadiationConfig.digammaY : RadiationConfig.geigerY);
 
 		Minecraft.getMinecraft().renderEngine.bindTexture(misc);
         gui.drawTexturedModalRect(posX, posY, 0, 218, 94, 18);

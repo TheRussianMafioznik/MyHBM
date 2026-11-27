@@ -1,19 +1,19 @@
 package com.hbm.handler;
 
+import org.lwjgl.input.Keyboard;
+
 import com.hbm.capability.HbmCapability;
 import com.hbm.capability.HbmCapability.IHBMData;
 import com.hbm.inventory.gui.GuiPerformanceSettings;
 import com.hbm.main.MainRegistry;
 import com.hbm.packet.KeybindPacket;
 import com.hbm.packet.PacketDispatcher;
+
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.settings.KeyBinding;
-import net.minecraft.entity.player.EntityPlayer;
-import net.minecraft.item.ItemStack;
 import net.minecraftforge.fml.client.registry.ClientRegistry;
 import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
 import net.minecraftforge.fml.common.gameevent.InputEvent.KeyInputEvent;
-import org.lwjgl.input.Keyboard;
 public class HbmKeybinds {
 
 	public static final String category = "key.categories.hbm";

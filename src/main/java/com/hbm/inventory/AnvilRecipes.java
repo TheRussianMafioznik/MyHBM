@@ -1,15 +1,43 @@
 package com.hbm.inventory;
 
+import static com.hbm.inventory.OreDictManager.AL;
+import static com.hbm.inventory.OreDictManager.ALLOY;
+import static com.hbm.inventory.OreDictManager.ANY_CONCRETE;
+import static com.hbm.inventory.OreDictManager.ANY_PLASTIC;
+import static com.hbm.inventory.OreDictManager.BE;
+import static com.hbm.inventory.OreDictManager.BIGMT;
+import static com.hbm.inventory.OreDictManager.CMB;
+import static com.hbm.inventory.OreDictManager.COAL;
 import static com.hbm.inventory.OreDictManager.CU;
+import static com.hbm.inventory.OreDictManager.DESH;
+import static com.hbm.inventory.OreDictManager.DIAMOND;
+import static com.hbm.inventory.OreDictManager.DNT;
+import static com.hbm.inventory.OreDictManager.EMERALD;
+import static com.hbm.inventory.OreDictManager.FERRO;
+import static com.hbm.inventory.OreDictManager.GOLD;
 import static com.hbm.inventory.OreDictManager.IRON;
+import static com.hbm.inventory.OreDictManager.LAPIS;
+import static com.hbm.inventory.OreDictManager.MAGTUNG;
+import static com.hbm.inventory.OreDictManager.MINGRADE;
+import static com.hbm.inventory.OreDictManager.NETHERQUARTZ;
+import static com.hbm.inventory.OreDictManager.OSMIRIDIUM;
+import static com.hbm.inventory.OreDictManager.PB;
+import static com.hbm.inventory.OreDictManager.RAREEARTH;
+import static com.hbm.inventory.OreDictManager.REDSTONE;
+import static com.hbm.inventory.OreDictManager.RUBBER;
+import static com.hbm.inventory.OreDictManager.S;
+import static com.hbm.inventory.OreDictManager.SA326;
+import static com.hbm.inventory.OreDictManager.SBD;
+import static com.hbm.inventory.OreDictManager.STAR;
 import static com.hbm.inventory.OreDictManager.STEEL;
+import static com.hbm.inventory.OreDictManager.TCALLOY;
+import static com.hbm.inventory.OreDictManager.TI;
+import static com.hbm.inventory.OreDictManager.W;
+import static com.hbm.inventory.OreDictManager.getReflector;
+import static net.minecraft.item.ItemStack.areItemStacksEqual;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
-
-import static com.hbm.inventory.OreDictManager.*;
-import static net.minecraft.item.ItemStack.areItemStacksEqual;
 
 import com.hbm.blocks.ModBlocks;
 import com.hbm.config.GeneralConfig;
@@ -24,6 +52,8 @@ import net.minecraft.init.Blocks;
 import net.minecraft.init.Items;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
+
+import java.util.Collections;
 
 public class AnvilRecipes {
 
@@ -179,7 +209,6 @@ public class AnvilRecipes {
 		constructionRecipes.add(new AnvilConstructionRecipe(new ComparableStack(ModBlocks.deco_lead, 1), new AnvilOutput(new ItemStack(ModItems.ingot_lead))).setTier(1).setOverlay(OverlayType.CONSTRUCTION));
 		constructionRecipes.add(new AnvilConstructionRecipe(new ComparableStack(ModBlocks.deco_red_copper, 1), new AnvilOutput(new ItemStack(ModItems.ingot_red_copper))).setTier(1).setOverlay(OverlayType.CONSTRUCTION));
 		constructionRecipes.add(new AnvilConstructionRecipe(new ComparableStack(ModBlocks.deco_steel, 1), new AnvilOutput(new ItemStack(ModItems.ingot_steel))).setTier(1).setOverlay(OverlayType.CONSTRUCTION));
-		constructionRecipes.add(new AnvilConstructionRecipe(new ComparableStack(ModBlocks.deco_steel, 1), new AnvilOutput(new ItemStack(ModItems.ingot_steel))).setTier(1).setOverlay(OverlayType.CONSTRUCTION));
 		constructionRecipes.add(new AnvilConstructionRecipe(new ComparableStack(ModBlocks.deco_titanium, 1), new AnvilOutput(new ItemStack(ModItems.ingot_titanium))).setTier(1).setOverlay(OverlayType.CONSTRUCTION));
 		constructionRecipes.add(new AnvilConstructionRecipe(new ComparableStack(ModBlocks.deco_tungsten, 1), new AnvilOutput(new ItemStack(ModItems.ingot_tungsten))).setTier(1).setOverlay(OverlayType.CONSTRUCTION));
 
@@ -215,16 +244,16 @@ public class AnvilRecipes {
 				},
 				new AnvilOutput(new ItemStack(ModBlocks.machine_difurnace_off))).setTier(1));
 		
-		int ukModifier = 1;
 		constructionRecipes.add(new AnvilConstructionRecipe(
 				new AStack[] {
-						new OreDictStack("blockGlassColorless", 4 * ukModifier),
-						new OreDictStack(STEEL.ingot(), 8 * ukModifier),
-						new OreDictStack(CU.ingot(), 8 * ukModifier),
-						new ComparableStack(ModItems.motor, 2 * ukModifier),
-						new ComparableStack(ModItems.circuit_aluminium, 1 * ukModifier)
+						new OreDictStack("blockGlassColorless", 4),
+						new OreDictStack(STEEL.ingot(), 8),
+						new OreDictStack(CU.ingot(), 8),
+						new ComparableStack(ModItems.motor, 2),
+						new ComparableStack(ModItems.circuit_aluminium, 1)
 				},
 				new AnvilOutput(new ItemStack(ModBlocks.machine_assembly))).setTier(2));
+
 		constructionRecipes.add(new AnvilConstructionRecipe(
 				new AStack[] {
 						new ComparableStack(Blocks.FURNACE),
@@ -799,21 +828,21 @@ public class AnvilRecipes {
 			this.setOverlay(OverlayType.SMITHING); //preferred overlay for 1:1 conversions is smithing
 		}
 		
-		public AnvilConstructionRecipe(AStack[] input, AnvilOutput output) {
-			for(AStack stack : input) this.input.add(stack);
+				public AnvilConstructionRecipe(AStack[] input, AnvilOutput output) {
+			Collections.addAll(this.input, input);
 			this.output.add(output);
 			this.setOverlay(OverlayType.CONSTRUCTION); //preferred overlay for many:1 conversions is construction
 		}
 		
 		public AnvilConstructionRecipe(AStack input, AnvilOutput[] output) {
 			this.input.add(input);
-			for(AnvilOutput out : output) this.output.add(out);
+			Collections.addAll(this.output, output);
 			this.setOverlay(OverlayType.RECYCLING); //preferred overlay for 1:many conversions is recycling
 		}
 		
 		public AnvilConstructionRecipe(AStack[] input, AnvilOutput[] output) {
-			for(AStack stack : input) this.input.add(stack);
-			for(AnvilOutput out : output) this.output.add(out);
+			Collections.addAll(this.input, input);
+			Collections.addAll(this.output, output);
 			this.setOverlay(OverlayType.NONE); //no preferred overlay for many:many conversions
 		}
 		

@@ -7,58 +7,52 @@ import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 
-import com.hbm.blocks.ModBlocks;
-import com.hbm.config.GeneralConfig;
-import com.hbm.forgefluid.ModForgeFluids;
 import com.hbm.forgefluid.HbmFluidContainer;
+import com.hbm.forgefluid.ModForgeFluids;
 import com.hbm.inventory.AnvilRecipes;
 import com.hbm.inventory.AnvilRecipes.AnvilConstructionRecipe;
 import com.hbm.inventory.AnvilRecipes.AnvilOutput;
 import com.hbm.inventory.AnvilRecipes.OverlayType;
 import com.hbm.inventory.AnvilSmithingRecipe;
 import com.hbm.inventory.AssemblerRecipes;
-import com.hbm.inventory.ChemplantRecipes;
-import com.hbm.inventory.MixerRecipes;
 import com.hbm.inventory.BreederRecipes;
 import com.hbm.inventory.BreederRecipes.BreederRecipe;
-import com.hbm.inventory.RBMKFuelRecipes;
-import com.hbm.inventory.WasteDrumRecipes;
-import com.hbm.inventory.StorageDrumRecipes;
+import com.hbm.inventory.CatalyticReformerRecipes;
+import com.hbm.inventory.ChemplantRecipes;
+import com.hbm.inventory.CrackRecipes;
 import com.hbm.inventory.CyclotronRecipes;
-import com.hbm.inventory.FusionRecipes;
 import com.hbm.inventory.DiFurnaceRecipes;
+import com.hbm.inventory.FusionRecipes;
 import com.hbm.inventory.HeatRecipes;
-import com.hbm.inventory.PressRecipes;
+import com.hbm.inventory.HydrotreaterRecipes;
 import com.hbm.inventory.MachineRecipes;
 import com.hbm.inventory.MachineRecipes.GasCentOutput;
 import com.hbm.inventory.MagicRecipes;
-import com.hbm.inventory.RefineryRecipes;
-import com.hbm.inventory.CrackRecipes;
-import com.hbm.inventory.HydrotreaterRecipes;
-import com.hbm.inventory.CatalyticReformerRecipes;
-import com.hbm.inventory.PyroOvenRecipes;
-import com.hbm.inventory.NuclearTransmutationRecipes;
 import com.hbm.inventory.MagicRecipes.MagicRecipe;
+import com.hbm.inventory.MixerRecipes;
+import com.hbm.inventory.NuclearTransmutationRecipes;
+import com.hbm.inventory.PressRecipes;
+import com.hbm.inventory.PyroOvenRecipes;
+import com.hbm.inventory.RBMKFuelRecipes;
 import com.hbm.inventory.RecipesCommon.AStack;
 import com.hbm.inventory.RecipesCommon.ComparableStack;
 import com.hbm.inventory.RecipesCommon.NbtComparableStack;
-import com.hbm.inventory.ChemplantRecipes;
+import com.hbm.inventory.RefineryRecipes;
+import com.hbm.inventory.StorageDrumRecipes;
+import com.hbm.inventory.WasteDrumRecipes;
 import com.hbm.items.ModItems;
-import com.hbm.items.machine.ItemAssemblyTemplate;
-import com.hbm.items.machine.ItemChemistryTemplate;
+import com.hbm.items.machine.ItemFELCrystal.EnumWavelengths;
 import com.hbm.items.machine.ItemFluidIcon;
 import com.hbm.items.machine.ItemFluidTank;
-import com.hbm.items.machine.ItemFELCrystal.EnumWavelengths;
 import com.hbm.items.special.ItemCell;
 import com.hbm.items.tool.ItemFluidCanister;
 import com.hbm.items.tool.ItemGasCanister;
 import com.hbm.lib.Library;
-import com.hbm.main.MainRegistry;
-import com.hbm.util.WeightedRandomObject;
-import com.hbm.util.Tuple.Quartet;
-import com.hbm.util.Tuple.Pair;
-import com.hbm.util.Tuple.Triplet;
 import com.hbm.util.I18nUtil;
+import com.hbm.util.Tuple.Pair;
+import com.hbm.util.Tuple.Quartet;
+import com.hbm.util.Tuple.Triplet;
+import com.hbm.util.WeightedRandomObject;
 
 import mezz.jei.api.gui.IDrawableStatic;
 import mezz.jei.api.ingredients.IIngredients;
@@ -67,18 +61,14 @@ import mezz.jei.api.recipe.IRecipeWrapper;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.FontRenderer;
 import net.minecraft.client.renderer.GlStateManager;
-import net.minecraft.init.Blocks;
-import net.minecraft.init.Items;
-import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
+import net.minecraft.util.text.TextFormatting;
 import net.minecraftforge.fluids.Fluid;
 import net.minecraftforge.fluids.FluidRegistry;
 import net.minecraftforge.fluids.FluidStack;
-import net.minecraft.util.text.TextFormatting;
 
 public class JeiRecipes {
 
-	private static List<AssemblerRecipeWrapper> assemblerRecipes = null;
 	private static List<ChemRecipe> chemRecipes = null;
 	private static List<MixerRecipe> mixerRecipes = null;
 	private static List<CyclotronRecipe> cyclotronRecipes = null;
@@ -367,7 +357,7 @@ public class JeiRecipes {
 		private final ItemStack output;
 
 		public TransmutationRecipe(List<ItemStack> inputs, ItemStack output) {
-			this.inputs = new ArrayList();
+			this.inputs = new ArrayList<>();
 			this.inputs.add(inputs);
 			this.output = output;
 		}
@@ -529,7 +519,7 @@ public class JeiRecipes {
 
 	}
 
-	public static class FluidRecipeInverse extends FluidRecipe implements IRecipeWrapper {
+	public static class FluidRecipeInverse extends FluidRecipe {
 
 		public FluidRecipeInverse(ItemStack input, ItemStack output) {
 			super(input, output);
@@ -861,7 +851,6 @@ public class JeiRecipes {
 		return cyclotronRecipes;
 	}
 
-	@SuppressWarnings("unchecked")
 	public static List<PressRecipe> getPressRecipes() {
 		if(pressRecipes != null)
 			return pressRecipes;
@@ -967,24 +956,17 @@ public class JeiRecipes {
 		return cmbRecipes;
 	}
 
-	public static List<GasCentRecipe> getGasCentrifugeRecipes() {
+		public static List<GasCentRecipe> getGasCentrifugeRecipes() {
 		if(gasCentRecipes != null)
 			return gasCentRecipes;
-		gasCentRecipes = new ArrayList<GasCentRecipe>();
+		gasCentRecipes = new ArrayList<>();
 
 		for(Fluid f : FluidRegistry.getRegisteredFluids().values()){
 			List<GasCentOutput> outputs = MachineRecipes.getGasCentOutput(f);
 
 			if(outputs != null){
-				int totalWeight = 0;
-
-				for(GasCentOutput o : outputs) {
-					totalWeight += o.weight;
-				}
-
 				ItemStack input = ItemFluidIcon.getStackWithQuantity(f, MachineRecipes.getFluidConsumedGasCent(f));
-
-				List<ItemStack> result = new ArrayList<ItemStack>(4);
+				List<ItemStack> result = new ArrayList<>(outputs.size());
 
 				for(GasCentOutput o : outputs){
 					ItemStack stack = o.output.copy();
@@ -1065,14 +1047,15 @@ public class JeiRecipes {
 	}
 
 
-	public static List<RefineryRecipe> getRefineryRecipe() {
+		public static List<RefineryRecipe> getRefineryRecipe() {
 		if(refineryRecipes != null)
 			return refineryRecipes;
-		refineryRecipes = new ArrayList<RefineryRecipe>();
+		refineryRecipes = new ArrayList<>();
 
 		for(Fluid fluid : RefineryRecipes.refineryRecipesMap.keySet()){
-			FluidStack[] outputFluids = RefineryRecipes.getRecipe(fluid).getKey();
-			ItemStack outputItem = RefineryRecipes.getRecipe(fluid).getValue();
+			Pair<FluidStack[], ItemStack> recipe = RefineryRecipes.getRecipe(fluid);
+			FluidStack[] outputFluids = recipe.getKey();
+			ItemStack outputItem = recipe.getValue();
 			refineryRecipes.add(new RefineryRecipe(
 					ItemFluidIcon.getStackWithQuantity(fluid, 1000),
 					Arrays.asList(
@@ -1266,55 +1249,45 @@ public class JeiRecipes {
 		return hadronRecipes;
 	}
 
+	private static SILEXRecipe buildSilexRecipe(List<ItemStack> inputs, com.hbm.inventory.SILEXRecipes.SILEXRecipe out) {
+		double weight = 0;
+		for(WeightedRandomObject obj : out.outputs) {
+			weight += obj.itemWeight;
+		}
+		int size = out.outputs.size();
+		List<Double> chances = new ArrayList<>(size);
+		List<ItemStack> outputs = new ArrayList<>(size);
+		for(int i = 0; size > i; i++) {
+			WeightedRandomObject obj = out.outputs.get(i);
+			outputs.add(obj.asStack());
+			chances.add(100 * obj.itemWeight / weight);
+		}
+		return new SILEXRecipe(inputs, chances, outputs, (double) out.fluidProduced / out.fluidConsumed, out.laserStrength);
+	}
 
 	public static List<SILEXRecipe> getSILEXRecipes(EnumWavelengths wavelength){
 		if(waveSilexRecipes.containsKey(wavelength))
 			return waveSilexRecipes.get(wavelength);
-		ArrayList wSilexRecipes = new ArrayList<>();
+		List<SILEXRecipe> wSilexRecipes = new ArrayList<>();
 		for(Entry<List<ItemStack>, com.hbm.inventory.SILEXRecipes.SILEXRecipe> e : com.hbm.inventory.SILEXRecipes.getRecipes().entrySet()){
-			com.hbm.inventory.SILEXRecipes.SILEXRecipe out = e.getValue();
-			if(out.laserStrength == wavelength){
-				double weight = 0;
-				for(WeightedRandomObject obj : out.outputs) {
-					weight += obj.itemWeight;
-				}
-				List<Double> chances = new ArrayList<>(out.outputs.size());
-				List<ItemStack> outputs = new ArrayList<>(chances.size());
-				for(int i = 0; i < out.outputs.size(); i++) {
-					WeightedRandomObject obj = out.outputs.get(i);
-					outputs.add(obj.asStack());
-					chances.add(100 * obj.itemWeight / weight);
-				}
-				wSilexRecipes.add(new SILEXRecipe(e.getKey(), chances, outputs, (double)out.fluidProduced/out.fluidConsumed, out.laserStrength));
+			if(e.getValue().laserStrength == wavelength){
+				wSilexRecipes.add(buildSilexRecipe(e.getKey(), e.getValue()));
 			}
 		}
 		waveSilexRecipes.put(wavelength, wSilexRecipes);
 		return wSilexRecipes;
 	}
 
-
 	public static List<SILEXRecipe> getSILEXRecipes(){
 		if(silexRecipes != null)
 			return silexRecipes;
 		silexRecipes = new ArrayList<>();
 		for(Entry<List<ItemStack>, com.hbm.inventory.SILEXRecipes.SILEXRecipe> e : com.hbm.inventory.SILEXRecipes.getRecipes().entrySet()){
-			com.hbm.inventory.SILEXRecipes.SILEXRecipe out = e.getValue();
-			double weight = 0;
-			for(WeightedRandomObject obj : out.outputs) {
-				weight += obj.itemWeight;
-			}
-			List<Double> chances = new ArrayList<>(out.outputs.size());
-			List<ItemStack> outputs = new ArrayList<>(chances.size());
-			for(int i = 0; i < out.outputs.size(); i++) {
-				WeightedRandomObject obj = out.outputs.get(i);
-				outputs.add(obj.asStack());
-				chances.add(100 * obj.itemWeight / weight);
-			}
-			silexRecipes.add(new SILEXRecipe(e.getKey(), chances, outputs, (double)out.fluidProduced/out.fluidConsumed, out.laserStrength));
+			silexRecipes.add(buildSilexRecipe(e.getKey(), e.getValue()));
 		}
 		return silexRecipes;
 	}
-
+		
 	public static List<SmithingRecipe> getSmithingRecipes(){
 		if(smithingRecipes != null)
 			return smithingRecipes;

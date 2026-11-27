@@ -214,12 +214,8 @@ public class HazardRegistry {
 		HazardSystem.register(billet_ra226be, makeData(RADIATION, rabe * billet));
 		HazardSystem.register(billet_pu238be, makeData(RADIATION, pube * billet));
 		
-		//TODO: move this into its own method
 		HazardSystem.trafos.add(new HazardTransformerRadiationNBT());
 	}
 	
-	private static HazardData makeData() { return new HazardData(); }
-	private static HazardData makeData(HazardTypeBase hazard) { return new HazardData().addEntry(hazard); }
 	private static HazardData makeData(HazardTypeBase hazard, float level) { return new HazardData().addEntry(hazard, level); }
-	private static HazardData makeData(HazardTypeBase hazard, float level, boolean override) { return new HazardData().addEntry(hazard, level, override); }
 }

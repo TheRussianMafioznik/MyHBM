@@ -5,21 +5,20 @@ import java.util.ArrayList;
 import java.util.Deque;
 import java.util.HashSet;
 import java.util.List;
-import java.util.Set;
 import java.util.Map.Entry;
+import java.util.Set;
 
+import com.hbm.config.GeneralConfig;
+import com.hbm.forgefluid.FluidTypeHandler;
 import com.hbm.interfaces.IHasCustomModel;
 import com.hbm.items.ModItems;
 import com.hbm.lib.RefStrings;
 import com.hbm.main.MainRegistry;
-import com.hbm.blocks.ModBlocks;
-import com.hbm.config.GeneralConfig;
 import com.hbm.packet.PacketDispatcher;
 import com.hbm.packet.PipeUpdatePacket;
 import com.hbm.tileentity.conductor.TileEntityFFDuctBaseMk2;
 import com.hbm.tileentity.conductor.TileEntityFFFluidDuctMk4;
 import com.hbm.util.I18nUtil;
-import com.hbm.forgefluid.FluidTypeHandler;
 
 import net.minecraft.client.renderer.block.model.ModelResourceLocation;
 import net.minecraft.client.resources.I18n;
@@ -37,7 +36,6 @@ import net.minecraft.util.EnumHand;
 import net.minecraft.util.NonNullList;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.RayTraceResult;
-import net.minecraft.util.text.TextFormatting;
 import net.minecraft.world.World;
 import net.minecraftforge.fluids.Fluid;
 import net.minecraftforge.fluids.FluidRegistry;
@@ -58,28 +56,16 @@ public class ItemForgeFluidIdentifier extends Item implements IHasCustomModel {
 		ModItems.ALL_ITEMS.add(this);
 	}
 
-	// @Override
-	// public ItemStack getContainerItem(ItemStack itemStack) {
-	// 	return itemStack.copy();
-	// }
-
-	// @Override
-	// public boolean hasContainerItem() {
-	// 	return true;
-	// }
-
 	@Override
 	public void getSubItems(CreativeTabs tab, NonNullList<ItemStack> items) {
-		if(GeneralConfig.registerTanks){
-			if (tab == this.getCreativeTab() || tab == CreativeTabs.SEARCH) {
-				for (Entry<String, Fluid> set : FluidRegistry.getRegisteredFluids().entrySet()) {
-					if(FluidTypeHandler.noID(set.getValue())) continue;
-					ItemStack stack = new ItemStack(this, 1, 0);
-					NBTTagCompound tag = new NBTTagCompound();
-					tag.setString("fluidtype", set.getKey());
-					stack.setTagCompound(tag);
-					items.add(stack);
-				}
+		if(GeneralConfig.registerTanks && (tab == this.getCreativeTab() || tab == CreativeTabs.SEARCH)) {
+			for (Entry<String, Fluid> set : FluidRegistry.getRegisteredFluids().entrySet()) {
+				if(FluidTypeHandler.noID(set.getValue())) continue;
+				ItemStack stack = new ItemStack(this, 1, 0);
+				NBTTagCompound tag = new NBTTagCompound();
+				tag.setString("fluidtype", set.getKey());
+				stack.setTagCompound(tag);
+				items.add(stack);
 			}
 		}
 	}
@@ -88,10 +74,7 @@ public class ItemForgeFluidIdentifier extends Item implements IHasCustomModel {
 	public void addInformation(ItemStack stack, World worldIn, List<String> list, ITooltipFlag flagIn) {
 		if (!(stack.getItem() instanceof ItemForgeFluidIdentifier))
 			return;
-		Fluid f = null;
-		if (stack.hasTagCompound()) {
-			f = FluidRegistry.getFluid(stack.getTagCompound().getString("fluidtype"));
-		}
+		Fluid f = stack.hasTagCompound() ? FluidRegistry.getFluid(stack.getTagCompound().getString("fluidtype")) : null;
 		list.add("");
 		list.add(I18nUtil.resolveKey("desc.unfluidid"));
 		if (f != null)
@@ -103,16 +86,13 @@ public class ItemForgeFluidIdentifier extends Item implements IHasCustomModel {
 	@Override
 	@SideOnly(Side.CLIENT)
 	public String getItemStackDisplayName(ItemStack stack) {
-		String s = ("" + I18n.format(this.getTranslationKey() + ".name")).trim();
-		Fluid s1 = null;
+		String s = I18n.format(this.getTranslationKey() + ".name").trim();
 		if (stack.hasTagCompound()) {
-			s1 = FluidRegistry.getFluid(stack.getTagCompound().getString("fluidtype"));
+			Fluid s1 = FluidRegistry.getFluid(stack.getTagCompound().getString("fluidtype"));
+			if (s1 != null) {
+				return s + ": " + s1.getLocalizedName(new FluidStack(s1, 1000));
+			}
 		}
-
-		if (s1 != null) {
-			s = s + ": " + s1.getLocalizedName(new FluidStack(s1, 1000));
-		}
-
 		return s;
 	}
 

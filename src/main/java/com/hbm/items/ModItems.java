@@ -842,7 +842,7 @@ public class ModItems {
 	public static final Item bj_plate_jetpack = new ArmorBJJetpack(MainRegistry.aMatBJ, -1, EntityEquipmentSlot.CHEST, RefStrings.MODID + ":textures/armor/starmetal_1.png", 10000000, 10000, 1000, 100, "bj_plate_jetpack").cloneStats((ArmorFSB) bj_helmet);
 	public static final Item bj_legs = new ArmorBJ(MainRegistry.aMatBJ, 7, EntityEquipmentSlot.LEGS, RefStrings.MODID + ":textures/armor/starmetal_2.png", 10000000, 10000, 1000, 100, "bj_legs").cloneStats((ArmorFSB) bj_helmet);
 	public static final Item bj_boots = new ArmorBJ(MainRegistry.aMatBJ, 7, EntityEquipmentSlot.FEET, RefStrings.MODID + ":textures/armor/starmetal_1.png", 10000000, 10000, 1000, 100, "bj_boots").cloneStats((ArmorFSB) bj_helmet);
-
+    //броня анклава
 	public static final Item rpa_helmet = new ArmorRPA(MainRegistry.aMatRPA, -1, EntityEquipmentSlot.HEAD, RefStrings.MODID + ":textures/armor/starmetal_1.png", 50000000, 100000, 20000, 500, "RPA_helmet").setCap(6.0F)
 			.setFireproof(true)
 			.enableVATS(true)
@@ -851,6 +851,7 @@ public class ModItems {
 			.addEffect(new PotionEffect(HbmPotion.radx, 30, 0))
 			.addEffect(new PotionEffect(MobEffects.STRENGTH, 30, 3))
 			.addEffect(new PotionEffect(MobEffects.WATER_BREATHING, 30, 0))
+			.addEffect(new PotionEffect(MobEffects.SPEED, 30, 1))
 			.setBlastProtection(0.25F)
 			.setProjectileProtection(0.25F)
 			.setProtectionLevel(1500)

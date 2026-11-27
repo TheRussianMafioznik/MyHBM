@@ -7,6 +7,15 @@ import com.hbm.items.gear.ArmorFSB;
 import com.hbm.lib.Library;
 import com.hbm.blocks.machine.ItemSelfcharger;
 import api.hbm.energy.IBatteryItem;
+import com.hbm.items.ModItems;
+import baubles.api.BaublesApi;
+
+import net.minecraft.client.Minecraft;
+import net.minecraft.client.gui.FontRenderer;
+import net.minecraft.client.gui.ScaledResolution;
+import net.minecraft.client.renderer.GlStateManager;
+import net.minecraft.client.renderer.RenderHelper;
+import net.minecraft.client.renderer.RenderItem;
 
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.client.util.ITooltipFlag;
@@ -274,4 +283,94 @@ public class ArmorFSBPowered extends ArmorFSB implements IBatteryItem {
     {
         this.dischargeBattery(stack, damage * consumption);
     }
+
+		@SideOnly(Side.CLIENT)
+	public static void renderPoweredArmorHUD(EntityPlayer player, ScaledResolution resolution) {
+		if (player == null) return;
+
+		EntityEquipmentSlot[] slots = {
+				EntityEquipmentSlot.HEAD,
+				EntityEquipmentSlot.CHEST,
+				EntityEquipmentSlot.LEGS,
+				EntityEquipmentSlot.FEET
+		};
+
+        ItemStack[] poweredStacks = new ItemStack[slots.length];
+		int count = 0;
+
+		for (EntityEquipmentSlot slot : slots) {
+			ItemStack stack = player.getItemStackFromSlot(slot);
+			if (!stack.isEmpty() && stack.getItem() instanceof IBatteryItem) {
+				IBatteryItem bat = (IBatteryItem) stack.getItem();
+				if (bat.getMaxCharge(stack) > 0) {
+					poweredStacks[count++] = stack;
+				}
+			}
+		}
+
+		if (count == 0) return;
+
+		Minecraft mc = Minecraft.getMinecraft();
+		FontRenderer font = mc.fontRenderer;
+		RenderItem itemRenderer = mc.getRenderItem();
+
+		int screenWidth = resolution.getScaledWidth();
+		int screenHeight = resolution.getScaledHeight();
+
+		int hotbarLeft = screenWidth / 2 - 91;
+		int availableWidth = hotbarLeft - 8;
+		if (40 > availableWidth) return;
+
+		boolean hasGeiger = !hasCustomGeigerCounter(player) && hasItemOrBauble(player, ModItems.geiger_counter);
+		boolean hasDigamma = hasItemOrBauble(player, ModItems.digamma_diagnostic);
+
+		int bottomOffset = 19;
+		if (hasGeiger && hasDigamma) {
+			bottomOffset += 36;
+		} else if (hasGeiger || hasDigamma) {
+			bottomOffset += 18;
+		}
+
+		int slotStep = Math.min(44, availableWidth / count);
+		int totalWidth = slotStep * count;
+		int startX = Math.max(4, (hotbarLeft - totalWidth) / 2);
+		int baseY = screenHeight - bottomOffset;
+
+		GlStateManager.pushMatrix();
+		GlStateManager.enableRescaleNormal();
+		RenderHelper.enableGUIStandardItemLighting();
+
+		for (int i = 0; count > i; i++) {
+			ItemStack stack = poweredStacks[i];
+			IBatteryItem bat = (IBatteryItem) stack.getItem();
+			long charge = bat.getCharge(stack);
+			long maxCharge = bat.getMaxCharge(stack);
+			int pct = (int) Math.round((100.0D * charge) / Math.max(1L, maxCharge));
+
+			int x = startX + i * slotStep;
+			itemRenderer.renderItemAndEffectIntoGUI(stack, x, baseY);
+
+			String text = "§c" + pct + "%";
+			int textX = x + 17;
+			int textY = baseY + 4;
+			font.drawStringWithShadow(text, textX, textY, 0xFFFFFF);
+		}
+
+		RenderHelper.disableStandardItemLighting();
+		GlStateManager.disableRescaleNormal();
+		GlStateManager.color(1.0F, 1.0F, 1.0F, 1.0F);
+		GlStateManager.popMatrix();
+	}
+
+	@SideOnly(Side.CLIENT)
+	private static boolean hasItemOrBauble(EntityPlayer player, Item item) {
+		if (Library.hasInventoryItem(player.inventory, item)) {
+			return true;
+		}
+		try {
+			return BaublesApi.isBaubleEquipped(player, item) != -1;
+		} catch (Throwable t) {
+			return false;
+		}
+	}
 }

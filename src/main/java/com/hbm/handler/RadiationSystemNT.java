@@ -12,9 +12,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Queue;
 import java.util.Set;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
-import java.util.function.BooleanSupplier;
 
 import com.hbm.capability.HbmLivingProps;
 import com.hbm.config.GeneralConfig;
@@ -30,18 +27,21 @@ import com.hbm.main.AdvancementManager;
 import com.hbm.main.MainRegistry;
 import com.hbm.packet.AuxParticlePacket;
 import com.hbm.packet.PacketDispatcher;
-
 import com.hbm.saveddata.AuxSavedData;
 import com.hbm.saveddata.RadiationSavedData;
 import com.hbm.util.ContaminationUtil;
+
 import net.minecraft.block.Block;
-import net.minecraft.block.BlockAir;
 import net.minecraft.block.state.IBlockState;
 import net.minecraft.entity.EntityLivingBase;
 import net.minecraft.entity.monster.EntityBlaze;
 import net.minecraft.entity.monster.EntityCreeper;
 import net.minecraft.entity.monster.EntityZombieVillager;
-import net.minecraft.entity.passive.*;
+import net.minecraft.entity.passive.EntityCow;
+import net.minecraft.entity.passive.EntityHorse;
+import net.minecraft.entity.passive.EntityMooshroom;
+import net.minecraft.entity.passive.EntityVillager;
+import net.minecraft.entity.passive.EntityZombieHorse;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.entity.player.EntityPlayerMP;
 import net.minecraft.init.MobEffects;
@@ -65,8 +65,9 @@ import net.minecraftforge.fml.common.Mod;
 import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
 import net.minecraftforge.fml.common.gameevent.TickEvent;
 import net.minecraftforge.fml.common.gameevent.TickEvent.Phase;
-import net.minecraftforge.fml.common.gameevent.TickEvent.ServerTickEvent;
 import net.minecraftforge.fml.common.network.NetworkRegistry.TargetPoint;
+
+import net.minecraft.entity.Entity;
 
 @Mod.EventBusSubscriber(modid = RefStrings.MODID)
 public class RadiationSystemNT {
@@ -297,111 +298,97 @@ public class RadiationSystemNT {
 					updateRadSaveData(world);
 				}
 
-				List<Object> oList = new ArrayList<Object>();
-				oList.addAll(world.loadedEntityList);
+                List<Entity> entities = world.loadedEntityList;
+				for(int idx = 0; entities.size() > idx; idx++) {
+					net.minecraft.entity.Entity e = entities.get(idx);
+					if(!(e instanceof EntityLivingBase)) {
+						continue;
+					}
 
-				for(Object e : oList) {
-					if(e instanceof EntityLivingBase) {
+					EntityLivingBase entity = (EntityLivingBase) e;
 
-						// effect for radiation
-						EntityLivingBase entity = (EntityLivingBase) e;
-
-						if(entity instanceof EntityPlayer){
-							EntityPlayer player = (EntityPlayer) entity;
-							if(RadiationConfig.neutronActivation){
-								double recievedRadiation = ContaminationUtil.getNoNeutronPlayerRads(player)*0.00004D-(0.00004D * RadiationConfig.neutronActivationThreshold); //20Rad/s threshold
-								float neutronRads = ContaminationUtil.getPlayerNeutronRads(player);
-								if(neutronRads > 0){
-									ContaminationUtil.contaminate(player, ContaminationUtil.HazardType.NEUTRON, ContaminationUtil.ContaminationType.CREATIVE, neutronRads * 0.05F);
-								}
-								else{
-									HbmLivingProps.setNeutron(entity, 0);
-								}
-								if(recievedRadiation > minRadRate){
-									ContaminationUtil.neutronActivateInventory(player, (float)recievedRadiation, 1.0F);
-									player.inventoryContainer.detectAndSendChanges();
-								}
-							}
-							if(player.capabilities.isCreativeMode || player.isSpectator()){
-								continue;
-							}
-						}
-
-						float eRad = (float)HbmLivingProps.getRadiation(entity);
-
-						if(eRad >= 200 && entity.getHealth() > 0 && entity instanceof EntityCreeper) {
-
-							if(world.rand.nextInt(3) == 0) {
-								EntityNuclearCreeper creep = new EntityNuclearCreeper(world);
-								creep.setLocationAndAngles(entity.posX, entity.posY, entity.posZ, entity.rotationYaw, entity.rotationPitch);
-
-								if(!entity.isDead)
-									if(!world.isRemote)
-										world.spawnEntity(creep);
-								entity.setDead();
+					if(entity instanceof EntityPlayer){
+						EntityPlayer player = (EntityPlayer) entity;
+						if(RadiationConfig.neutronActivation){
+							double recievedRadiation = ContaminationUtil.getNoNeutronPlayerRads(player) * 0.00004D - (0.00004D * RadiationConfig.neutronActivationThreshold);
+							float neutronRads = ContaminationUtil.getPlayerNeutronRads(player);
+							if(neutronRads > 0){
+								ContaminationUtil.contaminate(player, ContaminationUtil.HazardType.NEUTRON, ContaminationUtil.ContaminationType.CREATIVE, neutronRads * 0.05F);
 							} else {
-								entity.attackEntityFrom(ModDamageSource.radiation, 100F);
+								HbmLivingProps.setNeutron(entity, 0);
 							}
-							continue;
-
-						} else if(eRad >= 500 && entity instanceof EntityCow && !(entity instanceof EntityMooshroom)) {
-							EntityMooshroom creep = new EntityMooshroom(world);
-							creep.setLocationAndAngles(entity.posX, entity.posY, entity.posZ, entity.rotationYaw, entity.rotationPitch);
-
-							if(!entity.isDead)
-								if(!world.isRemote)
-									world.spawnEntity(creep);
-							entity.setDead();
-							continue;
-
-						} else if(eRad >= 600 && entity instanceof EntityVillager) {
-							EntityVillager vil = (EntityVillager)entity;
-							EntityZombieVillager creep = new EntityZombieVillager(world);
-							creep.setProfession(vil.getProfession());
-							creep.setForgeProfession(vil.getProfessionForge());
-							creep.setChild(vil.isChild());
-							creep.setLocationAndAngles(entity.posX, entity.posY, entity.posZ, entity.rotationYaw, entity.rotationPitch);
-
-							if(!entity.isDead)
-								if(!world.isRemote)
-									world.spawnEntity(creep);
-							entity.setDead();
-							continue;
-						} else if(eRad >= 700 && entity instanceof EntityBlaze) {
-							EntityRADBeast creep = new EntityRADBeast(world);
-							creep.setLocationAndAngles(entity.posX, entity.posY, entity.posZ, entity.rotationYaw, entity.rotationPitch);
-
-							if(!entity.isDead)
-								if(!world.isRemote)
-									world.spawnEntity(creep);
-							entity.setDead();
-							continue;
-						} else if(eRad >= 800 && entity instanceof EntityHorse) {
-							EntityHorse horsie = (EntityHorse)entity;
-							EntityZombieHorse zomhorsie = new EntityZombieHorse(world);
-							zomhorsie.setLocationAndAngles(entity.posX, entity.posY, entity.posZ, entity.rotationYaw, entity.rotationPitch);
-							zomhorsie.setGrowingAge(horsie.getGrowingAge());
-							zomhorsie.setTemper(horsie.getTemper());
-							zomhorsie.setHorseSaddled(horsie.isHorseSaddled());
-							zomhorsie.setHorseTamed(horsie.isTame());
-							zomhorsie.setOwnerUniqueId(horsie.getOwnerUniqueId());
-							zomhorsie.makeMad();
-							if(!entity.isDead)
-								if(!world.isRemote)
-									world.spawnEntity(zomhorsie);
-							entity.setDead();
-							continue;
-						} else if(eRad >= 900 && entity.getClass().equals(EntityDuck.class)) {
-
-							EntityQuackos quacc = new EntityQuackos(world);
-							quacc.setLocationAndAngles(entity.posX, entity.posY, entity.posZ, entity.rotationYaw, entity.rotationPitch);
-
-							if(!entity.isDead && !world.isRemote)
-								world.spawnEntity(quacc);
-
-							entity.setDead();
+							if(recievedRadiation > minRadRate){
+								ContaminationUtil.neutronActivateInventory(player, (float) recievedRadiation, 1.0F);
+								player.inventoryContainer.detectAndSendChanges();
+							}
+						}
+						if(player.capabilities.isCreativeMode || player.isSpectator()){
 							continue;
 						}
+					}
+
+					float eRad = (float) HbmLivingProps.getRadiation(entity);
+					if(0 >= eRad) {
+						continue;
+					}
+
+					if(eRad >= 200 && entity.getHealth() > 0 && entity instanceof EntityCreeper) {
+						if(world.rand.nextInt(3) == 0) {
+							EntityNuclearCreeper creep = new EntityNuclearCreeper(world);
+							creep.setLocationAndAngles(entity.posX, entity.posY, entity.posZ, entity.rotationYaw, entity.rotationPitch);
+							if(!entity.isDead)
+								world.spawnEntity(creep);
+							entity.setDead();
+						} else {
+							entity.attackEntityFrom(ModDamageSource.radiation, 100F);
+						}
+						continue;
+					} else if(eRad >= 500 && entity instanceof EntityCow && !(entity instanceof EntityMooshroom)) {
+						EntityMooshroom creep = new EntityMooshroom(world);
+						creep.setLocationAndAngles(entity.posX, entity.posY, entity.posZ, entity.rotationYaw, entity.rotationPitch);
+						if(!entity.isDead)
+							world.spawnEntity(creep);
+						entity.setDead();
+						continue;
+					} else if(eRad >= 600 && entity instanceof EntityVillager) {
+						EntityVillager vil = (EntityVillager) entity;
+						EntityZombieVillager creep = new EntityZombieVillager(world);
+						creep.setForgeProfession(vil.getProfessionForge());
+						creep.setChild(vil.isChild());
+						creep.setLocationAndAngles(entity.posX, entity.posY, entity.posZ, entity.rotationYaw, entity.rotationPitch);
+						if(!entity.isDead)
+							world.spawnEntity(creep);
+						entity.setDead();
+						continue;
+					} else if(eRad >= 700 && entity instanceof EntityBlaze) {
+						EntityRADBeast creep = new EntityRADBeast(world);
+						creep.setLocationAndAngles(entity.posX, entity.posY, entity.posZ, entity.rotationYaw, entity.rotationPitch);
+						if(!entity.isDead)
+							world.spawnEntity(creep);
+						entity.setDead();
+						continue;
+					} else if(eRad >= 800 && entity instanceof EntityHorse) {
+						EntityHorse horsie = (EntityHorse) entity;
+						EntityZombieHorse zomhorsie = new EntityZombieHorse(world);
+						zomhorsie.setLocationAndAngles(entity.posX, entity.posY, entity.posZ, entity.rotationYaw, entity.rotationPitch);
+						zomhorsie.setGrowingAge(horsie.getGrowingAge());
+						zomhorsie.setTemper(horsie.getTemper());
+						zomhorsie.setHorseSaddled(horsie.isHorseSaddled());
+						zomhorsie.setHorseTamed(horsie.isTame());
+						zomhorsie.setOwnerUniqueId(horsie.getOwnerUniqueId());
+						zomhorsie.makeMad();
+						if(!entity.isDead)
+							world.spawnEntity(zomhorsie);
+						entity.setDead();
+						continue;
+					} else if(eRad >= 900 && entity.getClass() == EntityDuck.class) {
+						EntityQuackos quacc = new EntityQuackos(world);
+						quacc.setLocationAndAngles(entity.posX, entity.posY, entity.posZ, entity.rotationYaw, entity.rotationPitch);
+						if(!entity.isDead)
+							world.spawnEntity(quacc);
+						entity.setDead();
+						continue;
+					}
 
 						if(eRad > 2500000)
 							HbmLivingProps.setRadiation(entity, 2500000);
@@ -485,7 +472,6 @@ public class RadiationSystemNT {
 				MainRegistry.logger.info("[Debug] Finished entity contamination processing");
 			}
 		}
-	}
 
 	/**
 	 * Marks a chunk to be rebuilt. This is used when a radiation resistant block is added or removed
@@ -515,36 +501,22 @@ public class RadiationSystemNT {
 	/**
 	 * Rebuilds stored dirty chunks
 	 */
-	private static void rebuildDirty() {
-
+		private static void rebuildDirty() {
 		for(WorldRadiationData r : worldMap.values()) {
-			boolean hadDirty = false;
-
-			//Set the iteration flag to avoid concurrent modification
+			if(r.dirtyChunks.isEmpty()) {
+				continue;
+			}
 			r.iteratingDirty = true;
-
-			//For each dirty sub chunk, rebuild it
 			for (BlockPos dirtyChunkPos : r.dirtyChunks) {
 				if (GeneralConfig.enableDebugMode) {
 					MainRegistry.logger.info("[Debug] Rebuilding chunk pockets for dirty chunk at " + dirtyChunkPos);
 				}
-
 				rebuildChunkPockets(r.world.getChunk(dirtyChunkPos.getX(), dirtyChunkPos.getZ()), dirtyChunkPos.getY());
-				hadDirty = true;
 			}
 			r.iteratingDirty = false;
-			//Clear the dirty chunks lists, and add any chunks that might have been marked while iterating to be dealt with next tick.
 			r.dirtyChunks.clear();
 			r.dirtyChunks.addAll(r.dirtyChunks2);
 			r.dirtyChunks2.clear();
-
-			// After chunks are updated, force save data to update as well and recalc rads for chunks
-			//if (hadDirty) {
-			//	if (GeneralConfig.enableDebugMode) {
-			//		MainRegistry.logger.info("[Debug] Forced update of rad save data after dirty chunk rebuild");
-			//	}
-			//	updateRadSaveData(r.world);
-			//}
 		}
 	}
 
@@ -591,16 +563,15 @@ public class RadiationSystemNT {
 		rebuildDirty();
 	}
 	
-	@SubscribeEvent
+		@SubscribeEvent
 	public static void onChunkUnload(ChunkEvent.Unload e){
 		if(!GeneralConfig.enableRads || !GeneralConfig.advancedRadiation)
 			return;
 		if(!e.getWorld().isRemote){
-			//When a chunk is unloaded, also unload it from our radiation data if it exists
 			WorldRadiationData data = getWorldRadData(e.getWorld());
-			if(data.data.containsKey(e.getChunk().getPos())){
-				data.data.get(e.getChunk().getPos()).unload();
-				data.data.remove(e.getChunk().getPos());
+			ChunkRadiationStorage st = data.data.remove(e.getChunk().getPos());
+			if(st != null){
+				st.unload();
 			}
 		}
 	}
@@ -696,15 +667,12 @@ public class RadiationSystemNT {
 				}
 
 				if (p.radiation > RadiationConfig.fogRad && w.world != null && w.world.rand.nextInt(RadiationConfig.fogCh) == 0) {
-					//Fog calculation works slightly differently here to account for the 3d nature of the system
-					//We just try 10 random coordinates of the sub chunk
-					//If the coordinate is inside this pocket and the block at the coordinate is air,
-					//use it to spawn a rad particle at that block and break
-					//Also only spawn it if it's close to the ground, otherwise you get a giant fart when nukes go off.
-					for (int i = 0; i < 10; i++) {
-						BlockPos randPos = new BlockPos(w.world.rand.nextInt(16), w.world.rand.nextInt(16), w.world.rand.nextInt(16));
-						if (p.parent.pocketsByBlock == null || p.parent.pocketsByBlock[randPos.getX() * 16 * 16 + randPos.getY() * 16 + randPos.getZ()] == p) {
-							randPos = randPos.add(p.parent.parent.getWorldPos(p.parent.yLevel));
+					for (int i = 0; 10 > i; i++) {
+						int rx = w.world.rand.nextInt(16);
+						int ry = w.world.rand.nextInt(16);
+						int rz = w.world.rand.nextInt(16);
+						if (p.parent.pocketsByBlock == null || p.parent.pocketsByBlock[rx * 256 + ry * 16 + rz] == p) {
+							BlockPos randPos = pos.add(rx, ry, rz);
 							IBlockState state = w.world.getBlockState(randPos);
 							Vec3d rPos = new Vec3d(randPos.getX() + 0.5, randPos.getY() + 0.5, randPos.getZ() + 0.5);
 							RayTraceResult trace = w.world.rayTraceBlocks(rPos, rPos.add(0, -6, 0));
@@ -722,7 +690,7 @@ public class RadiationSystemNT {
 					count += p.connectionIndices[e.ordinal()].size();
 				}
 				float amountPer = 0.7F / count;
-				if (count == 0 || p.radiation < 1) {
+				if (count == 0 || 1 > p.radiation) {
 					//Don't update if we have no connections or our own radiation is less than 1. Prevents micro radiation bleeding.
 					amountPer = 0;
 				}
@@ -735,7 +703,7 @@ public class RadiationSystemNT {
 					}
 				}
 
-				// TODO: This might also cause leaks from sealed pockets to unsealed
+				// This might also cause leaks from sealed pockets to unsealed
 				if (p.radiation > 0 && amountPer > 0) {
 					//Only update other values if this one has radiation to update with
 					for (EnumFacing e : EnumFacing.VALUES) {

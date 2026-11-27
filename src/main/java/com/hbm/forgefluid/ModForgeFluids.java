@@ -237,6 +237,7 @@ public class ModForgeFluids {
 	public static Fluid petroleum_raw = HbmFluid.builder("petroleum_raw")
 			.props(1, 4, 1, EnumSymbol.NONE)
 			.trait(FluidTrait.COMBUSTION_TU, 650)
+			.trait(FluidTrait.NO_ID)
 			.fuel(FuelGrade.GAS, 1_000_000)
 			.build();
 	public static Fluid methane = HbmFluid.builder("methane")
@@ -649,9 +650,6 @@ public class ModForgeFluids {
 	public static int getFluidColor(Fluid f){
 		if(f == null)
 			return 0;
-		Integer color = fluidColors.get(f);
-		if(color == null)
-			return 0xFFFFFF;
-		return color;
+        return fluidColors.getOrDefault(f, 0xFFFFFF);
 	}
 }

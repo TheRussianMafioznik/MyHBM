@@ -1661,25 +1661,23 @@ public class ModEventHandlerClient {
 			((IItemHUD)player.getHeldItem(EnumHand.OFF_HAND).getItem()).renderHUD(event, event.getType(), player, player.getHeldItem(EnumHand.OFF_HAND), EnumHand.OFF_HAND);
 		}
 
-		/// HANDLE GEIGER COUNTER AND JETPACK HUD ///
+				/// HANDLE GEIGER COUNTER AND JETPACK HUD ///
 		if(event.getType() == ElementType.HOTBAR) {
-			if(!ArmorFSBPowered.hasCustomGeigerCounter(player)) {
-				if(Library.hasInventoryItem(player.inventory, ModItems.geiger_counter) || hasBauble(player, ModItems.geiger_counter)) {
-	
-					float rads = (float)Library.getEntRadCap(player).getRads();
-	
-					RenderScreenOverlay.renderRadCounter(event.getResolution(), rads, Minecraft.getMinecraft().ingameGUI);
-				}
+			boolean hasGeiger = !ArmorFSBPowered.hasCustomGeigerCounter(player)
+					&& (Library.hasInventoryItem(player.inventory, ModItems.geiger_counter) || hasBauble(player, ModItems.geiger_counter));
+
+			if(hasGeiger) {
+				float rads = (float)Library.getEntRadCap(player).getRads();
+				RenderScreenOverlay.renderRadCounter(event.getResolution(), rads, Minecraft.getMinecraft().ingameGUI);
 			}
 			if(Library.hasInventoryItem(player.inventory, ModItems.digamma_diagnostic) || hasBauble(player, ModItems.digamma_diagnostic)) {
-	
 				float digamma = (float)Library.getEntRadCap(player).getDigamma();
-
-				RenderScreenOverlay.renderDigCounter(event.getResolution(), digamma, Minecraft.getMinecraft().ingameGUI);
+				RenderScreenOverlay.renderDigCounter(event.getResolution(), digamma, Minecraft.getMinecraft().ingameGUI, hasGeiger);
 			}
 			if(JetpackHandler.hasJetpack(player)){
 				JetpackHandler.renderHUD(player, event.getResolution());
 			}
+			ArmorFSBPowered.renderPoweredArmorHUD(player, event.getResolution());
 		}
 		
 		/// DODD DIAG HOOK FOR RBMK
@@ -1688,7 +1686,7 @@ public class ModEventHandlerClient {
 			World world = mc.world;
 			RayTraceResult mop = mc.objectMouseOver;
 			
-			if(mop != null && mop.typeOfHit == mop.typeOfHit.BLOCK) {
+			if(mop != null && mop.typeOfHit == Type.BLOCK) {
 				if(world.getBlockState(mop.getBlockPos()).getBlock() instanceof ILookOverlay) {
 					((ILookOverlay) world.getBlockState(mop.getBlockPos()).getBlock()).printHook(event, world, mop.getBlockPos().getX(), mop.getBlockPos().getY(), mop.getBlockPos().getZ());
 				}

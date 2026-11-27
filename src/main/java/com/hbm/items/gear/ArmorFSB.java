@@ -420,9 +420,14 @@ public class ArmorFSB extends ItemArmor {
 		return this;
 	}
 	
-	public ArmorFSB addEffect(PotionEffect effect) {
-		if(!PotionConfig.doJumpBoost && effect.getPotion() == MobEffects.JUMP_BOOST)
+		public ArmorFSB addEffect(PotionEffect effect) {
+		if (effect.getPotion() == MobEffects.JUMP_BOOST) {
+			if (!PotionConfig.doJumpBoost) {
+				return this;
+			}
+			effects.add(new PotionEffect(MobEffects.SPEED, effect.getDuration(), 1, effect.getIsAmbient(), effect.doesShowParticles()));
 			return this;
+		}
 		effects.add(effect);
 		return this;
 	}

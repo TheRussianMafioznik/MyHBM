@@ -70,10 +70,9 @@ public class ItemSwordAbility extends ItemSword implements IItemAbility {
 		return this;
 	}
 
-	@SuppressWarnings("deprecation")
 	@Override
-	public EnumRarity getRarity(ItemStack stack) {
-		return this.rarity != EnumRarity.COMMON ? this.rarity : super.getRarity(stack);
+	public net.minecraftforge.common.IRarity getForgeRarity(ItemStack stack) {
+		return this.rarity != EnumRarity.COMMON ? this.rarity : super.getForgeRarity(stack);
 	}
 
 	@Override
@@ -161,17 +160,17 @@ public class ItemSwordAbility extends ItemSword implements IItemAbility {
 			if(block.getBlock().removedByPlayer(block, world, pos, player, true)) {
 				block.getBlock().onPlayerDestroy(world, pos, block);
 			}
-			ItemStack itemstack = player.getHeldItem(hand);
-			if(itemstack != null) {
-				itemstack.onBlockDestroyed(world, block, new BlockPos(x, y, z), player);
+						ItemStack itemstack = player.getHeldItem(hand);
+			if(!itemstack.isEmpty()) {
+				itemstack.onBlockDestroyed(world, block, pos, player);
 
 				if(itemstack.isEmpty()) {
 					player.inventory.setInventorySlotContents(player.inventory.currentItem, ItemStack.EMPTY);
 				}
 			}
 
-			Minecraft.getMinecraft().getConnection().sendPacket(new CPacketPlayerDigging(CPacketPlayerDigging.Action.STOP_DESTROY_BLOCK, new BlockPos(x, y, z), Minecraft.getMinecraft().objectMouseOver.sideHit));
-		}
+			Minecraft.getMinecraft().getConnection().sendPacket(new CPacketPlayerDigging(CPacketPlayerDigging.Action.STOP_DESTROY_BLOCK, pos, Minecraft.getMinecraft().objectMouseOver.sideHit));
+        }
 	}
 
 	@Override

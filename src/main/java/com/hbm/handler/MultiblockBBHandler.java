@@ -35,10 +35,6 @@ public class MultiblockBBHandler {
 	
 	private static MultiblockBounds parse(ByteBuffer buf){
 		buf.order(ByteOrder.LITTLE_ENDIAN);
-		int version = buf.getInt();
-		int offsetX = buf.getInt();
-		int offsetY = buf.getInt();
-		int offsetZ = buf.getInt();
 		AxisAlignedBB[] boundingBoxes = new AxisAlignedBB[buf.getInt()];
 		int numBlocks = buf.getInt();
 		

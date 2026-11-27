@@ -37,11 +37,9 @@ public class PacketThreading {
     private static final int DROP_PARTICLE_QUEUE_THRESHOLD = 64;
     private static final int DROP_MAINTENANCE_QUEUE_THRESHOLD = 64;
     private static final int BATCH_SIZE = 256;
-    private static final long TRANSIENT_SYNC_INTERVAL_NANOS = TimeUnit.MILLISECONDS.toNanos(500L);
     private static final long QUEUE_FULL_LOG_INTERVAL_NANOS = TimeUnit.SECONDS.toNanos(10L);
     private static final LongAdder totalCnt = new LongAdder();
     private static final LongAdder nanosWaited = new LongAdder();
-    private static final Map<Long, Long> transientSyncTimes = new ConcurrentHashMap<>();
     private static final ConcurrentHashMap<String, LongAdder> recentPacketCounts = new ConcurrentHashMap<>();
     private static final ConcurrentHashMap<String, LongAdder> recentDroppedPacketCounts = new ConcurrentHashMap<>();
     private static final ConcurrentSkipListMap<Long, PacketTask> readyPackets = new ConcurrentSkipListMap<>();
@@ -50,19 +48,18 @@ public class PacketThreading {
     private static volatile boolean running = true;
     private static volatile boolean enabled = false;
     private static volatile long lastQueueFullLogNanos;
-    @SuppressWarnings("unused")
-    private static volatile int inFlightDispatch;
-    private static volatile LinkedBlockingQueue<PacketTask> dispatchQueue;
-    private static volatile Thread[] packetWorkers;
+  private static volatile int inFlightDispatch;
+  private static volatile LinkedBlockingQueue<PacketTask> dispatchQueue;
+  private static volatile Thread[] packetWorkers;
 
-    public static synchronized void init() {
-        shutdown();
-        transientSyncTimes.clear();
-        recentPacketCounts.clear();
-        recentDroppedPacketCounts.clear();
-        readyPackets.clear();
-        nextSequenceToSend = 0L;
-        sequenceCounter.set(0L);
+  public static synchronized void init() {
+      shutdown();
+      inFlightDispatch = 0;
+      recentPacketCounts.clear();
+      recentDroppedPacketCounts.clear();
+      readyPackets.clear();
+      nextSequenceToSend = 0L;
+      sequenceCounter.set(0L);
 
         if (!GeneralConfig.enablePacketThreading) {
             enabled = false;

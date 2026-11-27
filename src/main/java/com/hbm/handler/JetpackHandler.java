@@ -19,7 +19,6 @@ import com.hbm.animloader.AnimationWrapper.EndResult;
 import com.hbm.animloader.AnimationWrapper.EndType;
 import com.hbm.forgefluid.FFUtils;
 import com.hbm.forgefluid.ModForgeFluids;
-import com.hbm.handler.JetpackHandler.JetpackInfo;
 import com.hbm.items.ModItems;
 import com.hbm.items.gear.JetpackGlider;
 import com.hbm.lib.HBMSoundHandler;
@@ -65,10 +64,10 @@ import net.minecraftforge.event.entity.player.PlayerEvent;
 import net.minecraftforge.event.world.WorldEvent;
 import net.minecraftforge.fluids.Fluid;
 import net.minecraftforge.fluids.FluidTank;
+import net.minecraftforge.fml.common.ObfuscationReflectionHelper;
 import net.minecraftforge.fml.common.gameevent.PlayerEvent.PlayerLoggedInEvent;
 import net.minecraftforge.fml.common.gameevent.TickEvent.ClientTickEvent;
 import net.minecraftforge.fml.common.gameevent.TickEvent.Phase;
-import net.minecraftforge.fml.relauncher.ReflectionHelper;
 import net.minecraftforge.fml.relauncher.Side;
 import net.minecraftforge.fml.relauncher.SideOnly;
 
@@ -97,9 +96,7 @@ public class JetpackHandler {
 	public static boolean hasJetpack(EntityPlayer p){
 		ItemStack chest = p.inventory.armorInventory.get(2);
 		ItemStack stack = ArmorModHandler.pryMod(chest, 1);
-		if(stack.getItem() == ModItems.jetpack_glider)
-			return true;
-		return false;
+		return stack.getItem() == ModItems.jetpack_glider;
 	}
 	
 	public static FluidTank getTank(EntityPlayer p){
@@ -231,7 +228,6 @@ public class JetpackHandler {
 		// }
 		if(jetpackActive(player) && !player.onGround && info.failureTicks <= 0 && fuelTank.getFluidAmount() > 0){
 			float speed = getSpeed(fuelTank.getFluid().getFluid());
-			boolean inert = false;
 			MovementInput m = e.getMovementInput();
 			boolean sprint = Minecraft.getMinecraft().gameSettings.keyBindSprint.isKeyDown();
 			if(player.isSprinting())
@@ -424,13 +420,12 @@ public class JetpackHandler {
 		}
 	}
 	
-	@SuppressWarnings("deprecation")
 	public static void postPlayerTick(EntityPlayer player){
 		JetpackInfo j = get(player);
 		if(j == null)
 			return;
 		if(r_setSize == null){
-			r_setSize = ReflectionHelper.findMethod(Entity.class, "setSize", "func_70105_a", float.class, float.class);
+			r_setSize = ObfuscationReflectionHelper.findMethod(Entity.class, "func_70105_a", void.class, float.class, float.class);
 		}
 		if(jetpackActive(player) && !player.onGround && j.failureTicks <= 0 && getTank(player).getFluidAmount() > 0){
 			if(isHovering(player)){
@@ -660,7 +655,7 @@ public class JetpackHandler {
 			GlStateManager.rotate(-(180.0F - renderYaw), 0.0F, 1.0F, 0.0F);
 			if(j != null){
 				if(r_ticksElytraFlying == null)
-					r_ticksElytraFlying = ReflectionHelper.findField(EntityLivingBase.class, "ticksElytraFlying", "field_184629_bo");
+					r_ticksElytraFlying = ObfuscationReflectionHelper.findField(EntityLivingBase.class, "field_184629_bo");
 				try {
 					r_ticksElytraFlying.setInt(player, j.jetpackFlyTime);
 				} catch(IllegalArgumentException | IllegalAccessException e) {
@@ -705,7 +700,7 @@ public class JetpackHandler {
 				info.trails[1] = null;
 			}
 			if(r_ticksElytraFlying == null)
-				r_ticksElytraFlying = ReflectionHelper.findField(EntityLivingBase.class, "ticksElytraFlying", "field_184629_bo");
+				r_ticksElytraFlying = ObfuscationReflectionHelper.findField(EntityLivingBase.class, "field_184629_bo");
 			try {
 				r_ticksElytraFlying.setInt(player, 0);
 			} catch(IllegalArgumentException | IllegalAccessException e) {
@@ -759,78 +754,57 @@ public class JetpackHandler {
 				}
 				j.prevPrevPosX = player.prevPosX;
 				j.prevPrevPosZ = player.prevPosZ;
-				Iterator<Particle> it = j.booster_particles.iterator();
-				while(it.hasNext()){
-					Particle part = it.next();
+
+				java.util.function.Predicate<Particle> updateAndCheckDead = part -> {
 					part.onUpdate();
-					if(!part.isAlive())
-						it.remove();
-				}
-				it = j.distortion_particles.iterator();
-				while(it.hasNext()){
-					Particle part = it.next();
-					part.onUpdate();
-					if(!part.isAlive())
-						it.remove();
-				}
-				it = j.brightness_particles.iterator();
-				while(it.hasNext()){
-					Particle part = it.next();
-					part.onUpdate();
-					if(!part.isAlive())
-						it.remove();
-				}
+					return !part.isAlive();
+				};
+				j.booster_particles.removeIf(updateAndCheckDead);
+				j.distortion_particles.removeIf(updateAndCheckDead);
+				j.brightness_particles.removeIf(updateAndCheckDead);
+
 				boolean active = jetpackActive(player);
 				FluidTank tank = active ? getTank(player) : null;
 				if(active && !player.onGround && tank.getFluid() != null){
 					ColorGradient grad = getGradientFromFuel(tank.getFluid().getFluid());
 					float[] color = getBrightnessColorFromFuel(tank.getFluid().getFluid());
 					if(j.thrust > 0.05F){
+						java.util.Random rand = p.world.rand;
 						float thrust = j.thrust - 0.4F;
-						float speed = -1-2*thrust;
-						float scale = 4+2*thrust;
+						float speed = -1 - 2 * thrust;
+						float scale = 4 + 2 * thrust;
 						int numParticles = 3;
-						for(int i = 0; i < numParticles; i ++){
-							float iN = (float)i/(float)numParticles;
-							float randX = (float) (p.world.rand.nextGaussian()*0.05F);
-							float randZ = (float) (p.world.rand.nextGaussian()*0.05F);
-							j.booster_particles.add(new ParticleRocketPlasma(p.world, -1.8, iN*speed, 4, scale, grad)
-								.motion(randX-0.1F, speed, randZ));
-							randX = (float) (p.world.rand.nextGaussian()*0.05F);
-							randZ = (float) (p.world.rand.nextGaussian()*0.05F);
-							j.booster_particles.add(new ParticleRocketPlasma(p.world, 1.8, iN*speed, 4, scale, grad)
-								.motion(randX+0.1F, speed, randZ));
+						for(int i = 0; numParticles > i; i++){
+							float iN = (float) i / (float) numParticles;
+							j.booster_particles.add(new ParticleRocketPlasma(p.world, -1.8, iN * speed, 4, scale, grad)
+								.motion((float) (rand.nextGaussian() * 0.05F) - 0.1F, speed, (float) (rand.nextGaussian() * 0.05F)));
+							j.booster_particles.add(new ParticleRocketPlasma(p.world, 1.8, iN * speed, 4, scale, grad)
+								.motion((float) (rand.nextGaussian() * 0.05F) + 0.1F, speed, (float) (rand.nextGaussian() * 0.05F)));
 						}
-						if(player.world.getTotalWorldTime()%(2-player.world.rand.nextInt(2)) == 0){
-							j.brightness_particles.add(new ParticleFakeBrightness(p.world, 1.8, -1, 4, 20+thrust*10, 6+player.world.rand.nextInt(2))
-									.color(color[0], color[1], color[2], MathHelper.clamp(0.05F+thrust*0.1F, 0, 1))
+						if(player.world.getTotalWorldTime() % (2 - rand.nextInt(2)) == 0){
+							float alpha = MathHelper.clamp(0.05F + thrust * 0.1F, 0, 1);
+							j.brightness_particles.add(new ParticleFakeBrightness(p.world, 1.8, -1, 4, 20 + thrust * 10, 6 + rand.nextInt(2))
+									.color(color[0], color[1], color[2], alpha)
 									.enableLocalSpaceCorrection());
-							j.brightness_particles.add(new ParticleFakeBrightness(p.world, -1.8, -1, 4, 20+thrust*10, 6+player.world.rand.nextInt(2))
-									.color(color[0], color[1], color[2], MathHelper.clamp(0.05F+thrust*0.1F, 0, 1))
+							j.brightness_particles.add(new ParticleFakeBrightness(p.world, -1.8, -1, 4, 20 + thrust * 10, 6 + rand.nextInt(2))
+									.color(color[0], color[1], color[2], alpha)
 									.enableLocalSpaceCorrection());
 						}
-						if(player.world.rand.nextInt(2) == 0){
-							j.distortion_particles.add(new ParticleHeatDistortion(p.world, 1.8, -1, 4, 5+thrust, 1.5F+thrust*3, 5, player.world.rand.nextFloat()*20)
-									.motion(0.1F, speed*0.5F, 0)
+						if(rand.nextBoolean()){
+							j.distortion_particles.add(new ParticleHeatDistortion(p.world, 1.8, -1, 4, 5 + thrust, 1.5F + thrust * 3, 5, rand.nextFloat() * 20)
+									.motion(0.1F, speed * 0.5F, 0)
 									.enableLocalSpaceCorrection());
 						}
-						if(player.world.rand.nextInt(2) == 0){
-							j.distortion_particles.add(new ParticleHeatDistortion(p.world, -1.8, -1, 4, 5+thrust, 1.5F+thrust*3, 5, player.world.rand.nextFloat()*20)
-									.motion(-0.1F, speed*0.5F, 0)
+						if(rand.nextBoolean()){
+							j.distortion_particles.add(new ParticleHeatDistortion(p.world, -1.8, -1, 4, 5 + thrust, 1.5F + thrust * 3, 5, rand.nextFloat() * 20)
+									.motion(-0.1F, speed * 0.5F, 0)
 									.enableLocalSpaceCorrection());
 						}
 					}
 				}
-				player.ignoreFrustumCheck = true;
-				
-				//SYNC
-				if(player == Minecraft.getMinecraft().player && j.dirty){
-					PacketDispatcher.wrapper.sendToServer(new JetpackSyncPacket(player));
-					j.dirty = false;
-				}
-			}
+	        }
 		}
-	}
+	}		
 	
 	@SideOnly(Side.CLIENT)
 	public static void handleCameraTransform(EntityViewRenderEvent.CameraSetup e){

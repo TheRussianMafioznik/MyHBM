@@ -1,6 +1,105 @@
 package com.hbm.inventory;
 
-import com.google.gson.Gson;
+import static com.hbm.inventory.OreDictManager.AL;
+import static com.hbm.inventory.OreDictManager.ALLOY;
+import static com.hbm.inventory.OreDictManager.ANY_BISMOID;
+import static com.hbm.inventory.OreDictManager.ANY_CONCRETE;
+import static com.hbm.inventory.OreDictManager.ANY_HARDPLASTIC;
+import static com.hbm.inventory.OreDictManager.ANY_HIGHEXPLOSIVE;
+import static com.hbm.inventory.OreDictManager.ANY_PLASTIC;
+import static com.hbm.inventory.OreDictManager.ANY_PLASTICEXPLOSIVE;
+import static com.hbm.inventory.OreDictManager.ANY_RESISTANTALLOY;
+import static com.hbm.inventory.OreDictManager.ANY_RUBBER;
+import static com.hbm.inventory.OreDictManager.AS;
+import static com.hbm.inventory.OreDictManager.ASBESTOS;
+import static com.hbm.inventory.OreDictManager.B;
+import static com.hbm.inventory.OreDictManager.BAKELITE;
+import static com.hbm.inventory.OreDictManager.BE;
+import static com.hbm.inventory.OreDictManager.BIGMT;
+import static com.hbm.inventory.OreDictManager.BR;
+import static com.hbm.inventory.OreDictManager.CDALLOY;
+import static com.hbm.inventory.OreDictManager.CMB;
+import static com.hbm.inventory.OreDictManager.CO;
+import static com.hbm.inventory.OreDictManager.COAL;
+import static com.hbm.inventory.OreDictManager.CS;
+import static com.hbm.inventory.OreDictManager.CU;
+import static com.hbm.inventory.OreDictManager.DESH;
+import static com.hbm.inventory.OreDictManager.DIAMOND;
+import static com.hbm.inventory.OreDictManager.DNT;
+import static com.hbm.inventory.OreDictManager.DURA;
+import static com.hbm.inventory.OreDictManager.EUPH;
+import static com.hbm.inventory.OreDictManager.FERRO;
+import static com.hbm.inventory.OreDictManager.FIBER;
+import static com.hbm.inventory.OreDictManager.GH336;
+import static com.hbm.inventory.OreDictManager.GOLD;
+import static com.hbm.inventory.OreDictManager.GRAPHITE;
+import static com.hbm.inventory.OreDictManager.IRON;
+import static com.hbm.inventory.OreDictManager.KEY_BLACK;
+import static com.hbm.inventory.OreDictManager.KEY_BLUE;
+import static com.hbm.inventory.OreDictManager.KEY_BROWN;
+import static com.hbm.inventory.OreDictManager.KEY_CIRCUIT_BISMUTH;
+import static com.hbm.inventory.OreDictManager.KEY_CYAN;
+import static com.hbm.inventory.OreDictManager.KEY_GRAY;
+import static com.hbm.inventory.OreDictManager.KEY_GREEN;
+import static com.hbm.inventory.OreDictManager.KEY_LIGHTGRAY;
+import static com.hbm.inventory.OreDictManager.KEY_RED;
+import static com.hbm.inventory.OreDictManager.KEY_WHITE;
+import static com.hbm.inventory.OreDictManager.KEY_YELLOW;
+import static com.hbm.inventory.OreDictManager.KNO;
+import static com.hbm.inventory.OreDictManager.LA;
+import static com.hbm.inventory.OreDictManager.LI;
+import static com.hbm.inventory.OreDictManager.MAGTUNG;
+import static com.hbm.inventory.OreDictManager.MINGRADE;
+import static com.hbm.inventory.OreDictManager.NB;
+import static com.hbm.inventory.OreDictManager.ND;
+import static com.hbm.inventory.OreDictManager.NP237;
+import static com.hbm.inventory.OreDictManager.OSMIRIDIUM;
+import static com.hbm.inventory.OreDictManager.PB;
+import static com.hbm.inventory.OreDictManager.PO210;
+import static com.hbm.inventory.OreDictManager.POLYMER;
+import static com.hbm.inventory.OreDictManager.PU;
+import static com.hbm.inventory.OreDictManager.PU238;
+import static com.hbm.inventory.OreDictManager.PU239;
+import static com.hbm.inventory.OreDictManager.P_RED;
+import static com.hbm.inventory.OreDictManager.P_WHITE;
+import static com.hbm.inventory.OreDictManager.RA226;
+import static com.hbm.inventory.OreDictManager.REDSTONE;
+import static com.hbm.inventory.OreDictManager.REIIUM;
+import static com.hbm.inventory.OreDictManager.RUBBER;
+import static com.hbm.inventory.OreDictManager.S;
+import static com.hbm.inventory.OreDictManager.SA326;
+import static com.hbm.inventory.OreDictManager.SA327;
+import static com.hbm.inventory.OreDictManager.SBD;
+import static com.hbm.inventory.OreDictManager.SI;
+import static com.hbm.inventory.OreDictManager.STAR;
+import static com.hbm.inventory.OreDictManager.STEEL;
+import static com.hbm.inventory.OreDictManager.TC99;
+import static com.hbm.inventory.OreDictManager.TCALLOY;
+import static com.hbm.inventory.OreDictManager.TI;
+import static com.hbm.inventory.OreDictManager.U235;
+import static com.hbm.inventory.OreDictManager.U238;
+import static com.hbm.inventory.OreDictManager.UNOBTAINIUM;
+import static com.hbm.inventory.OreDictManager.VERTICIUM;
+import static com.hbm.inventory.OreDictManager.W;
+import static com.hbm.inventory.OreDictManager.XE135;
+import static com.hbm.inventory.OreDictManager.ZR;
+
+import java.io.BufferedReader;
+import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.FileReader;
+import java.io.FileWriter;
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.LinkedHashMap;
+import java.util.List;
+
+import org.apache.logging.log4j.Level;
+
 import com.hbm.blocks.ModBlocks;
 import com.hbm.config.GeneralConfig;
 import com.hbm.forgefluid.ModForgeFluids;
@@ -14,6 +113,7 @@ import com.hbm.items.machine.ItemFluidTank;
 import com.hbm.items.special.ItemCell;
 import com.hbm.items.tool.ItemFluidCanister;
 import com.hbm.main.MainRegistry;
+
 import net.minecraft.block.Block;
 import net.minecraft.init.Blocks;
 import net.minecraft.init.Items;
@@ -27,18 +127,11 @@ import net.minecraftforge.fluids.FluidStack;
 import net.minecraftforge.fluids.FluidUtil;
 import net.minecraftforge.fml.common.registry.GameRegistry;
 import net.minecraftforge.registries.IForgeRegistry;
-import org.apache.logging.log4j.Level;
-
-import java.io.*;
-import java.util.*;
-
-import static com.hbm.inventory.OreDictManager.*;
 
 public class AssemblerRecipes {
 
 	public static File config;
 	public static File template;
-	private static final Gson gson = new Gson();
 	private static IForgeRegistry<Item> itemRegistry;
 	private static IForgeRegistry<Block> blockRegistry;
 	public static LinkedHashMap<ComparableStack, AStack[]> recipes = new LinkedHashMap<>();
@@ -545,7 +638,6 @@ public class AssemblerRecipes {
 		makeRecipe(new ComparableStack(ModItems.missile_buster_strong, 1), new AStack[] { new ComparableStack(ModItems.warhead_buster_medium, 1), new ComparableStack(ModItems.fuel_tank_medium, 1), new ComparableStack(ModItems.thruster_medium, 1), new ComparableStack(ModItems.plate_welded_titanium, 10), new ComparableStack(ModItems.plate_welded_steel, 14), new ComparableStack(ModItems.circuit_targeting_tier2, 1), }, 250);
 		makeRecipe(new ComparableStack(ModItems.missile_emp_strong, 1), new AStack[] {new ComparableStack(ModBlocks.emp_bomb, 3), new ComparableStack(ModItems.fuel_tank_medium, 1), new ComparableStack(ModItems.thruster_medium, 1), new ComparableStack(ModItems.plate_welded_titanium, 10), new ComparableStack(ModItems.plate_welded_steel, 14), new ComparableStack(ModItems.circuit_targeting_tier2, 1), },250);
 		makeRecipe(new ComparableStack(ModItems.missile_burst, 1), new AStack[] { new ComparableStack(ModItems.warhead_generic_large, 1), new ComparableStack(ModItems.fuel_tank_large, 1), new ComparableStack(ModItems.thruster_large, 1), new ComparableStack(ModItems.plate_welded_titanium, 14), new ComparableStack(ModItems.plate_welded_steel, 20), new ComparableStack(ModItems.plate_welded_aluminium, 12), new ComparableStack(ModItems.circuit_targeting_tier3, 1), }, 350);
-		makeRecipe(new ComparableStack(ModItems.missile_inferno, 1), new AStack[] { new ComparableStack(ModItems.warhead_incendiary_large, 1), new ComparableStack(ModItems.fuel_tank_large, 1), new ComparableStack(ModItems.thruster_large, 1), new ComparableStack(ModItems.plate_welded_titanium, 14), new ComparableStack(ModItems.plate_welded_steel, 20), new ComparableStack(ModItems.plate_welded_aluminium, 12), new ComparableStack(ModItems.circuit_targeting_tier3, 1), }, 350);
 		makeRecipe(new ComparableStack(ModItems.missile_rain, 1), new AStack[] { new ComparableStack(ModItems.warhead_cluster_large, 1), new ComparableStack(ModItems.fuel_tank_large, 1), new ComparableStack(ModItems.thruster_large, 1), new ComparableStack(ModItems.plate_welded_titanium, 14), new ComparableStack(ModItems.plate_welded_steel, 20), new ComparableStack(ModItems.plate_welded_aluminium, 12), new ComparableStack(ModItems.circuit_targeting_tier3, 1), }, 350);
 		makeRecipe(new ComparableStack(ModItems.missile_drill, 1), new AStack[] { new ComparableStack(ModItems.warhead_buster_large, 1), new ComparableStack(ModItems.fuel_tank_large, 1), new ComparableStack(ModItems.thruster_large, 1), new ComparableStack(ModItems.plate_welded_titanium, 14), new ComparableStack(ModItems.plate_welded_steel, 20), new ComparableStack(ModItems.plate_welded_aluminium, 12), new ComparableStack(ModItems.circuit_targeting_tier3, 1), }, 350);
 		makeRecipe(new ComparableStack(ModItems.missile_n2, 1), new AStack[] { new ComparableStack(ModItems.warhead_n2, 1), new ComparableStack(ModItems.fuel_tank_large, 1), new ComparableStack(ModItems.thruster_large, 1), new ComparableStack(ModItems.plate_welded_titanium, 20), new ComparableStack(ModItems.plate_welded_steel, 24), new ComparableStack(ModItems.plate_welded_aluminium, 16), new ComparableStack(ModItems.circuit_targeting_tier4, 1), }, 500);
@@ -1094,18 +1186,10 @@ public class AssemblerRecipes {
 	}
 
 	public static void addTantalium(ComparableStack out, int amount) {
-		
 		AStack[] ins = recipes.get(out);
-		
-		if(ins != null) {
-			
-			AStack[] news = new AStack[ins.length + 1];
-			
-			for(int i = 0; i < ins.length; i++)
-				news[i] = ins[i];
-			
-			news[news.length - 1] = new ComparableStack(ModItems.circuit_tantalium, amount);
-			
+		if (ins != null) {
+			AStack[] news = Arrays.copyOf(ins, ins.length + 1);
+			news[ins.length] = new ComparableStack(ModItems.circuit_tantalium, amount);
 			recipes.put(out, news);
 		}
 	}
@@ -1344,8 +1428,7 @@ public class AssemblerRecipes {
 				return null;
 			}
 			if(parts.length == 4){
-				String name = parts[3];
-				name.trim();
+				String name = parts[3].trim();
 				NBTTagCompound tag = parseNBT(name);
 				if(tag == null){
 					MainRegistry.logger.log(Level.WARN, "Failed to parse NBT tag: " + parts[3] + ". Skipping...");

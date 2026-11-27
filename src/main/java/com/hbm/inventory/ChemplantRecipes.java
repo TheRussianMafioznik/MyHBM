@@ -1,12 +1,34 @@
 package com.hbm.inventory;
 
+import static com.hbm.inventory.OreDictManager.ASBESTOS;
+import static com.hbm.inventory.OreDictManager.COAL;
+import static com.hbm.inventory.OreDictManager.COLTAN;
+import static com.hbm.inventory.OreDictManager.DNT;
+import static com.hbm.inventory.OreDictManager.DURA;
+import static com.hbm.inventory.OreDictManager.F;
+import static com.hbm.inventory.OreDictManager.IRON;
+import static com.hbm.inventory.OreDictManager.KEY_BRICK;
+import static com.hbm.inventory.OreDictManager.KEY_GRAVEL;
+import static com.hbm.inventory.OreDictManager.KEY_OIL_TAR;
+import static com.hbm.inventory.OreDictManager.KEY_PLANKS;
+import static com.hbm.inventory.OreDictManager.KEY_SAND;
+import static com.hbm.inventory.OreDictManager.KNO;
+import static com.hbm.inventory.OreDictManager.PB;
+import static com.hbm.inventory.OreDictManager.PU;
+import static com.hbm.inventory.OreDictManager.P_RED;
+import static com.hbm.inventory.OreDictManager.REDSTONE;
+import static com.hbm.inventory.OreDictManager.S;
+import static com.hbm.inventory.OreDictManager.SA326;
+import static com.hbm.inventory.OreDictManager.SA327;
+import static com.hbm.inventory.OreDictManager.SBD;
+import static com.hbm.inventory.OreDictManager.U;
+import static com.hbm.inventory.OreDictManager.U238;
+
 import java.util.Arrays;
-import java.util.List;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
+import java.util.List;
 
-import static com.hbm.inventory.OreDictManager.*;
-import com.google.common.collect.Lists;
 import com.hbm.blocks.ModBlocks;
 import com.hbm.config.GeneralConfig;
 import com.hbm.config.MachineConfig;
@@ -17,21 +39,14 @@ import com.hbm.inventory.RecipesCommon.AStack;
 import com.hbm.inventory.RecipesCommon.ComparableStack;
 import com.hbm.inventory.RecipesCommon.OreDictStack;
 import com.hbm.items.ModItems;
-import com.hbm.items.machine.ItemBattery;
 import com.hbm.items.machine.ItemChemistryTemplate;
-import com.hbm.items.special.ItemCell;
-import com.hbm.items.tool.ItemFluidCanister;
 
 import net.minecraft.init.Blocks;
 import net.minecraft.init.Items;
-import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
-import net.minecraftforge.fluids.Fluid;
 import net.minecraftforge.fluids.FluidRegistry;
 import net.minecraftforge.fluids.FluidStack;
-import net.minecraftforge.oredict.OreDictionary;
 
-//TODO: clean this shit up
 @Spaghetti("everything")
 public class ChemplantRecipes {
 
@@ -191,7 +206,7 @@ public class ChemplantRecipes {
 		makeRecipe(880, "OSMIRIDIUM_DEATH", new AStack[] { new ComparableStack(ModItems.powder_paleogenite), new OreDictStack(F.dust(), 8), new ComparableStack(ModItems.nugget_bismuth, 4) }, new FluidStack[]{ PressurizedFluids.make(ModForgeFluids.sulfuric_acid, 1000), PressurizedFluids.make(ModForgeFluids.sas3, 1000) }, null, new FluidStack[]{ new FluidStack(ModForgeFluids.liquid_osmiridium, 1000) }, 240);
 		
 		makeRecipe(890, "SPARKFUEL", new AStack[] {new ComparableStack(ModItems.powder_spark_mix, 1) }, new FluidStack[]{ new FluidStack(ModForgeFluids.balefire, 3000) }, new AStack[] { new ComparableStack(ModItems.powder_power, 1) }, new FluidStack[]{ new FluidStack(ModForgeFluids.sparkfuel, 4000) }, 100);
-		// makeRecipe(0, "FP_SMEAR, new AStack[] { new ComparableStack() }, new FluidStack[]{ new FluidStack() }, null, null, 100);
+
 		makeRecipe(900, "LITCRYST", new AStack[] {new ComparableStack(ModBlocks.block_lithium, 1) }, new FluidStack[]{ new FluidStack(ModForgeFluids.schrabidic, 2000) }, new AStack[] { new ComparableStack(ModItems.crystal_lithium, 1) }, null, 1200);
 
 		makeRecipe(910, "GASOLINE_HQ", new AStack[] {new ComparableStack(ModItems.antiknock, 1) }, new FluidStack[]{ new FluidStack(ModForgeFluids.petroil_hq, 10000) }, null, new FluidStack[]{ new FluidStack(ModForgeFluids.gasoline_hq, 12000) }, 40);
@@ -239,30 +254,26 @@ public class ChemplantRecipes {
 		recipeNames.remove(index);
 	}
 
-	public static List<AStack> getChemInputFromTempate(ItemStack stack) {
-		if (stack == null || !(stack.getItem() instanceof ItemChemistryTemplate))
+		public static List<AStack> getChemInputFromTempate(ItemStack stack) {
+		if (stack == null || stack.isEmpty() || !(stack.getItem() instanceof ItemChemistryTemplate))
 			return null;
 		AStack[] inputs = recipeItemInputs.get(stack.getItemDamage());
-		if(inputs != null)
-			return Arrays.asList(inputs);
-		return null;
+		return inputs != null ? Arrays.asList(inputs) : null;
 	}
 
-
 	public static FluidStack[] getFluidInputFromTempate(ItemStack stack) {
-		if (stack == null || !(stack.getItem() instanceof ItemChemistryTemplate))
+		if (stack == null || stack.isEmpty() || !(stack.getItem() instanceof ItemChemistryTemplate))
 			return null;
 		return recipeFluidInputs.get(stack.getItemDamage());
 	}
 
-
 	public static ItemStack[] getChemOutputFromTempate(ItemStack stack) {
-		if (stack == null || !(stack.getItem() instanceof ItemChemistryTemplate))
+		if (stack == null || stack.isEmpty() || !(stack.getItem() instanceof ItemChemistryTemplate))
 			return null;
 		AStack[] outputs = recipeItemOutputs.get(stack.getItemDamage());
-		if(outputs != null){
+		if (outputs != null) {
 			ItemStack[] stackOutputs = new ItemStack[outputs.length];
-			for(int i=0; i<stackOutputs.length; i++){
+			for (int i = 0; stackOutputs.length > i; i++) {
 				stackOutputs[i] = outputs[i].getStack();
 			}
 			return stackOutputs;
@@ -270,42 +281,31 @@ public class ChemplantRecipes {
 		return null;
 	}
 
-
 	public static FluidStack[] getFluidOutputFromTempate(ItemStack stack) {
-		if (stack == null || !(stack.getItem() instanceof ItemChemistryTemplate))
+		if (stack == null || stack.isEmpty() || !(stack.getItem() instanceof ItemChemistryTemplate))
 			return null;
 		return recipeFluidOutputs.get(stack.getItemDamage());
 	}
 
+	public static int getProcessTime(ItemStack stack) {
+		if (stack == null || stack.isEmpty() || !(stack.getItem() instanceof ItemChemistryTemplate))
+			return 100;
+		return recipeDurations.getOrDefault(stack.getItemDamage(), 100);
+	}
 
-	public static int getProcessTime(ItemStack stack) {	
-    	if(!(stack.getItem() instanceof ItemChemistryTemplate))
-    		return 100;
-        Integer time = recipeDurations.get(stack.getItemDamage());
-        if(time != null)
-        	return time;
-        return 100;
-    }
+	public static String getName(ItemStack stack) {
+		if (stack == null || stack.isEmpty() || !(stack.getItem() instanceof ItemChemistryTemplate))
+			return null;
+		return recipeNames.getOrDefault(stack.getItemDamage(), "BAD_RECIPE");
+	}
 
-    public static String getName(ItemStack stack) {	
-    	if(!(stack.getItem() instanceof ItemChemistryTemplate))
-    		return null;
-        String name = recipeNames.get(stack.getItemDamage());
-        if(name != null)
-        	return name;
-        return "BAD_RECIPE";
-    }
+	public static String getName(int i) {
+		return recipeNames.getOrDefault(i, "");
+	}
 
-    public static String getName(int i) {	
-        String name = recipeNames.get(i);
-        if(name != null)
-        	return name;
-        return "";
-    }
-
-    public static boolean hasRecipe(ItemStack stack) {	
-    	if(stack == null || !(stack.getItem() instanceof ItemChemistryTemplate))
-    		return false;
-       	return recipeNames.containsKey(stack.getItemDamage());
-    }
+	public static boolean hasRecipe(ItemStack stack) {
+		if (stack == null || stack.isEmpty() || !(stack.getItem() instanceof ItemChemistryTemplate))
+			return false;
+		return recipeNames.containsKey(stack.getItemDamage());
+	}
 }
